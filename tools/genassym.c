@@ -44,7 +44,7 @@
  * Back when this compiled on a sun3 m68k system, long was 4 bytes
  * tjt
  */
-typedef int u32
+typedef int u32;
 
 /*
  * These unions are used to define page map entries and enable register
