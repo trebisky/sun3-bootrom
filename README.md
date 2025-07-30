@@ -6,4 +6,5 @@ using the m68k gcc cross compiler and assembler on an
 x86 linux host.
 
 I am going to begin targetting the Sun 3/160 since the sources
-support that (as CARERRA) and because I have a 3/160 to test with.
+support that target (as CARRERA) and because I
+have a 3/160 to test with.
