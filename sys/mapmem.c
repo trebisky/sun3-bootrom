@@ -20,6 +20,8 @@
 #include "../h/enable.h"
 #include "../sun3/structconst.h"
 
+#include "../h/protos.h"
+
 void setupmap ( struct pginit * );
 
 /*

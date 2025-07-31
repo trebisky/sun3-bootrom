@@ -1,8 +1,13 @@
 # Build the sun3 bootrom
+#
+# Tom Trebisky  7-30-2025
 
+# These 4 machines are directly supported
 # CARRERA is the 3/160
 # SIRIUS is the 3/260 3/280
-# PRISM is the 
+# PRISM is the 3/110
+# M25 is the 3/50
+
 IDENT='-DID="Rev 2.1"' -DSUN3 -DCARRERA
 
 # Now this is in bootrom.lds
@@ -26,6 +31,15 @@ SIZE = m68k-linux-gnu-size
 DUMP = m68k-linux-gnu-objdump -d
 
 OBJS = romvec.o trap.o mapmem.o reset.o
+
+# A short note on Gnu make "automatic variables" that are handy,
+# but I often forget how to use -- I only use the first two
+#  and there are more than these.
+# $< - the first prerequisite
+# $@ - the first target
+# $? - all prerequisites newer than the target
+# $^ - all prerequisites, no duplicates
+# $+ - all prerequisites, including duplicates
 
 #all: bootrom
 all: $(OBJS)

@@ -15,6 +15,8 @@
  * since it's hard to take the Vector Base Reg into account.
  */
 
+#ifdef NOTANSI
+// tjt -- moved to protos.h
 /*
  * int (*)()
  * set_evec(offset, func)
@@ -24,6 +26,7 @@
  * Sets the vector at  offset  to  func  and returns the previous value.
  */
 int (*set_evec())();
+#endif
 
 #define	EVEC_RESET	0x000
 #define	EVEC_BUSERR	0x008

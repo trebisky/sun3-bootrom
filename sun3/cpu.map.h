@@ -217,7 +217,6 @@ union pgmap_un {
 
 #define	MAPADDRMASK	0x0FFFE000	/* Keeps bits relevant to map entry */
 
-
 /*
  * The following subroutines accept any address in the mappable range
  * (256 megs).  They access the map for the current context.  They
@@ -230,25 +229,12 @@ union pgmap_un {
  * implementation doesn't support structures returned from reentrant routines.
  */ 
 
-#ifdef ANSI
-/* in cpu.map.s */
-int /*struct pgmapent*/ getpgmap ( char * );
-int                     setpgmap( char *, int );
-
-segnum_t	getsegmap ( char * );
-int         setsegmap ( char *, int );
-
-context_t getsupcontext ( void );
-int           setsupcontext ( int );
-
-context_t getusercontext ( void );
-int           setusercontext ( int );
-
-#else
+#ifdef NOTANSI
 extern /*struct pgmapent*/ getpgmap();	/* (addr) */
 extern                     setpgmap();	/* (addr, entry) */
 extern segnum_t getsegmap();		/* (addr) */
 extern          setsegmap();		/* (addr, entry) */
+/* The next 4 don't exist in bootrom code */
 extern context_t getsupcontext();	/* () */
 extern           setsupcontext();	/* (entry) */
 extern context_t getusercontext();	/* () */
