@@ -105,6 +105,16 @@ struct pgmapent {
 	unsigned	pm_page		:19;	/* Page # in physical memory */
 };
 
+/* tjt -- added 7-31-2025
+ * This allows us to switch between treating one of the 32 bit
+ * gadgets defined above and a 32 bit integer.
+ * Used in mapmem.c
+ */
+union pgmap_un {
+	struct pgmapent u_pgmap;
+	int u_val;
+};
+
 #define	PMREALBITS	0xFF07FFFF	/* Which are actually implemented */
 #define PMREALBITS_M25  0xFF0007FF      /* Which for M25 */
 
@@ -220,6 +230,21 @@ struct pgmapent {
  * implementation doesn't support structures returned from reentrant routines.
  */ 
 
+#ifdef ANSI
+/* in cpu.map.s */
+int /*struct pgmapent*/ getpgmap ( char * );
+int                     setpgmap( char *, int );
+
+segnum_t	getsegmap ( char * );
+int         setsegmap ( char *, int );
+
+context_t getsupcontext ( void );
+int           setsupcontext ( int );
+
+context_t getusercontext ( void );
+int           setusercontext ( int );
+
+#else
 extern /*struct pgmapent*/ getpgmap();	/* (addr) */
 extern                     setpgmap();	/* (addr, entry) */
 extern segnum_t getsegmap();		/* (addr) */
@@ -228,5 +253,8 @@ extern context_t getsupcontext();	/* () */
 extern           setsupcontext();	/* (entry) */
 extern context_t getusercontext();	/* () */
 extern           setusercontext();	/* (entry) */
+#endif
 
 #endif ADRSPC_SIZE
+
+/* THE END */
