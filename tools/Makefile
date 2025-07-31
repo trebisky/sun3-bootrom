@@ -4,9 +4,12 @@
 # For compile to run on local host
 HCC = cc
 # HCFLAGS= -Wno-endif-labels -Wno-implicit-function-declaration
-HCFLAGS= -Wno-endif-labels -Wno-implicit-function-declaration -Wno-implicit-int
+HCFLAGS= -Wno-endif-labels -Wno-implicit-function-declaration -Wno-implicit-int -Wno-pointer-to-int-cast
 
 all:	genassym
+
+build:
+		./genassym >../sun3/assym.h
 
 # ===================================
 # assym.h contains assembler defns of structure members.  It's made by

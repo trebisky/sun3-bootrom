@@ -13,13 +13,19 @@
  * such a symbol, you have to add the printf() for it to this module.
  */
 
+#ifdef no_can_do
+/* We would like to do this to get printf() and such in
+ * the official way, but it drags in everything but the kitchen
+ * sink -- and conflicts with declarations in our headers
+ * (such as size_t, daddr_t, and others
+ */
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdint.h>
+#endif
 
-#include "../sun3/cpu.map.h"
+int printf ( char *, ... );
 
-#ifdef notyet
 #include "../sun3/cpu.addrs.h"
 #include "../sun3/cpu.map.h"
 #include "../sun3/sunmon.h"
@@ -38,13 +44,13 @@
 #include "../sun3/memerr.h"
 #include "../h/interreg.h"
 #include "../h/enable.h"
-#endif notyet
 
 /* We can't use long on a 64 bit x86 system.
  * Back when this compiled on a sun3 m68k system, long was 4 bytes
  * tjt
  */
-typedef int u32;
+typedef short int16;
+typedef int int32;
 
 /*
  * These unions are used to define page map entries and enable register
@@ -52,19 +58,32 @@ typedef int u32;
  */
 union longmap {
 	// long	longval;
-	u32	longval;
+	int32	longval;
 	struct pgmapent pgmapent;
 };
 
+/* tjt  -  7/31/2025
+ * This is from sun3/m68vectors.h
+ * I moved it here and added portable fixtures so
+ * that we get the right size when this program gets
+ * compiled on an x86
+ */
+
+struct XXintstack {
+    int16   i_sr;       /* Stacked status register */
+    int32   i_pc;       /* Program counter of error */
+    int16   i_fvo;      /* Format & vector offset */
+} __attribute__((packed));
+
+#ifdef notdef
 int
 main()
 {
-	printf ( "long is %d\n", sizeof(long) );
-	printf ( "int is %d\n", sizeof(int) );
-	printf ( "int32 is %d\n", sizeof(int32_t) );
+	printf ( "long is %d\n", sizeof(long) );	// 8
+	printf ( "int is %d\n", sizeof(int) );		// 4
 }
+#endif
 
-#ifdef notyet
 int
 main()
 {
@@ -72,7 +91,9 @@ main()
 	 * Declare assorted registers that we're interested in.
 	 */
 	union longmap mapper;
-	struct intstack *ip = 0;	/* Assume structs start at 0 */
+	/* Assume structs start at 0 */
+	/* Used to get the offset for "i_fvo" */
+	struct XXintstack *ip = 0;
 	struct zscc_device *zp = 0;
 	struct deschip *dp = 0;
 	struct monintstack *mp = 0;
@@ -321,12 +342,22 @@ main()
 	printf("#define g_mod3addr 0x%x\n", &gp->g_mod3addr);
         printf("#define g_mod3exp 0x%x\n", &gp->g_mod3exp);
         printf("#define g_mod3obs 0x%x\n", &gp->g_mod3obs);
+
 	/*
 	 * Fields from dpy.h
 	 */
 	printf("\n");
-	printf("#define GXBase 0x%x\n", &GXBase);
-	printf("#define fbaddr 0x%x\n", &fbaddr);
+
+	/* gcc doesn't like either of these, it complains ..
+	 *   error: lvalue required as unary ‘&’ operand
+	 * the value is defined in h/dpy.h as:
+	 * #define	GXBase		((int)(gp->g_fbdata.md_image))
+	 * #define	fbaddr		((int)(gp->g_fbdata.md_image))
+	 */
+	// printf("#define GXBase 0x%x\n", &GXBase);
+	// printf("#define fbaddr 0x%x\n", &fbaddr);
+	printf("#define GXBase 0x%x\n", & gp->g_fbdata.md_image );
+	printf("#define fbaddr 0x%x\n", & gp->g_fbdata.md_image );
 
 	/*
 	 * Fields from m68vectors.h
@@ -345,7 +376,7 @@ main()
 	printf("#define EVEC_MENU_TSTS 0x%x\n", EVEC_MENU_TSTS);
 	printf("#define EVEC_BOOT_EXEC 0x%x\n", EVEC_BOOT_EXEC);
 	printf("#define FVO_OFFSET 0x%x\n", FVO_OFFSET);
-	printf("#define sizeofintstack 0x%x\n", sizeof(struct intstack));
+	printf("#define sizeofintstack 0x%x\n", sizeof(struct XXintstack));
 	printf("#define i_fvo 0x%x\n", &ip->i_fvo);
 
 	/*
@@ -479,7 +510,7 @@ main()
 	printf("#define	CACR_ENABLE 0x%x\n", CACR_ENABLE);
 	printf("#define	CACR_CLEAR_ENT 0x%x\n", CACR_CLEAR_ENT);
 
-	exit(0);
+	// exit(0);
 }
 
-#endif notyet
+/* THE END */

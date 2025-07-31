@@ -12,7 +12,7 @@ IDENT='-DID="Rev 2.1"' -DSUN3 -DCARRERA
 # COPTS= -Wno-endif-labels -Wno-implicit-function-declaration
 
 #AFLAGS = -m68020 -x assembler-with-cpp -Wno-endif-labels
-AFLAGS = -march=68020 -mcpu=68020 -x assembler-with-cpp -Wa,--register-prefix-optiona -Wno-endif-labels
+AFLAGS = -march=68020 -mcpu=68020 -x assembler-with-cpp -Wa,--register-prefix-optional -Wno-endif-labels
 
 # For cross compile to m68k target
 CC = m68k-linux-gnu-gcc -m68020 -fno-builtin

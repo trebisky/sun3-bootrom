@@ -14,6 +14,7 @@
 #define	enum_t	int
 #define	FALSE	(0)
 #define	TRUE	(1)
+
 #define __dontcare__	-1
 
 #ifndef KERNEL

@@ -390,23 +390,23 @@ _nmi:
 |  and go on to exit
 #ifdef	SIRIUS
 	btst	#0,d0		| is ti a correctible error?
-	beq	10$		| its a UE so continue on to monitor
+	beq	10f				| its a UE so continue on to monitor
 | CE begins here
         movl    a0,sp@-         | save addr reg
         movl    d2,sp@-         |for brd cnt 
         clrl    d2 
         lea     ECC_SYNDROME,a0 | to get the phys addr
-5$:
+5:
         movl    a0@,d0          | get phys address
         movl    #0,a0@          | clear out current CE report
         btst    #0,d0           | is this the board?
-        bne     7$              | yes, run with it
+        bne     7f              | yes, run with it
         addql   #1,d2           | bump brd number cnt 
         addl    #0x40,a0        | bump it by nxt adrr amount
         cmpl    #ECC_SYNDROME+(4*0x40),a0 |at end + 1 ?
-        bne     5$
+        bne     5b
 | this hack-- cant find right board so use last one MJC hack
-7$:
+7:
         andl    #SYN_MASK,d0    | mask in A<24..3>
         lsll    #2,d0           | and adjust it  
 | now call printf
@@ -426,7 +426,7 @@ _nmi:
 #endif	SIRIUS			| debug for now
 |
 |
-10$:	movw	#EVEC_MEMERR,sp@(4+i_fvo) | Indicate that this is memory err
+10:	movw	#EVEC_MEMERR,sp@(4+i_fvo) | Indicate that this is memory err
 trapout:
 	movl	sp@+,d0			| Restore saved register
 	jra	_trap			| And just trap out as usual.
@@ -467,14 +467,14 @@ Trykey:
 	tstb	a0@(zscc_control)	| Read to flush previous pointer.
 
 	moveq   #0x7f, d0 
-1$:     dbra    d0, 1$
+1:     dbra    d0, 1b
 
 	moveq	#ZSRR0_RX_READY,d0	| Bit mask for RX ready bit
 	andb	a0@(zscc_control),d0	| Now read it for real.
 	jeq	s2_notnew		| If no char around, skip.
 
 	moveq   #0x7f, d0 
-2$:     dbra    d0, 2$
+2:     dbra    d0, 2b
 
 	moveq	#0,d0
 	movb	a0@(zscc_data),d0	| Get the keycode
@@ -503,10 +503,10 @@ s2_notnew:
 Brkt1:
 	tstb	a0@(zscc_control)	| Read to flush previous pointer.
 	moveq   #0x7f, d0 
-1$:     dbra    d0, 1$
+1:     dbra    d0, 1b
 	movb	#ZSWR0_RESET_STATUS,a0@(zscc_control)	| Avoid latch action
 	moveq   #0x7f, d0 
-2$:     dbra    d0, 2$
+2:     dbra    d0, 2b
 	movb	#ZSRR0_BREAK,d0		| Who's afraid of the big bad sign?
 	andb	a0@(zscc_control),d0	| Now read it for real.
 	movl	d1,a0			| Restore a0
@@ -544,14 +544,14 @@ _sendtokbd:
 	tstb	a0@(zscc_control)	| Read to flush previous pointer.
 
 	moveq   #0x7f, d0 
-1$:     dbra    d0, 1$
+1:     dbra    d0, 1b
 
 	moveq   #ZSRR0_TX_READY,d0      | Bit mask for TX ready bit
 	andb	a0@(zscc_control),d0	| Now read it for real.
 	jeq	sendret			| If can't xmit, just return the 0.
 
 	moveq	#0x7f, d0
-2$:	dbra	d0, 2$
+2:	dbra	d0, 2b
 
 	movb	sp@(7),a0@(zscc_data)	| Write the byte to the kbd uart
 	moveq	#1,d0			| Indicate success
@@ -717,10 +717,10 @@ _getidprom:
 	movl	#FC_MAP,d2
 	movc	d2,sfc		| set space 3
 	lea	IDPROMOFF,a1	| select id prom
-	jra	2$		| Enter loop at bottom as usual for dbra
-1$:	movsb	a1@+,d2		| get a byte
+	jra	2f		| Enter loop at bottom as usual for dbra
+1:	movsb	a1@+,d2		| get a byte
 	movb	d2,a0@+		| save it
-2$:	dbra	d1,1$		| and loop
+2:	dbra	d1,1b		| and loop
 	movc	d0,sfc		| restore sfc
 	movl	sp@+,d2		| restore d2
 	rts
