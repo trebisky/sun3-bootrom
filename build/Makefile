@@ -30,7 +30,17 @@ SIZE = m68k-linux-gnu-size
 
 DUMP = m68k-linux-gnu-objdump -d
 
-OBJS = romvec.o trap.o mapmem.o reset.o
+OBJS = romvec.o trap.o mapmem.o reset.o cpu.map.o \
+	diag.o
+
+# This defines the link order
+ORIG_OBJS = romvec.o trap.o mapmem.o reset.o cpu.map.o diag.o banner.o commands.o \
+    idprom.o usecmd.o getline.o printf.o busyio.o keypress.o\
+    getkey.o ktab.s2.o boot.o monalloc.o common.o blts.o \
+    expand.o finit.o fwritestr.o gallmash.o mem_grab.o if_ie.o \
+    xy.o sc.o sd.o xxboot.o xxprobe.o scutils.o space.o st.o tm.o xt.o \
+    inet.o tftp.o diagmenus.o machdep.o cmp.o patt.o db.o si.o xd.o
+
 
 # A short note on Gnu make "automatic variables" that are handy,
 # but I often forget how to use -- I only use the first two
@@ -52,14 +62,6 @@ check: chkalign.c
 	$(DUMP) chkalign.o >check.dump
 
 
-# This defines the link order
-ORIG_OBJS=romvec.o trap.o mapmem.o reset.o cpu.map.o diag.o banner.o commands.o \
-    idprom.o usecmd.o getline.o printf.o busyio.o keypress.o\
-    getkey.o ktab.s2.o boot.o monalloc.o common.o blts.o \
-    expand.o finit.o fwritestr.o gallmash.o mem_grab.o if_ie.o \
-    xy.o sc.o sd.o xxboot.o xxprobe.o scutils.o space.o st.o tm.o xt.o \
-    inet.o tftp.o diagmenus.o machdep.o cmp.o patt.o db.o si.o xd.o
-
 romvec.o: ../sun3/romvec.s
 	$(AS) -c $<
 
@@ -71,6 +73,9 @@ mapmem.o: ../sys/mapmem.c
 
 reset.o: ../sys/reset.c
 	$(CC) -c $<
+
+cpu.map.o: ../sun3/cpu.map.s
+	$(AS) -c $<
 
 bootrom: Makefile $(OBJS)
 	@echo linking bootrom
