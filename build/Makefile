@@ -77,6 +77,9 @@ reset.o: ../sys/reset.c
 cpu.map.o: ../sun3/cpu.map.s
 	$(AS) -c $<
 
+diag.o: ../diag/diag.s
+	$(AS) -c $<
+
 bootrom: Makefile $(OBJS)
 	@echo linking bootrom
 	@rm -f bootrom

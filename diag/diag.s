@@ -1,5 +1,8 @@
 |	@(#)diag.s 1.00 85/6/10 Copyright (c) 1985 by Sun Microsystems
 |	Power-Up Diagnostics for Sun-3 Processor Board
+|   
+|   tjt - a big file, 3180 lines, with lots of local labels
+|    7-31-2025
 |
 |	Revision History
 |
@@ -13,7 +16,7 @@
 |	This module is executed immediately after a power-up reset or a "K2"
 |	reset command. The execution time of the selftest is a function of the 
 |	workstation type and its available memory.  Exeuction times are provided 
-|as|	as follows:
+|	as follows:
 |
 |	workstation	memory size	execution time
 |	-----------	-----------	--------------
@@ -392,7 +395,7 @@ LED_loop:
 	
 	movl	#led_delay,d1		| delay count for human viewing
 
-10$:	dbra	d1,10$			| view delay loop
+10:	dbra	d1,10b			| view delay loop
 
 	rolw	#1,d0			| shift bit left 
 	cmpb	#0xFF,d0		| loop til 0-bit is shifted out
@@ -420,16 +423,16 @@ Test_00:
 	bset	#bit_no_print,d7	| disable printouts for this test
 	bset	#bit_no_read,d7		| disable reading chars
 	movb	#~0,d7			| test # is 0
-	lea	10$,a6			| save PC return
+	lea	10f,a6			| save PC return
 	jra	test$			| display test # in LEDs
-10$:
+10:
 	movl	#SEGOFF+MAXSEG-SEGINCR,a0 | 2FFE0000 >> a0
 	movl	#PAGEOFF+MAXSEG-SEGINCR+MAXPAGE-PAGEINCR,a1 | 1FFFE000 >> a1
 	moveq	#1,d1			| initial write pattern = 1
-14$:
-	lea	20$,a6
+14:
+	lea	20f,a6
 	jra	loop$			| <<<TOP OF TEST LOOP>>>
-20$:
+20:
 	moveq	#FC_MMU,d0
 	movc	d0,sfc			| setup source and dest fc
 	movc	d0,dfc
@@ -441,26 +444,27 @@ Test_00:
 	movsl	d0,a1@			| ***0xF4000010 >> Page address 0xFFF
 	movb	#0x0c,UARTACNTL		| ***select SCC WR 12***
 	movw	#0x100,d4		| chip recovery time delay
-30$:	dbra	d4,30$
+30:	dbra	d4,30b
 	movb	d1,UARTACNTL		| ***write SCC WR 12***
 	movw	#0x100,d4		| chip recovery time delay
-40$:	dbra	d4,40$
+40:	dbra	d4,40b
 	movb	#0x0c,UARTACNTL		| ***select SCC RR 12***
 	movw	#0x100,d4		| chip recovery time delay
-50$:	dbra	d4,50$
+50:	dbra	d4,50b
 	movb	UARTACNTL,d0		| ***read SCC RR 12***
 	cmpb	d0,d1			| write byte = read byte?
-	beq	60$			| br if equal
-	lea	60$,a6			| save PC return
+	beq	60f			| br if equal
+	lea	60f,a6			| save PC return
 	jra  	error$				| Error!! SCC write/read
 					| data compare error thru
 					| MMU path!
-60$:
-	lea	70$,a6			| save PC return
+60:
+	lea	70f,a6			| save PC return
 	jra	loop$end		| <<<BOTTOM OF TEST LOOP>>>
-70$:
+70:
 	aslb	#1,d1			| next byte pattern
-	bne	14$			| if not last pattern
+	bne	14b			| if not last pattern
+
 	bclr	#bit_no_print,d7	| reenable print to SCC port A	
 	bclr	#bit_no_read,d7		| renable char reads from port A
 
@@ -468,16 +472,16 @@ Test_00:
 
 | Setup SCC chip for 1200 Baud, no parity, 8 data bits, 1 stop bit
 
-	lea	100$,a6			| save PC return
+	lea	100f,a6			| save PC return
 	jra	UARTinit		| init the MMU bypass SCC port A
-100$:					| for non-model 25 workstations
+100:					| for non-model 25 workstations
 
 | Output Program name to serial port A.
 
 	lea	program_name,a4
-	lea	110$,a6
+	lea	110f,a6
 	jra	print$			| "Sun_3 Selftest"
-110$:
+110:
 Start:
 |------------------------------------------------------------------------------
 | PROM Checksum Test
@@ -491,37 +495,37 @@ Start:
 Test_01:
 	movb	#~1,d7			| test #
 	lea	Test_01_txt,a4		| test descriptor text
-	lea	10$,a6			| save PC return
+	lea	10f,a6			| save PC return
 	jra	test$			| display test text and number
-10$:
-	lea	20$,a6			| save PC return
+10:
+	lea	20f,a6			| save PC return
 	jra	loop$			| <<<TOP OF TEST LOOP>>>
-20$:
+20:
 	subl	a5,a5			| start at PROM/virtual addr 0
 	moveq	#FC_SP,d0		| select instruction fetch(PROM) space
 	movc	d0,sfc			| for movs FC space access
 	clrl	d0
-40$:					 
+40:					 
 	movsb	a5@+,d1			| ***read a PROM byte***
 	andl	#0xFF,d1		| insure only 8 bits 
 	addl	d1,d0			| accumulate checksum
 	cmpl    #EPROM_sz - 2,a5        | at last 2 bytes?
-	bne	40$			| if not
+	bne	40b			| if not
 
 	movsw	a5@+,d1			| get expected PROM checksum
 	andl    #0xFFFF,d0              | strip off don't cares
 	moveq	#FC_MMU,d3
 	movc	d3,sfc			| restore sfc to MMU=default
 	cmpw	d0,d1			| is stored checksum = calcualated?
-44$:
- 	beq	50$			| if yes
+44:	| tjt -- ??
+ 	beq	50f			| if yes
 	lea	chksm_err_txt,a4	
-	lea	50$,a6
+	lea	50f,a6
 	jra	error$			| error! checksum in last 2 bytes of 
-50$:					| EPROM not = accumulated checksum!!
-	lea	60$,a6
+50:					| EPROM not = accumulated checksum!!
+	lea	60f,a6
 	jra	loop$end		| <<<BOTTOM OF TEST LOOP>>>
-60$:
+60:
 
 #ifndef	M25
 |-----------------------------------------------------------------------------
@@ -537,29 +541,29 @@ Test_01:
 Test_02:
 	movb	#~2,d7			| test #
 	lea	Test_02_txt,a4		| test descriptor text
-	lea	10$,a6			| save PC return
+	lea	10f,a6			| save PC return
 	jra	test$			| display test text and number
-10$:
+10:
 	movl	#USERENREG,a5		| address of User DVMA Enable Reg
 	movl	#0xFF,d1		| initial pattern = 0xFF
-14$:
-	lea	20$,a6			| save return PC
+14:
+	lea	20f,a6			| save return PC
 	jra	loop$			| <<<TOP OF TEST LOOP>>>
-20$:
+20:
 	movsb	d1,a5@			| ***write User Ena Register***
 	movsb	a5@,d0			| ***read User Ena Register***
 	andb	#0xff,d0
 	movl	d0,d2
 	eorb	d1,d2			| form xor of good vs bad
-	beq	30$			| if OK
+	beq	30f			| if OK
 	lea	wr_rd_err_txt,a4		| error text msg address
-	lea	30$,a6			| save return PC
+	lea	30f,a6			| save return PC
 	jra	error$			| error! User Ena Register write
-30$:					| data not = read data!
-	lea	40$,a6
+30:					| data not = read data!
+	lea	40f,a6
 	jra	loop$end		| <<<BOTTOM OF TEST LOOP>>>
-40$:
-	dbra	d1,14$			| last pattern?
+40:
+	dbra	d1,14b			| last pattern?
 
 #endif	M25	
 |----------------------------------------------------------------------------
@@ -574,33 +578,33 @@ Test_02:
 Test_03:
  	movb	#~3,d7			| test #
 	lea	Test_03_txt,a4		| test descriptor text
-	lea	10$,a6			| save PC return
+	lea	10f,a6			| save PC return
 	jra	test$
-10$:
+10:
 	moveq	#NCONTEXTS-1,d1		| initial pattern = 7
-14$:
-	lea	20$,a6			| save return PC
+14:
+	lea	20f,a6			| save return PC
 	jra	loop$			| <<<TOP OF TEST LOOP>>>
-20$:
+20:
 	clrl    d0                      | clear d0 for read data
 	movsb	d1,CXREG			| ***write Context Register*** 
 	movsb	CXREG,d0			| ***read Context Register***
 	andb    #NCONTEXTS-1,d0		| strip unused bits
 	movl	d0,d2
 	eorb	d1,d2			| for xor for good vs bad
-	beq	30$			| if OK 
+	beq	30f			| if OK 
 	clrl	d3
 	movsb	d3,CXREG		| 0 > CXREG for print$ routine
 	lea	wr_rd_err_txt,a4	| error text msg address
-	lea	30$,a6			| save return PC
+	lea	30f,a6			| save return PC
 	jra	error$			| error! Context Register write
-30$:					| data not = read data!
-	lea	40$,a6
+30:					| data not = read data!
+	lea	40f,a6
 	clrl	d3
 	movsb	d3,CXREG	| CXREG must be 0 for loop$end
 	jra	loop$end		| <<<BOTTOM OF TEST LOOP>>>
-40$:
-	dbra	d1,14$			| decrement pattern, last?
+40:
+	dbra	d1,14b			| decrement pattern, last?
 |----------------------------------------------------------------------------
 | Segment Map Write/Read Test
 |
@@ -614,9 +618,9 @@ Test_03:
 Test_04:
 	movb	#~4,d7			| test #
 	lea	Test_04_txt,a4		| test descriptor text
-	lea	10$,a6			| save PC return
+	lea	10f,a6			| save PC return
 	jra	test$
-10$:
+10:
 	moveq	#NCONTEXTS - 1,d4	| number of contexts 
 20$:
 	movl	#SEGOFF,a5		| Segment Map RAM base address
@@ -625,9 +629,9 @@ Test_04:
 45$:
 	moveq	#1,d1			| initial write pattern
 50$:
-	lea	60$,a6			| save pc return
+	lea	60f,a6			| save pc return
 	jra	loop$			| <<<TOP OF TEST LOOP>>>
-60$:
+60:
 	movsb	d4,CXREG		| ***load CX register***
 	clrl	d0			| clear register for read data
 	movsb	d1,a5@			| ***write segment RAM address***
