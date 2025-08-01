@@ -118,7 +118,9 @@ FC_UD           =       1               | user data accesses
 FC_UP           =       2               | user program accesses
 FC_MMU          =       3               | access to MMU stuff is in fc3
 FC_SD           =       5               | supervisor data accesses
-FC_SP           =       6               | supervisor program accesses
+| tjt - this is already defined in assym.h
+| defining it again gets into a nasty tangle
+| FC_SP           =       6               | supervisor program accesses
 
 |--------------------------------------------------------------------
 | MMU Control Space defines
@@ -622,13 +624,13 @@ Test_04:
 	jra	test$
 10:
 	moveq	#NCONTEXTS - 1,d4	| number of contexts 
-20$:
+20:
 	movl	#SEGOFF,a5		| Segment Map RAM base address
-40$:
+40:
 	movl	#NSEGS-2,d5		| number of segments/context,preserve 0xFF	
-45$:
+45:
 	moveq	#1,d1			| initial write pattern
-50$:
+50:
 	lea	60f,a6			| save pc return
 	jra	loop$			| <<<TOP OF TEST LOOP>>>
 60:
@@ -639,22 +641,22 @@ Test_04:
 	andl	#0xFF,d0		| strip off other read bits
 	movl	d0,d2			| copy read data to d0 for xor
 	eorb	d1,d2			| xor of write and read data
-	beq	70$			| if write = read data
+	beq	70f			| if write = read data
 	clrl	d3
 	movsb	d3,CXREG		| 0 > CXREG for print$ routine
 	lea	xor_rd_err_txt,a4	| error text address
-	lea	70$,a6			| save pc return
+	lea	70f,a6			| save pc return
 	jra	error$			| ERROR! DATA COMPARE ERROR IN
-70$:					| WRITING AND READING MMU SEGMENT
-	lea	80$,a6			| save pc return
+70:					| WRITING AND READING MMU SEGMENT
+	lea	80f,a6			| save pc return
 	movsb	d3,CXREG		| 0 > CXREG for loop$end
 	jra	loop$end		| <<<BOTTOM OF TEST LOOP>>>
-80$:
+80:
 	aslb	#1,d1			| next write pattern
-	bne	50$			| if not last pattern
+	bne	50b			| if not last pattern
 	addl	#SEGINCR,a5		| next Segment RAM address
-	dbra	d5,45$			| if not RAM address 0 yet
-	dbra	d4,20$			| next context #
+	dbra	d5,45b			| if not RAM address 0 yet
+	dbra	d4,20b			| next context #
 	clrl	d3
 	movsb	d3,CXREG		| 0 > CXREG for print$ routine
 
@@ -673,79 +675,80 @@ Test_04:
 Test_05:
 	movb	#~5,d7			| test #
 	lea	Test_05_txt,a4		| test descriptor text
-	lea	10$,a6			| save PC return
+	lea	10f,a6			| save PC return
 	jra	test$
-10$:
+10:
 	movl	#Test_patt,d2		| point to 1st test pattern
-6$:
-	lea     11$,a6                  | save PC return
+6:
+	lea     11f,a6                  | save PC return
         jra     loop$                    | <<<TOP OF TEST LOOP>>>
-11$:
+11:
 	moveq   #7,d4                   | 1st context = 7
 	moveq   #1,d3                   | modulo 3 pattern count
-12$:
+12:
 	movsb	d4,CXREG		| load Context Register
 	movl	#SEGOFF,a5		| Segment Map RAM base address
 	movl	#NSEGS-2,d5 		| number of segments/context -1
 					| Seg Addr 0xFF must be preserved
 					| for Serial port A terminal I/O!!
-14$:
+14:
 	rorl	#8,d1
 	subql	#1,d3
-	bne	15$
+	bne	15f
 	movl	d2,d1			| reinit modulo 3 pattern generator
 	moveq   #3,d3                   | modulo 3 pattern count
-15$:
+15:
 	movsb   d1,a5@                  | ***write Segment Map address***
 	addl    #SEGINCR,a5             | next Segment Map address
-	dbra	d5,14$			| last segment address in context?
-	dbra	d4,12$			| next context
+	dbra	d5,14b			| last segment address in context?
+	dbra	d4,12b			| next context
 
 	moveq	#1,d3			| modulo 3 pattern count
 	moveq	#7,d4			| 1st context = 7
-18$:
+18:
 	movsb	d4,CXREG		| load Context Register
 	movl	#SEGOFF,a5		| Segment Map RAM base address
 	movl	#NSEGS-2,d5 		| number of segments/context
-24$:
+24:
 	rorl	#8,d1
 	subql	#1,d3
-	bne	36$
+	bne	36f
 	movl	d2,d1
 	moveq	#3,d3			| reinit pattern generator
-36$:
+36:
 	clrl    d0
 	movsb	d4,CXREG		| load Context Register
         movsb   a5@,d0                  | ***read Segment Map address***
         cmpb	d0,d1			| write pattern = read pattern?
-	beq     38$
+	beq     38f
 	movl	d1, d6
         andl    #0xFF,d1
 	rorl	#8,d3	| make a "0" to clr CXREG for M25 print$
 	movsb	d3,CXREG	| CXREG must be 0 for M25 print$
 	roll	#8,d3
         lea     mem_rd_err_txt,a4
-        lea     37$,a6
+        lea     37f,a6
         jra     error$
-37$:
+37:
 	movl	d6, d1
-38$:
+38:
 	addl    #SEGINCR,a5
-	dbra	d5,24$			| decrement segment addr count
-	dbra	d4,18$			| next context
+	dbra	d5,24b			| decrement segment addr count
+	dbra	d4,18b			| next context
 					| byte pattern written!
-	lea	40$,a6
+	lea	40f,a6
 	rorl	#8,d3		| make a "0" to clr CXREG for M25 loop$end
 	movsb	d3,CXREG	| clr CXREG for loop$end
 	roll	#8,d3
 	jra	loop$end		| <<<BOTTOM OF TEST LOOP>>>
-40$:
+40:
 	rorl	#8,d2			| next modulo 3 pattern set
 	cmpl	#patt_end,d2		| last pattern set?
-	bne	6$			| if not
+	bne	6b			| if not
 	bra	Test_06
 	clrl	d0
 	movsb	d0,CXREG	| clr CXREG for M25 print$
+
 |-----------------------------------------------------------------------------
 | Page Map Test
 |
@@ -765,43 +768,43 @@ Test_05:
 Test_06:
 	movb	#~6,d7			| test #
 	lea	Test_06_txt,a4		| test descriptor text
-	lea	6$,a6			| save PC return
+	lea	6f,a6			| save PC return
 	jra	test$
-6$:
+6:
 	movsb	d0,CXREG		| set context to 0
 	movl	#NSEGS-1,d6		| # of Segment Map addresses cnt
 	movl	#SEGOFF+MAXADDR-SEGINCR,a5 | top Segment Map address
-8$:
+8:
 	movsb	d6,a5@			| map virtual = physical for Context 0
 	subl	#SEGINCR,a5		| next Segment Map address
-	dbra	d6,8$	
-10$:
+	dbra	d6,8b	
+10:
 	movl	#Test_patt,d2
-11$:
-	lea	12$,a6			| save PC return
+11:
+	lea	12f,a6			| save PC return
 	jra	loop$			| <<<TOP OF TEST LOOP>>>
-12$:
+12:
 	movl	#NPAGES-1,d4		| # of Page Map addresses
 	movl	#PAGEOFF,a5		| Segment Map RAM base address
-14$:
+14:
 	movl	d2,d3			| init pattern generator
 	movl	#3,d6			| modulo 3 pattern count
-16$:
+16:
 	movsl	d3,a5@			| ***write Page Map address***
 	subql	#1,d4			| decrement page # cnt
-	ble	18$			| if done
+	ble	18f			| if done
 	addl	#PAGEINCR,a5		| next Page Map address
 	rorl	#8,d3
 	subql	#1,d6
-	bne	16$
-	bra	14$
-18$:
+	bne	16b
+	bra	14b
+18:
 	movl	#PAGEOFF,a5		| Segment Map RAM base address
 	movl	#NPAGES-1,d4 		| number of pages to do 
-20$:
+20:
 	movl	d2,d3			| initial pattern generator
 	movl	#3,d6			| modulo 3 pattern count
-24$:
+24:
 	movsl	a5@,d0			| ***read Page Map address***
 	movl	d3,d1
 #ifdef	M25
@@ -812,25 +815,25 @@ Test_06:
 	andl    #0xFF07FFFF,d0
 #endif M25
 	cmpl	d0,d1			| write pattern = read?
-	beq	34$
+	beq	34f
 	lea	mem_rd_err_txt,a4
-	lea	34$,a6
+	lea	34f,a6
 	jra	error$			| error! Segment read byte not
-34$:					| byte pattern written!
+34:					| byte pattern written!
 	addl	#PAGEINCR,a5		| next Page Map address
 	rorl	#8,d3			| next pattern
 	subql	#1,d4			| last RAM address?
-	ble	40$
+	ble	40f
 	subql	#1,d6			| decrement modulo 3 pattern count
-	bne	24$
-	bra	20$
-40$:
-	lea	50$,a6
+	bne	24b
+	bra	20b
+40:
+	lea	50f,a6
 	jra	loop$end		| <<<BOTTOM OF TEST LOOP>>>
-50$:
+50:
 	rorl	#8,d2			| next modulo 3 pattern set
 	cmpl	#patt_end,d2		| last pattern?
-	bne	11$			| if not
+	bne	11b			| if not
 
 |-------------------------------------------------------------------------------
 | Setup trap/vector service for tests that follow which test MMU bus error traps
@@ -2979,36 +2982,36 @@ UARTinit:                               | init uart
         clrl    d0
         lea     uartainit, a0           | set up pram xfer for A
 
-	movsb   ENABLEOFF,d0            | read diag switch
+	    movsb   ENABLEOFF,d0            | read diag switch
         btst    #DIAGSW,d0              | Diagnostic mode (diag sw = 1)?
-        beq     6$                      | if not, do not initialize UART
+        beq     6f                      | if not, do not initialize UART
 
-1$:     movl    #FC_SP, d1              | get next byte from init table
+1:      movl    #FC_SP, d1              | get next byte from init table
         movc    d1, sfc
         movc    d1, dfc
         movsb   a0@+, d0
-	moveq   #FC_MMU, d1
+	    moveq   #FC_MMU, d1
         movc    d1, sfc
         movc    d1, dfc
         cmpb    #0xff, d0               | are we done yet??
-        jeq     3$
+        jeq     3f
 
 #ifdef	M25
-	movb	d0, UARTACNTL		| stuff
+	    movb	d0, UARTACNTL		| stuff
 #else
-	movsb   d0, UARTACNTL           | stuff
+	    movsb   d0, UARTACNTL           | stuff
 #endif M25
 
         movl    #0x800, d1              | and wait
-2$:     dbra    d1, 2$
-        jra     1$
+2:      dbra    d1, 2b
+        jra     1b
 |
 |	Set Port B Baud rate to 1200
 |
-3$:	
+3:	
         lea     uartbinit, a0           | set up pram xfer for A
  
-4$:     movl    #FC_SP, d1              | get next byte from init table
+4:      movl    #FC_SP, d1              | get next byte from init table
         movc    d1, sfc
         movc    d1, dfc
         movsb   a0@+, d0
@@ -3016,7 +3019,7 @@ UARTinit:                               | init uart
         movc    d1, sfc
         movc    d1, dfc
         cmpb    #0xff, d0               | are we done yet??
-        jeq     6$
+        jeq     6f
  
 #ifdef  M25
         movb    d0, UARTBCNTL           | stuff
@@ -3025,13 +3028,13 @@ UARTinit:                               | init uart
 #endif M25
  
         movl    #0x800, d1              | and wait
-5$:     dbra    d1, 5$
-	jra	4$
+5:      dbra    d1, 5b
+	    jra	4b
 
-6$:	jmp     a6@
+6:	    jmp     a6@
 
-	.data
-	.even
+		.data
+	    .even
 uartainit:
         .word   0x09c0          | Force hardware reset
         .word   0x0446          | X16 clock mode, 1 stop bit/char, even parity
