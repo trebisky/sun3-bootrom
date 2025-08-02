@@ -1,5 +1,5 @@
 
-/*	@(#)memreg.h 1.1 86/09/27 SMI	*/
+/*      @(#)memreg.h 1.1 86/09/27 SMI   */
 
 /*
  * Copyright (c) 1986 by Sun Microsystems, Inc.
@@ -32,24 +32,24 @@
  * finally disable the chip.
  */
 struct memropc {
-	u_short	mrc_dest;		/* destination register */
-	u_short	mrc_source1;		/* source1 register (right) */
-	u_short	mrc_source2;		/* source2 register (left) */
-	u_short	mrc_pattern;		/* pattern register */
-	u_short	mrc_mask1;		/* mask1 register */
-	u_short mrc_mask2;		/* mask2 register */
-	short	mrc_shift;		/* bit 0..3 shift count for source */
-					/* bit 8    sourceload bit */
-	short	mrc_op;			/* function */
-	short	mrc_width;		/* word width */
-	short	mrc_opcount;		/* counts down the width */
-	short	mrc_decoderout;		/* decoder output */
-	short	mrc_x11;		/* manual load destination (diag)*/
-	short	mrc_x12;		/* manual load source (diag) */
-	short	mrc_x13;
-	short	mrc_x14;
-	short	mrc_x15;		/* flags register for applications */
+        u_short mrc_dest;               /* destination register */
+        u_short mrc_source1;            /* source1 register (right) */
+        u_short mrc_source2;            /* source2 register (left) */
+        u_short mrc_pattern;            /* pattern register */
+        u_short mrc_mask1;              /* mask1 register */
+        u_short mrc_mask2;              /* mask2 register */
+        short   mrc_shift;              /* bit 0..3 shift count for source */
+                                        /* bit 8    sourceload bit */
+        short   mrc_op;                 /* function */
+        short   mrc_width;              /* word width */
+        short   mrc_opcount;            /* counts down the width */
+        short   mrc_decoderout;         /* decoder output */
+        short   mrc_x11;                /* manual load destination (diag)*/
+        short   mrc_x12;                /* manual load source (diag) */
+        short   mrc_x13;
+        short   mrc_x14;
+        short   mrc_x15;                /* flags register for applications */
 };
 
-#define	mrc_enable(mrc)		((mrc)->mrc_shift |= 0x100)
-#define	mrc_disable(mrc)	((mrc)->mrc_shift &= ~0x100)
+#define mrc_enable(mrc)         ((mrc)->mrc_shift |= 0x100)
+#define mrc_disable(mrc)        ((mrc)->mrc_shift &= ~0x100)

@@ -1,5 +1,5 @@
 
-/*	@(#)sunmon.h 1.1 86/09/27 SMI	*/
+/*      @(#)sunmon.h 1.1 86/09/27 SMI   */
 
 /*
  * Copyright (c) 1986 by Sun Microsystems, Inc.
@@ -14,23 +14,23 @@
 /*
  * Size of the Monitor prom, in bytes
  */
-#define	PROMSIZE	0x10000		/* 64KB avail in one 27512 */
+#define PROMSIZE        0x10000         /* 64KB avail in one 27512 */
 
 /*
  * Various memory layout parameters
  */
-#define	INITSP		STACK_TOP	/* Initial stack pointer after reset */
-#define	USERCODE	0x2000		/* starting address for user programs */
+#define INITSP          STACK_TOP       /* Initial stack pointer after reset */
+#define USERCODE        0x2000          /* starting address for user programs */
 
 /*
  * STRTDATA is the starting address of monitor global data.
  */
-#define	STRTDATA	MONSHORTPAGE
+#define STRTDATA        MONSHORTPAGE
 
 /*
  * Size of line input buffer
  */
-#define	BUFSIZE		80
+#define BUFSIZE         80
 
 /*
  * Size of up/down keyboard's typeahead buffer.  It is scanned
@@ -44,7 +44,7 @@
  * course, this typeahead won't echo immediately in the monitor, but will
  * echo in its proper place in the I/O transcript.)
  */
-#define	KEYBUFSIZE	90
+#define KEYBUFSIZE      90
 
 /*
  * Frequency of the NMI timer used for keyboard scanning.
@@ -54,7 +54,7 @@
  * Since Sun-3 hardware provides 1/100th, 1/10th, and 1-second interrupts,
  * we have to run it at 1/100th second.
  */
-#define	NMIFREQ		100
+#define NMIFREQ         100
 
 /*
  * Size of the transparent I/O (terminal emulator) receive-ahead buffer.
@@ -74,24 +74,24 @@
  * lag behind BufSIZE by 100 or so chars, depending on how fast the host
  * responds to ^S.  (100 chars gives .1 second leeway at 9600 baud).
  */
-#define	TRANSPBUFSIZE	1000
-#define	TRANSPHALTMAX	900
-#define	TRANSPHALTMIN	25
-#define	TRANSPHALTCHAR	0x13		/* ^S */
-#define	TRANSPHALTENDCHAR	0x11	/* ^Q */
+#define TRANSPBUFSIZE   1000
+#define TRANSPHALTMAX   900
+#define TRANSPHALTMIN   25
+#define TRANSPHALTCHAR  0x13            /* ^S */
+#define TRANSPHALTENDCHAR       0x11    /* ^Q */
 
 /*
  * This character takes you out of transparent mode, from a serial terminal.
  */
-#define	CENDTRANSP	'\036'		/* ^^ (ctrl ^) */
+#define CENDTRANSP      '\036'          /* ^^ (ctrl ^) */
 
 /*
  * These are the "erase" and "kill" characters for
  * input processing.
  */
-#define	CERASE1		'\b'		/* backspace */
-#define	CERASE2		0x7F		/* delete */
-#define	CKILL1		'\025'		/* ^U */
+#define CERASE1         '\b'            /* backspace */
+#define CERASE2         0x7F            /* delete */
+#define CKILL1          '\025'          /* ^U */
 
-#define	UPCASE		0x5F		/* mask to force upper case letters */
-#define	NOPARITY	0x7F		/* mask to strip off parity */
+#define UPCASE          0x5F            /* mask to force upper case letters */
+#define NOPARITY        0x7F            /* mask to strip off parity */

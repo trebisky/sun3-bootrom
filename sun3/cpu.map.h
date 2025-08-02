@@ -19,7 +19,7 @@
 /*
  * The address space available to a single process is 256 Megabytes.
  */
-#define	ADRSPC_SIZE	0x10000000
+#define ADRSPC_SIZE     0x10000000
 
 /*
  * The context register selects among 8 different address spaces.  Each
@@ -33,8 +33,8 @@
  */
 typedef unsigned char context_t;
 
-#define	NUMCONTEXTS	8
-#define	CONTEXTMASK	(NUMCONTEXTS-1)	/* Relevant bits on read of cx reg */
+#define NUMCONTEXTS     8
+#define CONTEXTMASK     (NUMCONTEXTS-1) /* Relevant bits on read of cx reg */
 
 /*
  * The segment map determines which large pieces of the 256MB address space
@@ -56,19 +56,19 @@ typedef unsigned char context_t;
  */
 typedef unsigned char segnum_t; /* Segment number */
 
-#define	SEGSPERCONTEXT	2048
-#define	NUMPMEGS	256
-#define	PGSPERSEG	16
+#define SEGSPERCONTEXT  2048
+#define NUMPMEGS        256
+#define PGSPERSEG       16
 
 /*
  * The following are valid in the pm_type field of the page map.
  */
 enum pm_types {
-	VPM_MEMORY	= 0,	/* Page is in main memory */
-	VPM_IO		= 1,	/* Page is onboard I/O */
-	VPM_VME16	= 2,	/* Page is on VMEbus, accessing 16-bit dev */
-	VPM_VME32	= 3,	/* Page is on VMEbus, accessing 32-bit dev */
-	VPM_MEMORY_NOCACHE = 4,	/* Page is in main memory, but not cacheable */
+        VPM_MEMORY      = 0,    /* Page is in main memory */
+        VPM_IO          = 1,    /* Page is onboard I/O */
+        VPM_VME16       = 2,    /* Page is on VMEbus, accessing 16-bit dev */
+        VPM_VME32       = 3,    /* Page is on VMEbus, accessing 32-bit dev */
+        VPM_MEMORY_NOCACHE = 4, /* Page is in main memory, but not cacheable */
 };
 
 
@@ -76,10 +76,10 @@ enum pm_types {
  * The following are valid in the pm_permissions field.
  */
 enum pm_perm {
-	PMP_RO		= 0,	/* Page is read-only by all */
-	PMP_RO_SUP	= 1,	/* Page is read-only by supervisor */
-	PMP_ALL		= 2,	/* Page is read-write by all */
-	PMP_SUP		= 3,	/* Page is read-write by supervisor */
+        PMP_RO          = 0,    /* Page is read-only by all */
+        PMP_RO_SUP      = 1,    /* Page is read-only by supervisor */
+        PMP_ALL         = 2,    /* Page is read-write by all */
+        PMP_SUP         = 3,    /* Page is read-write by supervisor */
 };
 
 
@@ -92,17 +92,17 @@ enum pm_perm {
  * page referenced and modified bits will not be changed, nor will the page
  * number or type fields be used; so they can be used by software.
  */
-#define	BYTESPERPG	8192
-#define	BYTES_PG_SHIFT	13
+#define BYTESPERPG      8192
+#define BYTES_PG_SHIFT  13
 
 struct pgmapent {
-	unsigned	pm_valid	:1;	/* This entry is valid */
-	enum pm_perm	pm_permissions	:2;	/* Access privileges */
-	enum pm_types	pm_type		:3;	/* Type of page+don't cache */
-	unsigned 	pm_accessed	:1;	/* Page has been read */
-	unsigned	pm_modified	:1;	/* Page has been written */
-	unsigned			:5;	/* Reserved */
-	unsigned	pm_page		:19;	/* Page # in physical memory */
+        unsigned        pm_valid        :1;     /* This entry is valid */
+        enum pm_perm    pm_permissions  :2;     /* Access privileges */
+        enum pm_types   pm_type         :3;     /* Type of page+don't cache */
+        unsigned        pm_accessed     :1;     /* Page has been read */
+        unsigned        pm_modified     :1;     /* Page has been written */
+        unsigned                        :5;     /* Reserved */
+        unsigned        pm_page         :19;    /* Page # in physical memory */
 };
 
 /* tjt -- added 7-31-2025
@@ -111,11 +111,11 @@ struct pgmapent {
  * Used in mapmem.c
  */
 union pgmap_un {
-	struct pgmapent u_pgmap;
-	int u_val;
+        struct pgmapent u_pgmap;
+        int u_val;
 };
 
-#define	PMREALBITS	0xFF07FFFF	/* Which are actually implemented */
+#define PMREALBITS      0xFF07FFFF      /* Which are actually implemented */
 #define PMREALBITS_M25  0xFF0007FF      /* Which for M25 */
 
 /*
@@ -124,22 +124,22 @@ union pgmap_un {
  * mapped) address bits connect to the address lines of the device and
  * determine which facility of the device is being accessed.
  */
-#define	VIOPG_KBM	0x00	/* Dual serial Z8530 SCC for keyboard&mouse */
-#define	VIOPG_SERIAL0	0x10	/* Dual serial Z8530 SCC */
-#define	VIOPG_EEPROM	0x20	/* Non-volatile memory */
-#define	VIOPG_CLOCK	0x30	/* Intersil 7170 time-of-day clock */
-#define	VIOPG_MEMORY_ERR 0x40	/* Uncorrectable Memory Error registers */
-#define	VIOPG_INTERRUPT	0x50	/* Interrupt control register */
-#define	VIOPG_ETHER	0x60	/* Intel 82586 Ethernet interface */
-#define	VIOPG_COLORMAP	0x70	/* Color Map for onboard video someday */
-#define	VIOPG_PROM	0x80	/* Bootstrap proms */
-#define	VIOPG_AMD_ETHER	0x90	/* AMD Ethernet interface */
-#define	VIOPG_SCSI	0xA0	/* Onboard SCSI interface */
-/*			0xB0	/* Reserved */
-/*			0xC0	/* Reserved */
-/*			0xD0	/* Reserved */
-#define	VIOPG_DES	0xE0	/* AMD 8068 data ciphering processor */
-#define	VIOPG_ECC_CTRL	0xF0	/* ECC Control Register access */
+#define VIOPG_KBM       0x00    /* Dual serial Z8530 SCC for keyboard&mouse */
+#define VIOPG_SERIAL0   0x10    /* Dual serial Z8530 SCC */
+#define VIOPG_EEPROM    0x20    /* Non-volatile memory */
+#define VIOPG_CLOCK     0x30    /* Intersil 7170 time-of-day clock */
+#define VIOPG_MEMORY_ERR 0x40   /* Uncorrectable Memory Error registers */
+#define VIOPG_INTERRUPT 0x50    /* Interrupt control register */
+#define VIOPG_ETHER     0x60    /* Intel 82586 Ethernet interface */
+#define VIOPG_COLORMAP  0x70    /* Color Map for onboard video someday */
+#define VIOPG_PROM      0x80    /* Bootstrap proms */
+#define VIOPG_AMD_ETHER 0x90    /* AMD Ethernet interface */
+#define VIOPG_SCSI      0xA0    /* Onboard SCSI interface */
+/*                      0xB0    /* Reserved */
+/*                      0xC0    /* Reserved */
+/*                      0xD0    /* Reserved */
+#define VIOPG_DES       0xE0    /* AMD 8068 data ciphering processor */
+#define VIOPG_ECC_CTRL  0xF0    /* ECC Control Register access */
 
 
 /*
@@ -148,8 +148,8 @@ union pgmap_un {
 
 /*****************************************************************************/
 #ifdef PRISM
-			/* these are the physical page numbers */
-#define MEMPG_VIDEO	(0xFF000000 >> BYTES_PG_SHIFT)  /* prism bw frame buf */
+                        /* these are the physical page numbers */
+#define MEMPG_VIDEO     (0xFF000000 >> BYTES_PG_SHIFT)  /* prism bw frame buf */
 #define MEMPG_BW_ENABLE (0xFE400000 >> BYTES_PG_SHIFT)  /* enable plane */
 #define MEMPG_PRISM_CFB (0xFE800000 >> BYTES_PG_SHIFT)  /* prism color fb */
 #endif PRISM
@@ -164,16 +164,16 @@ union pgmap_un {
 #endif SIRIUS
 
 #ifdef M25
-#define MEMPG_VIDEO  	(0x00100000 >> BYTES_PG_SHIFT)  /* FB in main mem */
+#define MEMPG_VIDEO     (0x00100000 >> BYTES_PG_SHIFT)  /* FB in main mem */
 #endif M25
 
-#define	VMEPG_24ADDR	(0xFF000000 >> BYTES_PG_SHIFT)	/* 24-bit addr VME */
-#define	VMEPG_16ADDR	(0xFFFF0000 >> BYTES_PG_SHIFT)	/* 16-bit addr VME */
-#define	VME_COLOR_PHYS	0xFF400000	/* Base addr (not pg#) of VME color */
-#define	VPM_VME_COLOR	VPM_VME16	/* Page type for VME color */
-#define	VMEPG_COLOR	(VME_COLOR_PHYS >> BYTES_PG_SHIFT)
+#define VMEPG_24ADDR    (0xFF000000 >> BYTES_PG_SHIFT)  /* 24-bit addr VME */
+#define VMEPG_16ADDR    (0xFFFF0000 >> BYTES_PG_SHIFT)  /* 16-bit addr VME */
+#define VME_COLOR_PHYS  0xFF400000      /* Base addr (not pg#) of VME color */
+#define VPM_VME_COLOR   VPM_VME16       /* Page type for VME color */
+#define VMEPG_COLOR     (VME_COLOR_PHYS >> BYTES_PG_SHIFT)
 #ifdef PRISM
-#define	MONBEG	MONSTART-PRISM_CFB_SIZE
+#define MONBEG  MONSTART-PRISM_CFB_SIZE
 #else
 #define MONBEG  MONSTART
 #endif PRISM
@@ -195,27 +195,27 @@ union pgmap_un {
  * The following defines the encodings for the various address spaces used
  * by "movs".
  */
-#define	FC_UD	1	/* User Data */
-#define	FC_UP	2	/* User Program */
-#define	FC_MAP	3	/* Sun-3 Memory Maps */
-#define	FC_SD	5	/* Supervisor Data */
-#define	FC_SP	6	/* Supervisor Program */
-#define	FC_CPU	7	/* CPU Space (Int Ack, Co-processors, ...) */
+#define FC_UD   1       /* User Data */
+#define FC_UP   2       /* User Program */
+#define FC_MAP  3       /* Sun-3 Memory Maps */
+#define FC_SD   5       /* Supervisor Data */
+#define FC_SP   6       /* Supervisor Program */
+#define FC_CPU  7       /* CPU Space (Int Ack, Co-processors, ...) */
 
-#define	SEGMAPADR(addr)	(char *)(((int)addr&MAPADDRMASK)+SMAPOFF)
-#define	PAGEMAPADR(addr)(long *)(((int)addr&MAPADDRMASK)+PMAPOFF)
+#define SEGMAPADR(addr) (char *)(((int)addr&MAPADDRMASK)+SMAPOFF)
+#define PAGEMAPADR(addr)(long *)(((int)addr&MAPADDRMASK)+PMAPOFF)
 
-#define	IDPROMOFF	0x00000000	/* ID Prom */
-#define	PMAPOFF		0x10000000	/* Page map offset within maps */
-#define	SMAPOFF		0x20000000	/* Segment map offset within maps */
-#define	CONTEXTOFF	0x30000000	/* Context registers */
-#define	ENABLEOFF	0x40000000	/* System Enable Reg -- turns me on */
-#define	UDMAENABLEOFF	0x50000000	/* User DVMA Enable Reg */
-#define	BUSERROFF	0x60000000	/* Bus Error Register - tells why */
-#define	LEDOFF		0x70000000	/* LED's for diagnostics -- 0=lit */
-#define	SERIALOFF	0xF0000000	/* Serial port bypass for diagnostics */
+#define IDPROMOFF       0x00000000      /* ID Prom */
+#define PMAPOFF         0x10000000      /* Page map offset within maps */
+#define SMAPOFF         0x20000000      /* Segment map offset within maps */
+#define CONTEXTOFF      0x30000000      /* Context registers */
+#define ENABLEOFF       0x40000000      /* System Enable Reg -- turns me on */
+#define UDMAENABLEOFF   0x50000000      /* User DVMA Enable Reg */
+#define BUSERROFF       0x60000000      /* Bus Error Register - tells why */
+#define LEDOFF          0x70000000      /* LED's for diagnostics -- 0=lit */
+#define SERIALOFF       0xF0000000      /* Serial port bypass for diagnostics */
 
-#define	MAPADDRMASK	0x0FFFE000	/* Keeps bits relevant to map entry */
+#define MAPADDRMASK     0x0FFFE000      /* Keeps bits relevant to map entry */
 
 /*
  * The following subroutines accept any address in the mappable range
@@ -230,15 +230,15 @@ union pgmap_un {
  */ 
 
 #ifdef NOTANSI
-extern /*struct pgmapent*/ getpgmap();	/* (addr) */
-extern                     setpgmap();	/* (addr, entry) */
-extern segnum_t getsegmap();		/* (addr) */
-extern          setsegmap();		/* (addr, entry) */
+extern /*struct pgmapent*/ getpgmap();  /* (addr) */
+extern                     setpgmap();  /* (addr, entry) */
+extern segnum_t getsegmap();            /* (addr) */
+extern          setsegmap();            /* (addr, entry) */
 /* The next 4 don't exist in bootrom code */
-extern context_t getsupcontext();	/* () */
-extern           setsupcontext();	/* (entry) */
-extern context_t getusercontext();	/* () */
-extern           setusercontext();	/* (entry) */
+extern context_t getsupcontext();       /* () */
+extern           setsupcontext();       /* (entry) */
+extern context_t getusercontext();      /* () */
+extern           setusercontext();      /* (entry) */
 #endif
 
 #endif ADRSPC_SIZE
