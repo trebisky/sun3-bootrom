@@ -1,0 +1,25 @@
+#!/bin/python
+
+import os
+
+directory = "."
+def process ( f ) :
+    print ( f )
+    savef = f + ".ORIG"
+    cmd = "mv " + f + " " + savef 
+    print ( cmd )
+    os.system ( cmd )
+    cmd = "expand " + savef + " > " + f
+    print ( cmd )
+    os.system ( cmd )
+
+for file in os.listdir ( directory ) :
+    if os.path.isdir ( file ) :
+        #print ( "Skip dir: ", file )
+        continue
+    if file == "detab" :
+        #print ( "Skip self: ", file )
+        continue
+    process ( file )
+
+# THE END
