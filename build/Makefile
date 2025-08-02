@@ -31,7 +31,7 @@ SIZE = m68k-linux-gnu-size
 DUMP = m68k-linux-gnu-objdump -d
 
 OBJS = romvec.o trap.o mapmem.o reset.o cpu.map.o \
-	diag.o
+	diag.o banner.o
 
 # This defines the link order
 ORIG_OBJS = romvec.o trap.o mapmem.o reset.o cpu.map.o diag.o banner.o commands.o \
@@ -79,6 +79,10 @@ cpu.map.o: ../sun3/cpu.map.s
 
 diag.o: ../diag/diag.s
 	$(AS) -c $<
+
+banner.o: ../sys/banner.c
+	$(CC) -c $<
+
 
 bootrom: Makefile $(OBJS)
 	@echo linking bootrom

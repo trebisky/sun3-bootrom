@@ -1543,18 +1543,18 @@ ecc4:
 Test_0D:
         movb    #~0x0D,d7               | test #
         lea     Test_0D_txt,a4          | test descriptor text
-        lea     40$,a6
+        lea     40f,a6
         jra     test$
-40$:
+40:
         movl    #Test_patt,d5           | initialize test pattern
-50$:
+50:
         movl    d5,d1                   | working test pattern
         movl    #NCACHEWDS - 2,d4       | # of addresses to test
         movl    #CACHEDOFF,a5
-54$:
-        lea     60$,a6
+54:
+        lea     60f,a6
         jra     loop$                   | <<<TOP OF TEST LOOP>>>
-60$:
+60:
         movsl   d1,a5@                  | ***write cache data address***
         notl    d1                      | complement pattern
         addl    #CACHEDINCR,a5            | next cache data address
@@ -1564,20 +1564,20 @@ Test_0D:
         notl    d1                      | recomplement pattern
         movl    d1,d2
         eorl    d0,d2                   | xor of good and bad
-        beq     70$                     | if write  = read data
+        beq     70f                     | if write  = read data
         lea     xor_rd_err_txt,a4
-        lea     70$,a6
+        lea     70f,a6
         jra     error$                  | ERROR! DATA COMPARE ERROR IN
-70$:                                    | WRITING AND READING CACHE DATA
+70:                                    | WRITING AND READING CACHE DATA
                                         | ADDRESS!
-        lea     80$,a6
+        lea     80f,a6
         jra     loop$end                | <<<BOTTOM OF TEST LOOP>>>
-80$:
+80:
         addl    #CACHEDINCR,a5          | next cache data address
-        dbra    d4,54$
+        dbra    d4,54b
         rorl    #8,d5                   | next modulo 3 pattern set
         cmpl    #patt_end,d5            | last pattern?
-        bne     50$                     | if not
+        bne     50b                     | if not
 #endif  NOT_USEFUL
 |--------------------------------------------------------------------------
 |       <Cache Data 3-Pattern Test>
@@ -1598,58 +1598,58 @@ Test_0D:
         bset    #bit_print_all,d7       | print all errors in this test
         movb    #~0x0D,d7               | test #
         lea     Test_0E_txt,a4          | test descriptor text
-        lea     6$,a6
+        lea     6f,a6
         jra     test$
-6$:
+6:
         movl    #Test_patt,d2
-11$:
-        lea     12$,a6
+11:
+        lea     12f,a6
         jra     loop$                   | <<<TOP OF TEST LOOP>>>
-12$:
+12:
         movl    #NCACHEWDS-1,d4         | # of cache data addresses
         movl    #CACHEDOFF,a5           | cache data base address
-14$:
+14:
         movl    d2,d3                   | init pattern generator
         moveq   #3,d5                   | modulo 3 pattern count
-16$:
+16:
         movsl   d3,a5@                  | ***write cache data address***
         subql   #1,d4                   | decrement count
-        ble     18$                     | if done
+        ble     18f                     | if done
         addl    #CACHEDINCR,a5          | next cache data address
         rorl    #8,d3
         subql   #1,d5
-        bne     16$
-        bra     14$
-18$:
+        bne     16b
+        bra     14b
+18:
         movl    #CACHEDOFF,a5           | cache data base address
         movl    #NCACHEWDS-1,d4            | number of byte reads to do
-20$:
+20:
         movl    d2,d3                   | initial pattern generator
         moveq   #3,d5                   | modulo 3 pattern count
-24$:
+24:
         movsl   a5@,d0                  | ***read cache data address***
         movl    d3,d1
         cmpl    d0,d1                   | write pattern = read?
 
-        beq     34$
+        beq     34f
         lea     mem_rd_err_txt,a4
-        lea     34$,a6
+        lea     34f,a6
         jra     error$                  | error! cache data read not
-34$:                                    | equal pattern written!
+34:                                    | equal pattern written!
         addl    #CACHEDINCR,a5          | next  address
         rorl    #8,d3                   | next pattern
         subql   #1,d4                   | last RAM address?
-        ble     40$
+        ble     40f
         subql   #1,d5                   | decrement modulo 3 pattern count
-        bne     24$
-        bra     20$
-40$:
-        lea     50$,a6
+        bne     24b
+        bra     20b
+40:
+        lea     50f,a6
         jra     loop$end                | <<<BOTTOM OF TEST LOOP>>>
-50$:
+50:
         rorl    #8,d2                   | next modulo 3 pattern set
         cmpl    #patt_end,d2            | last pattern?
-        bne     11$                     | if not
+        bne     11b                     | if not
         bclr    #bit_print_all,d7
 
 
@@ -1670,18 +1670,18 @@ Test_0D:
 Test_0F:
         movb    #~0x0F,d7               | test #
         lea     Test_0F_txt,a4          | test descriptor text
-        lea     10$,a6
+        lea     10f,a6
         jra     test$
-10$:
+10:
         movl    #Test_patt,d5           | initialize test pattern
-50$:
+50:
         movl    d5,d1                   | working test pattern
         movl    #NCACHETGS  - 2,d4      | # of addresses to test
         movl    #CACHETOFF,a5
-54$:
-        lea     60$,a6
+54:
+        lea     60f,a6
         jra     loop$                   | <<<TOP OF TEST LOOP>>>
-60$:
+60:
         andl    #CACHETMASK,d1          | strip off nonrelevant bits
         movsl   d1,a5@                  | ***write cache tags address***
         notl    d1                      | complement pattern
@@ -1695,20 +1695,20 @@ Test_0F:
         andl    #CACHETMASK,d0          | strip off nonrelevant bits
         movl    d1,d2
         eorl    d0,d2                   | xor of good and bad
-        beq     70$                     | if write  = read tags data
+        beq     70f                     | if write  = read tags data
         lea     xor_rd_err_txt,a4
-        lea     70$,a6
+        lea     70f,a6
         jra     error$                  | ERROR! DATA COMPARE ERROR IN
-70$:                                    | WRITING AND READING CACHE DATA
+70:                                    | WRITING AND READING CACHE DATA
                                         | ADDRESS!
-        lea     80$,a6
+        lea     80f,a6
         jra     loop$end                | <<<BOTTOM OF TEST LOOP>>>
-80$:
+80:
         addl    #CACHETINCR,a5          | next cache tags address
-        dbra    d4,54$
+        dbra    d4,54b
         rorl    #8,d5                   | next modulo 3 pattern set
         cmpl    #patt_end,d5            | last pattern?
-        bne     50$                     | if not
+        bne     50b                     | if not
 #endif  NOT_USEFUL
 |-----------------------------------------------------------------------------
 |       <Cache Tags 3-Pattern Test>
@@ -1728,61 +1728,61 @@ Test_0F:
 Test_10:
         movb    #~0x0E,d7               | test #
         lea     Test_10_txt,a4          | test descriptor text
-        lea     6$,a6
+        lea     6f,a6
         jra     test$
-6$:
+6:
         movl    #Test_patt,d2
-11$:
-        lea     12$,a6
+11:
+        lea     12f,a6
         jra     loop$                   | <<<TOP OF TEST LOOP>>>
-12$:
+12:
         movl    #NCACHETGS-1,d4         | # of cache tags addresses
         movl    #CACHETOFF,a5           | cache tags base address
-14$:
+14:
         movl    d2,d3                   | init pattern generator
         moveq   #3,d5                   | modulo 3 pattern count
-16$:
+16:
         movl    d3,d1
         andl    #CACHETMASK,d1          | strip off nonrelevant bits
         movsl   d1,a5@                  | ***write cache tags address***
         subql   #1,d4                   | decrement count
-        ble     18$                     | if done
+        ble     18f                     | if done
         addl    #CACHETINCR,a5          | next cache tags address
         rorl    #8,d3
         subql   #1,d5
-        bne     16$
-        bra     14$
-18$:
+        bne     16b
+        bra     14b
+18:
         movl    #CACHETOFF,a5           | cache tags base address
         movl    #NCACHETGS-1,d4            | number of byte reads to do
-20$:
+20:
         movl    d2,d3                   | initial pattern generator
         moveq   #3,d5                   | modulo 3 pattern count
-24$:
+24:
         movsl   a5@,d0                  | ***read cache tags address***
         movl    d3,d1
         andl    #CACHETMASK,d1          | strip off nonrelevant bits
         andl    #CACHETMASK,d0          | strip off nonrelevant bits
         cmpl    d0,d1                   | write pattern = read?
-        beq     34$
+        beq     34f
         lea     mem_rd_err_txt,a4
-        lea     34$,a6
+        lea     34f,a6
         jra     error$                  | error! cache tags  read not
-34$:                                    | equal pattern written!
+34:                                    | equal pattern written!
         addl    #CACHETINCR,a5          | next  address
         rorl    #8,d3                   | next pattern
         subql   #1,d4                   | last RAM address?
-        ble     40$
+        ble     40f
         subql   #1,d5                   | decrement modulo 3 pattern count
-        bne     24$
-        bra     20$
-40$:
-        lea     50$,a6
+        bne     24b
+        bra     20b
+40:
+        lea     50f,a6
         jra     loop$end                | <<<BOTTOM OF TEST LOOP>>>
-50$:
+50:
         rorl    #8,d2                   | next modulo 3 pattern set
         cmpl    #patt_end,d2            | last pattern?
-        bne     11$                     | if not
+        bne     11b                     | if not
 #endif  SQUEEZE
 |************************************************************************
 |       memory size 
@@ -1795,9 +1795,9 @@ mem_size:
         lea     buserr,a0               | set up vector return addr
         movl    a0,8                    | set trap vector
         lea     mem_sizing_txt,a4       | msg "Sizing memory .."
-        lea     10$,a6
+        lea     10f,a6
         jra     print$                  | go display msg
-10$:
+10:
         lea     ECC_MEM_BASE,a5         | get address of ecc enable reg
         clrl    d6                      | init buss error flag
         clrl    d3
@@ -1818,9 +1818,9 @@ memsz4:
         btst    #9,d0                   | 8 meg board
         bne     memsz5                  | yes, branch
         lea     mem_invalid_txt,a4      | msg addr
-        lea     10$,a6                  | get return address
+        lea     10f,a6                  | get return address
         jra     error$                  | msg "invalid mem size"
-10$:
+10:
         bra     memsz7
 memsz5:
         movw    d2,a5@                  | init mem enb reg
