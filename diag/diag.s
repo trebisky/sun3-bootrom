@@ -1058,7 +1058,7 @@ Test_0A:
 20:
         lea     0x800,sp                | init stack pointer
         lea     level_5_vector,a0       | setup vector address
-        lea     40$,a1
+        lea     40f,a1
         movl    a1,a0@                  | store vector at vector address
         movw    #0x2000,sr              | put CPU on level 0
 
@@ -1074,27 +1074,27 @@ Test_0A:
         movb    CLK_BASE+clk_intrreg,d0 | ***clear any pending interrupts***
         movb    #clk_setup,CLK_BASE+clk_cmdreg | allow TOD int's
         movl    #0xFFFFFF,d0            | delay to wait for interrupt
-30$:
+30:
         subql   #1,d0
-        bne    30$ 
+        bne    30b 
 
         lea     int_TOD_error_txt,a4
-        lea     40$,a6
+        lea     40f,a6
         jra     error$
                                         | ERROR!  ASSERTING A TOD CLOCK AUTO-
                                         | VECTOR SHLD CAUSE A LEVEL 7 INT
                                         | BUT DIDN'T!!
-40$:
+40:
         movw    #0x2700,sr
         movb    #0,CLK_BASE+clk_cmdreg  | disable clock int's 
         movb    #0,INT_BASE             | clear interrupt enable bits
-        lea     50$,a6
+        lea     50f,a6
         jra     loop$end                | bottom of test loop
-50$:
+50:
         lea     unex_trap_err,a1       | restore level 7 vector
         lea     level_5_vector,a0
         movl    a1,a0@
-60$:
+60:
 
 |-----------------------------------------------------------------------------
 | MMU Control/Status Tests
@@ -1103,7 +1103,7 @@ Test_0A:
 Test_0B:
         movb    #~0xB,d7                | 0xA > LED display
         lea     MMU_access_txt,a4
-        lea     10$,a6
+        lea     10f,a6
         jra     test$                   | display test name
 
 
@@ -1111,10 +1111,10 @@ Test_0B:
 | Verify read accessing a page sets the access status bit for that page
 |
 
-10$:
-        lea     20$,a6  
+10:
+        lea     20f,a6  
         jra     loop$                   | <<<TOP OF TEST LOOP>>>
-20$:
+20:
         movl    #PME_MEMORY_1,d3        | set rd valid,write allowed for page 1
         lea     BYTES_PER_PG,a5         | virtual page 1 address
         movl    #PAGEOFF,d4
@@ -1125,12 +1125,12 @@ Test_0B:
         clrl    d5
         movl    d0,d5
         eorb    d1,d5                   | form xor of good vs bad
-        beq     30$                     | if good 
+        beq     30f                     | if good 
         lea     access_err_txt,a4
-        lea     30$,a6
+        lea     30f,a6
         jra     error$                  | read accessing a page shld set its
                                         | accessed status bit!!
-30$:
+30:
         lea     Test_0B0,a6
         jra     loop$end                | <<<BOTTOM OF TEST LOOP>>>
 
@@ -1141,12 +1141,12 @@ Test_0B:
 Test_0B0:
         movb    #~0xB,d7                | test # for LED display
         lea     MMU_accmod_txt,a4
-        lea     110$,a6
+        lea     110f,a6
         jra     test$                   | display test #
-110$:
-        lea     120$,a6
+110:
+        lea     120f,a6
         jra     loop$                   | <<<TOP OF TEST LOOP>>>
-120$:
+120:
         movl    #PME_MEMORY_1,d3        | set rd valid,write allowed for page 1
         lea     BYTES_PER_PG,a5         | virtual page 1 address
         movl    #PAGEOFF,d4
@@ -1156,12 +1156,12 @@ Test_0B0:
         movl    #PME_MEMORY_1+ACCESSED+MODIFIED,d1 | exepected MMU page status
         movl    d0,d5
         eorl    d1,d5
-        beq     130$                    | if so
+        beq     130f                    | if so
         lea     access_err_txt,a4
-        lea     130$,a6
+        lea     130f,a6
         jra     error$                  | read accessing a page shld set its
                                         | accessed status bit!!
-130$:
+130:
         lea     Test_0B1,a6
         jra     loop$end                | <<<BOTTOM OF TEST LOOP>>>
 
@@ -1174,14 +1174,14 @@ Test_0B0:
 Test_0B1:
         movb    #~0xB,d7                | test # >> LEDs
         lea     MMU_invalid_txt,a4
-        lea     200$,a6
+        lea     200f,a6
         jra     test$                   | display test #
-200$:
-        lea     250$,a0
+200:
+        lea     250f,a0
         movl    a0,8                    | setup bus error trap svc for test
-        lea     220$,a6
+        lea     220f,a6
         jra     loop$                   | <<<TOP OF TEST LOOP>>>
-220$:
+220:
         movl    #PME_INVALID_1,d3       | set rd valid,write allowed for page 1
         lea     BYTES_PER_PG,a5         | virtual page 1 address
         movl    #PAGEOFF,d4
@@ -1189,10 +1189,10 @@ Test_0B1:
         movb    a5@,d2                  | ***attempt to read page address***
 
         lea     inv_ac_err_txt,a4
-        lea     260$,a6
+        lea     260f,a6
         jra     error$                  | Read accessing an invalid page shld
                                         | cause a bus error trap!!
-250$:
+250:
         movl    #0x800,sp               | reinit stack pointer 
         movl    #BERR_VALID,d1
         clrl    d0
@@ -1200,13 +1200,13 @@ Test_0B1:
         andb    #0xFC,d0                | strip off don't care bits
         movl    d0,d2
         eorl    d1,d2                   | xor for good vs bad
-        beq     280$
+        beq     280f
         lea     be_status_txt,a4
-        lea     280$,a6
+        lea     280f,a6
         jra     error$                  | Error! Bus error register status
                                         | not correct after read accessing an
-260$:                                   | invalid page!!
-280$:
+260:                                   | invalid page!!
+280:
         lea     Test_0B2,a6
         jra     loop$end                | <<<BOTTOM OF TEST LOOP>>>
 
@@ -1218,43 +1218,43 @@ Test_0B1:
 Test_0B2:
         movb    #~0xB,d7                        | test # >> LEDs
         lea     MMU_protect_txt,a4
-        lea     300$,a6
+        lea     300f,a6
         jra     test$
-300$:
-        lea     350$,a0
+300:
+        lea     350f,a0
         movl    a0,8                    | setup bus error trap svc for test
-        lea     320$,a6
+        lea     320f,a6
         jra     loop$                   | <<<TOP OF TEST LOOP>>>
-320$:
+320:
         movl    #PME_RD_ONLY_1,d3       | set rd valid,write allowed for page 1
         lea     BYTES_PER_PG,a5         | virtual page 1 address
         movl    #PAGEOFF,d4
         movsl   d3,a5@(0,d4:L)          | clear page stat bits, virtual pg 1
         movb    d2,a5@                  | ***write to page 1 address***
         lea     wr_prot_err_txt,a4
-        lea     360$,a6
+        lea     360f,a6
         jra     error$                  | Write accessing a write protected page
                                         | shld cause a bus error trap!!
-        bra     360$
-350$:
+        bra     360f
+350:
         movl    #BERR_PROTERR,d1
         clrl    d0
         movsb   BERRREG,d0              | ***read bus error register***
         andb    #0xFC,d0                | strip off don't care bits
         movl    d0,d2
         eorb    d1,d2                   | status as expected?
-        beq     380$
+        beq     380f
         lea     be_status_txt,a4
-        lea     380$,a6
+        lea     380f,a6
         jra     error$                  | Error! Bus error register status
                                         | not correct after read accessing an
-360$:                                   | invalid page!!
-380$:
-        lea     390$,a6
+360:                                   | invalid page!!
+380:
+        lea     390f,a6
         jra     loop$end                | <<<BOTTOM OF TEST LOOP>>>
 |
 |       Restore wr/rd access to page 1
-390$:
+390:
         movl    #PME_MEMORY_1,d3
         lea     BYTES_PER_PG,a5
         movl    #PAGEOFF,d4
@@ -1273,23 +1273,23 @@ Test_0B2:
 Test_0E:
         movb    #~0xE,d7                | 0xD > LED display
         lea     Test_0C_txt,a4
-        lea     4$,a6
+        lea     4f,a6
         jra     test$                   | display test name and number
 
 |-----------------------------------------------------------------------------
 | Verify writing and reading a known good memory address with parity
 | checking enabled does not cause a parity error.
 
-4$:
-        lea     50$,a0
+4:
+        lea     50f,a0
         movl    a0,nmi_vector           | setup parity err trap svc for test
 
         moveq   #1,d3                   | initialize write pattern
         lea     0x1000,a5               | address to write/read data 
-6$:
-        lea     10$,a6
+6:
+        lea     10f,a6
         jra     loop$                   | <<<TOP OF TEST LOOP>>>
-10$:
+10:
         lea     0x800,sp                | init stack ptr
         movb    #EN_PARINT,d1           | expected parity error status
         movb    #0,MERR_ADDR            | ***rd memory error addr reg to clr***
@@ -1309,27 +1309,27 @@ Test_0E:
         movb    MERR_BASE,d0            | ***read parity error register***
         andb    #0xf0,d0                | ignore parity byte bits
         cmpb    d0,d1                   | status as expected?
-        beq     60$                     | if no compare error
+        beq     60f                     | if no compare error
         lea     par_st_err_txt,a4       
-        lea     60$,a6
+        lea     60f,a6
         jra     error$                  | error!! nominal reading memory with
                                         | good parity generation shld not
-        bra     60$                     | cause bad parity error status!!
-50$:
+        bra     60f                     | cause bad parity error status!!
+50:
         movl    #0x800,sp               | reinit stack pointer
         clrl    d0
         movb    MERR_BASE,d0            | ***read parity error register***
         lea     unex_par_int,a4
-        lea     60$,a6
+        lea     60f,a6
         jra     error$                  | error!!  reading memory has caused
                                         | a parity error trap!!
-60$:
+60:
         movb    #0,MERR_ADDR            | *** write memory error reg to clr***
-        lea     70$,a6
+        lea     70f,a6
         jra     loop$end                | <<<BOTTOM OF TEST LOOP>>>
-70$:
+70:
         asll    #1,d3                   | next float one pattern
-        bne     6$                      | last pattern?
+        bne     6b                      | last pattern?
 |------------------------------------------------------------------------------
 | Verify that forcing a parity error by writing bad parity shld cause
 | a parity error nmi trap (autovector level 7) with correct parity error
@@ -1337,18 +1337,18 @@ Test_0E:
 
 Test_0F:
         movb    #~0xF,d7
-        lea     100$,a6
+        lea     100f,a6
         jra     test$                   | test # >> LEDs
-100$:
-        lea     150$,a0
+100:
+        lea     150f,a0
         movl    a0,nmi_vector           | setup nmi (parity err) vector for test
         lea     0x1000,a5               | mem address to wr/rd
         moveq   #0x8,d1         | expected parity err byte status bit
-104$:
+104:
         moveq   #1,d3                   | initialize write pattern
-        lea     110$,a6                 | 
+        lea     110f,a6                 | 
         jra     loop$                   | <<<TOP OF TEST LOOP>>>
-110$:
+110:
         lea     0x800,sp                | init stack ptr
         movb    #0,MERR_BASE            | ***clear parity err register***\
         movb    #0,MERR_ADDR            | ***write mem. err reg to clr***
@@ -1362,30 +1362,30 @@ Test_0F:
         nop
         nop
         lea     no_par_trap_txt,a4
-        lea     170$,a6
+        lea     170f,a6
         jra     error$                  | error!! Reading bad parity shld cause
                                         | a parity error trap but didn't!!
-150$:
+150:
         orb     #PARCHECK+EN_PARINT+PARINT,d1 | expected parity error status
         movb    MERR_BASE,d0            | ***read parity err status***
         cmpb    d0,d1                   | parity error status as exp'd?
-        beq     170$                    |
+        beq     170f                    |
         lea     par_st_err_txt,a4
-        lea     170$,a6
+        lea     170f,a6
         jra     error$                  | error! parity error status not
-170$:                                   | correct after reading bad parity!
+170:                                   | correct after reading bad parity!
         movb    #0,MERR_ADDR            | ***write mem err reg to clr***
-        lea     180$,a6
+        lea     180f,a6
         jra     loop$end                | <<<BOTTOM OF TEST LOOP>>>
-180$:
+180:
         aslb    #1,d3                   | next write pattern
-        bne     110$
+        bne     110b
         movb    #0,MERR_BASE    | clr parity err register
         movb    #0,a5@          | write correct parity in last byte
         addql   #1,a5                   | next byte of A<1,0>=00,01,10,11
         andb    #0x0f,d1
         asrw    #1,d1
-        bne     104$                    | last byte address to do?
+        bne     104b                    | last byte address to do?
         movb    #0,MERR_BASE            | clear parity int register
         movb    #0,MERR_ADDR            | clear memory err register
         movl    #0,0x1000               | set good parity in test address
@@ -1394,24 +1394,24 @@ Test_0F:
 |       memory timeout) trap to determine size.  
 
         lea     mem_sizing_txt,a4       | "Sizing memory..."
-        lea     214$,a6
+        lea     214f,a6
         jra     print$
-214$:
-        lea     220$,a0
+214:
+        lea     220f,a0
         movl    a0,8                    | setup bus err vector
         movl    #0x200000,a5            | start at top of 2 MBytes
-216$:
+216:
         movb    a5@,d0                  | ***attempt to read address***
         addl    #0x100000,a5            | next 1 MByte
         cmpl    #0x2000000,a5           | at 32 Bbytes yet?
-        bne     216$                    | if not & not bus err
-220$:
+        bne     216b                    | if not & not bus err
+220:
         movl    a5,d5                   | save top of memory +1
         moveq   #20,d0
         movl    d5,d3                   | shift to make MBytes
         asrl    d0,d3
         movl    d3,MEM_size             | save memory size in page RAM
-230$:
+230:
 #endif SIRIUS
 #ifdef SIRIUS           
 |*****************************************************************************
@@ -1425,12 +1425,12 @@ Test_0F:
 Test_0C:
         movb    #~0xC,d7                | 0xd > led display
         lea     Test_ecc_txt,a4
-        lea     10$,a6
+        lea     10f,a6
         jra     test$                   | display msg and leds
-10$:
-        lea     20$,a6                  | get return address
+10:
+        lea     20f,a6                  | get return address
         jra     loop$                   | init top of loop pntr
-20$:
+20:
         movl    #0x80000000,d3          | get data pattern
         movl    #0x01000000,d5          | get 1st diag reg pattern
         movl    #0xc000,d6              | get 2nd diag reg pattern
@@ -1511,9 +1511,9 @@ ecc4:
 |***
         bset    #bit_tst_err,d7         | reset error flag
 |***
-        lea     10$,a6
+        lea     10f,a6
         jra     loop$end                | go check end of loop options
-10$:
+10:
 |
 |       init registers for 2 bit error check
 |
@@ -1836,7 +1836,7 @@ memsz7:
         movw    #20,d0
         asrl    d0,d3                   | shift down for msg
 |#endif SIRIUS          
-50$:
+50:
         movl   d3,MEM_size             | save memory size in map ram
 |#endif SIRIUS
         movl    d3,d5                   | store memory size
@@ -1853,7 +1853,7 @@ buserr:
 
 |       Check if diag switch = 1. 
 check_sw:
-230$:
+230:
         moveq   #20,d0                  | get shift count
         lea     unex_bus_err,a0         | restore unexpected bus error service
         movl    a0, 8
@@ -1861,17 +1861,17 @@ check_sw:
         movsb   ENABLEOFF,d2            | read diag switch
         btst    #DIAGSW,d2              | diag sw = 0?
 #ifdef M25
-        bne     250$                    | if not, test all of memory
+        bne     250f                    | if not, test all of memory
 
         movb    EEPROM_MEM_SZ,d2        | ***read EEPROM for mem sz
         beq     end_test                | if 0, don't test memory
         cmpb    d2,d3                   | sz to test <= memory size?
-        bge     250$                    | if not
+        bge     250f                    | if not
         movb    d2,d3
 #else
         beq     end_test                | if yes, don't test memory
 #endif M25
-250$:
+250:
         movl    d3,d5
         lsll    d0,d5                   | expand to memory address
 
@@ -1897,16 +1897,16 @@ check_sw:
 Test_10:
         bset    #bit_print_all,d7
         cmpl    #0x2000000,d5           | must not write over our mapped pages 
-        blt     1$ 
+        blt     1f 
         subl    #0x20000,d5             | adjust for size 
-1$: 
+1: 
         movb    #~0x10,d7               | 0xF > LED display
         lea     Test_11_txt,a4
-        lea     50$,a6
+        lea     50f,a6
         jra     test$                   | output test number and name
 | Thirdly, set up parity error trap service and enable it while testing
-50$:
-        lea     83$,a0          
+50:
+        lea     83f,a0          
         movl    a0,nmi_vector           | point parity err to this routine
 
         movb    #PARCHECK+EN_PARINT,MERR_BASE
@@ -1915,76 +1915,76 @@ Test_10:
 
 |       Write modulo three pattern in memory
 
-60$:
-        lea     64$,a6
+60:
+        lea     64f,a6
         jra     loop$                   | <<<TOP OF TEST LOOP>>>
-64$:
+64:
         lea     low_mem_addr,a5         | starting memory address to test
-70$:
+70:
         movl    a0,d3                   | init pattern generator
         movl    d3,a5@+                 | ***write long word pattern***
         cmpl    d5,a5                   | at end of memory?
-        beq     78$
+        beq     78f
         rorl    #8,d3                   | next long word pattern
         movl    d3,a5@+                 | ***write long word pattern***
         cmpl    d5,a5                   | end of write to memory
-        beq     78$
+        beq     78f
         rorl    #8,d3                   | next long word pattern
         movl    d3,a5@+                 | ***write long word pattern***
         cmpl    d5,a5                   | at end of memory?
-        bne     70$
+        bne     70b
 
 |       Read back and compare with pattern generator.
 
-78$:
+78:
         lea     low_mem_addr,a5         | starting memory address to test
-80$:
+80:
         movl    a0,d1                   | init pattern generator
         moveq   #2,d3                   | modulo 3 count
-82$:
+82:
 | save a0 please!
         movl    a0,save_a0
         movl    a5@+,d0                 | ***read long word address***
         cmpl    d1,d0                   | write = read pattern?
-        beq     86$
+        beq     86f
         movl    d1,d2                   | copy to d2 for xor
         eorl    d0,d2
         tstl    a5@-                    | back up access address for error$
         lea     xor_rd_err_txt,a4
-        lea     82$,a6                  | for loop on error MJC
+        lea     82b,a6                  | for loop on error MJC
         jra     error$                  | error!!  A write/read data compare
-83$:
+83:
         movl    #0x800,sp               | reinit stack pointer
         clrl    d2
         movb    MERR_BASE,d2            | ***rd parity err status***
         movb    #0,MERR_ADDR            | ***clr parity err status***
         btst    #7,d2                   | parity interrupt bit set?
-        beq     85$                     | if not?!?
+        beq     85f                     | if not?!?
         tstl    a5@-                    | back up access address for error$
         lea     mem_par_err_txt,a4
-        lea     82$,a6
+        lea     82b,a6
         jra     error$                  | Error! A parity err trap while
-85$:
+85:
         lea     nmi_ques_int_txt,a4
-        lea     82$,a6
+        lea     82b,a6
         jra     error$                  | Error! An nmi interrupt without
                                         | parity err interrupt status!!
-86$:
+86:
         bset    #bit_tst_err, d7
         rorl    #8,d1                   | next pattern
         cmpl    d5,a5                   | at end of memory?
-        beq     88$
-        dbra    d3,82$                  | modulo three yet?
-        bra     80$
-88$:
-        lea     89$,a6
+        beq     88f
+        dbra    d3,82b                  | modulo three yet?
+        bra     80b
+88:
+        lea     89f,a6
         jra     loop$end                | <<<BOTTOM OF TEST LOOP>>>
-89$:
+89:
         movl    a0,d4
         rorl    #8,d4
         movl    d4,a0                   | next pattern generator
         cmpl    #patt_end,a0            | last pattern +1?
-        bne     60$                     | next memory pass
+        bne     60b                     | next memory pass
 #endif  SIRIUS 
 #ifdef  SIRIUS 
 |************************************************************************
@@ -2011,39 +2011,39 @@ mod3tbl:
 Test_11:
         movsb   ENABLEOFF,d2            | read diagnostic switch
         btst    #DIAGSW,d2              | is switch = ON?
-        beq     6$                      | if not
+        beq     6f                      | if not
         bset    #bit_print_all,d7       | yes, set no loop on error
-6$:                                     | and print all errors
+6:                                     | and print all errors
         movb    #~0x0F,d7               | get led display
         movl   MEM_size,d3
 | FIXME! if 32 megs then test only 31 megs
 | look at mem init below and you'll get the idea
         cmpl    #MEG32,d3               | is it?
-        bne     8$                      | cant be > 32meg so go on
+        bne     8f                      | cant be > 32meg so go on
         movl    #MEG31,d3               | at 31 megs we are safe
         movl    #0x1f00000,d5
-8$:     
+8:     
         lea     Test_11_txt,a4          | get msg address
-        lea     15$,a6                  | return address
+        lea     15f,a6                  | return address
         jra     test$                   | display test number
-15$:
+15:
         lea     mod3tbl,a0              | get table address
         movl    #0x900,a1               | memory address
         movw    #9,d0
         movl    #FC_SP,d1               | get prom function code
         movc    d1,sfc
-20$:
+20:
         movsl   a0@+,d1
         movl    d1,a1@+                 | store table into memory
-        dbra    d0,20$
+        dbra    d0,20b
         moveq   #FC_MMU,d0              | reinit funciton code to mmu
         movc    d0,sfc
         movc    d0,dfc
         movl    #15,ce_error            |  set ce count
         clrl    ue_error                | clear UE count
-        lea     30$,a6                  | get return address
+        lea     30f,a6                  | get return address
         jra     loop$                   | set up top of loop address
-30$:
+30:
         clrw    save_d4                 | index pointer
 |
 |       write data patterns to memory getting data from table
@@ -2076,12 +2076,12 @@ mod3tst2:
         lsrl    d0,d1                   | get number of boards
         subqw   #1,d1
         movl    #ECC_MEM_BASE,a2        | get enb reg address
-10$:
+10:
         movw    a2@,d0                  | get enb reg contents
         orw     #0xc0,d0                | enable ecc
         movw    d0,a2@                  | write to enable reg
         addl    #0x40,a2                | set to next mem board
-        dbra    d1,10$                  | go enable ecc on next mem bd.
+        dbra    d1,10b                  | go enable ecc on next mem bd.
         movl    #ECC_MEM_BASE,a2        | reinit ecc mem enable reg addr
 
 |
@@ -2099,9 +2099,9 @@ mod3tst4:
         beq     mod3tst5                | yes, branch
         lea     mem_rd_err_txt,a4       | address of message
         subql    #4,a5                  | adjust to correct address
-        lea     10$,a6                  | get return address
+        lea     10f,a6                  | get return address
         jra     error$                  | display message
-10$:
+10:
         addql    #4,a5                  | get next address
 |       re-init a0 here cause gets destroyed in print$ MJC 
         movl    #0x900,a0               | get table address
@@ -2124,9 +2124,9 @@ mod3tst7:
         addw    #8,save_d4              | step to next pattern
         cmpw    #0x18,save_d4           | last pattern
         blt     mod3tsta                | no, go test next pattern
-        lea     10$,a6                  | get return address
+        lea     10f,a6                  | get return address
         jra     loop$end                | set bottom of loop
-10$:
+10:
 mod3tst8:
         bra     end_test 
 |*************************************************************************
@@ -2151,7 +2151,7 @@ eccmod3:
         
         movl    #ue_error,a4            | get UE count
         cmpl    #2,a4@                  | > 1
-        bge     10$                     | yes, go to scope loop
+        bge     10f                     | yes, go to scope loop
         btst    #1,d1                   | UE error ?
         beq     eccCE_err               | no, must be CE error then branch
         addqb   #1,a4@                  | inc error count
@@ -2159,9 +2159,9 @@ eccmod3:
 |       UE error, if 1st error print message; else loop on error
 |
         lea     syn_err_txt,a4          | address of message
-        lea     10$,a6                  | get return address
+        lea     10f,a6                  | get return address
         jra     error$                  | display message
-10$:
+10:
 
         movl    #0x900,a0               | reset table address
         subql   #4,a5                   | dec address to failing address
@@ -2169,12 +2169,12 @@ eccmod3:
 eccCE_err:
         movl    #ce_error,a4            | get counter address
         tstl    a4@                     | we at 0?
-        beq     90$
+        beq     90f
         subql   #1,a4@                  | dec ce count
         lea     syn_err_txt,a4          | address of message
-        lea     90$,a6                  | get return address
+        lea     90f,a6                  | get return address
         jra     error$                  | display message
-90$:
+90:
         jra     mod3tst6                | go coninue testing    
 #endif  SIRIUS 
 
@@ -2189,25 +2189,25 @@ end_test:
         movl    a0,nmi_vector           | restore nmi service
         
         btst    #bit_fail,d7            | did selftest fail?
-        beq     10$
+        beq     10f
         lea     test_fail_txt,a4
-        lea     20$,a6
+        lea     20f,a6
         jra     print$                  | "Selftest failed"
-10$:
+10:
         lea     test_pass_txt,a4
-        lea     20$,a6
+        lea     20f,a6
         jra     print$                  | "Selftest passed successfully"
-20$:
+20:
         btst    #bit_burn_in,d7         | doing burn in test?
-        bne     30$                     | if yes  TEMP HACK MIKE
-        bra     40$                     | if not
-30$:
+        bne     30f                     | if yes  TEMP HACK MIKE
+        bra     40f                     | if not
+30:
 #ifdef  M25
         jra     Test_00
 #else
         jra     Start                   | if burn in test, restart
 #endif  M25
-40$:
+40:
         movl    MEM_size,d2
 esckey:
         movl    #20,d0
@@ -2219,47 +2219,47 @@ esckey:
         movl    d2,d1
 #ifdef SIRIUS
         cmpl    #0x2000000,d1           | must not write over our mapped pages
-        blt     47$
+        blt     47f
         subl    #0x20000,d1             | adjust for size
-47$:
+47:
         subl    a5,a5                   | start a address 0
         movl    #0xFFFFFFFF,d0          |
-50$:
+50:
         movl    d0,a5@+                 | store it in memory
         cmpl    d1,a5                   | at top of memory yet?
-        bne     50$                     | if not
+        bne     50b                     | if not
 
         cmpl    #0x1fe0000,d1           | Is there 32 Mb of memory
-        blt     54$                     | If not, initialization is done
+        blt     54f                     | If not, initialization is done
 
         moveq   #0xf, d1                | Else, we missed upper 16 pages
         movl    #0xc0000ff0, d3         | Get page entry for 32Mb - 128K
         movl    #MEMINIT_PAGE, d4       | Use the same page for 16 pages of mem
         movl    #PAGEOFF,a0             | Get the Page Map offset
-52$:
+52:
         movsl   d3,a0@(0,d4:L)          | Set Page to appropriate memory
         movl    d4, a5                  | Get starting address
 
         movl    #0x7ff, d0              | Number of long words in page
-53$:
+53:
         movl    #0xFFFFFFFF, a5@+       | Initialize it to 0xFFFFFFFF
-        dbra    d0, 53$
+        dbra    d0, 53b
 
         addl    #1, d3                  | Increment Page entry to next 8K mem
-        dbra    d1, 52$                 | Do this for the remaining 16 pages
-54$:
+        dbra    d1, 52b                 | Do this for the remaining 16 pages
+54:
 #else
         cmpl    #0x2000000,d1           | must not write over our mapped pages
-        blt     47$
+        blt     47f
         subl    #0x100000,d1            | adjust for size
-47$:
+47:
 
         subl    a5,a5                   | start a address 0
         movl    #0xFFFFFFFF,d0          |
-50$:
+50:
         movl    d0,a5@+                 | store it in memory
         cmpl    d1,a5                   | at top of memory yet?
-        bne     50$                     | if not
+        bne     50b                     | if not
 #endif SIRIUS
 | for sirius, enable ecc for all mem brds but disable ce reporting
 #ifdef  SIRIUS  
@@ -2281,29 +2281,29 @@ enbl_ecc:
         movw    #EVEC_RESET,d3          | Fake Reset fvo
         movsb   ENABLEOFF,d1            | read diag switch state
         btst    #DIAGSW,d1              | is diag switch set?
-        beq     100$                    | if not, proceed to Unix boot
+        beq     100f                    | if not, proceed to Unix boot
         movw    #EVEC_BOOT_EXEC,d3      | Fake Boot Diag Exec fvo
         lea     _menu_msg,a4            | "Optional Tests
-        lea     55$,a6                  | Menu"
+        lea     55f,a6                  | Menu"
         jra     print$
-55$:
+55:
         lea     m_op_tests,a4           | "(enter e for echo mode)"
-        lea     60$,a6                   
+        lea     60f,a6                   
         jra     print$                  
-60$:
+60:
         movl    #delay_10_sec,d0        | delay count for ~10 seconds
         bclr    #31, d3                 | Clear Port B flag bit
-70$:
+70:
 #ifdef  M25
         movb    UARTACNTL,d1            | read Port A RX status
 #else
         movsb   UARTACNTL,d1            | read Port A RX status
 #endif M25
         btst    #RXREADY,d1             | an input character entered?
-        bne     80$                     | if yes
+        bne     80f                     | if yes
 
         moveq   #0xf, d1
-71$:    dbra    d1, 71$                 | Wait for SCC to recover
+71:    dbra    d1, 71b                 | Wait for SCC to recover
 
 #ifdef  M25
         movb    UARTBCNTL,d1            | read Port B RX status
@@ -2311,24 +2311,24 @@ enbl_ecc:
         movsb   UARTBCNTL,d1            | read Port B RX status
 #endif M25
         btst    #RXREADY,d1             | an input character entered?
-        bne     82$                     | if yes
+        bne     82f                     | if yes
 
         subql   #1,d0                   | decrement delay count
-        bgt     70$                     | if no timeout yet
-        bra     100$                    | timed out
-80$:
+        bgt     70b                     | if no timeout yet
+        bra     100f                    | timed out
+80:
         moveq   #0xf, d0
-81$:    dbra    d0, 81$                 | Wait for SCC to recover
+81:    dbra    d0, 81b                 | Wait for SCC to recover
  
 #ifdef M25
         movb    UARTADATA, d0           | Read the character
 #else
         movsb   UARTADATA, d0           | Read the character
 #endif M25
-        jra     84$
-82$:
+        jra     84f
+82:
         moveq   #0xf, d0
-83$:    dbra    d0, 83$                 | Wait for SCC to recover
+83:    dbra    d0, 83b                 | Wait for SCC to recover
 
         bset    #31, d3                 | Set bit to flag this is Port B
 #ifdef M25
@@ -2336,21 +2336,21 @@ enbl_ecc:
 #else    
         movsb   UARTBDATA, d0           | Read the character
 #endif M25
-84$:
+84:
         andb    #0x7f, d0               | Strip off parity bit
         cmpb    #0x65, d0               | Is it an 'e'?
-        bne     85$                     | If not, do not set echo bit
+        bne     85f                     | If not, do not set echo bit
  
         bset    #bit_echo_mode, d7      | Else, set echo bit
         lea     echo_msg, a4            | "Echo mode: Output will echo
-        lea     85$, a6                 | to Video"
+        lea     85f, a6                 | to Video"
         jra     print$
-85$:
-        lea     90$,a6
+85:
+        lea     90f,a6
         jra     UARTinit                | reinit UART prior to return
-90$:
+90:
         movw    #EVEC_MENU_TSTS,d3      | Fake vfo for menu tests
-100$:                                   | from serial port A    
+100:                                   | from serial port A    
         movl    d2,a6                   | memory size
         moveml  #0xFFFF,sp@-            | save all registers
         moveq   #~L_SETUP_MAP,d0        | 
@@ -2368,13 +2368,13 @@ enbl_ecc:
         movsb   d0,LEDREG               | and turn it off
         movb    #0x01, g_sccflag        | Initialize SCC flag to Port A
         btst    #bit_echo_mode, d7      | should we set the echo mode flag
-        beq     110$                    | If not, do not set flag
+        beq     110f                    | If not, do not set flag
         movb    #0x12, g_diagecho       | Else, set the flag
-110$:
+110:
         btst    #31, d3                 | Check the SCC Port flag
-        beq     120$                    | If not set, this is Port A
+        beq     120f                    | If not set, this is Port A
         movb    #0x02, g_sccflag        | Else, set the flag for Port B
-120$:
+120:
         movw    d3,INITSP-6             |
         movl    a5,a6                   | restore memory size
         jra     _reset_common           | return to trap.s module
@@ -2388,20 +2388,20 @@ _mod3write:
         movl    sp@(4), a0              | Get starting address
         movl    sp@(8), a1              | Get ending address
         movl    sp@(12), d1             | Get starting pattern
-1$:
+1:
         movl    d1, d0                  | Init pattern generator
         movl    d0, a0@+                | Write pattern to memory
         cmpl    a0, a1                  | Check if at end of memory 
-        beq     2$                      | If yes, exit
+        beq     2f                      | If yes, exit
         rorl    #8, d0                  | Next long word pattern
         movl    d0, a0@+                | Write pattern to memory
         cmpl    a0, a1                  | Check if at end of memory
-        beq     2$                      | If yes, exit
+        beq     2f                      | If yes, exit
         rorl    #8, d0                  | Next long word pattern
         movl    d0, a0@+                | Write pattern to memory
         cmpl    a0, a1                  | Check if at end of memory
-        bne     1$                      | If not, keep writing
-2$:
+        bne     1b                      | If not, keep writing
+2:
         rts
 
         .globl  _mod3read
@@ -2413,15 +2413,15 @@ _mod3read:
         movl    sp@(4), a0              | Get starting address
         movl    sp@(8), a1              | Get ending address
         movl    sp@(12), d4             | Get starting pattern
-1$:
+1:
         movl    d4, d1                  | Init pattern generator
-        lea     2$, a5                  | Return point if no error
+        lea     2f, a5                  | Return point if no error
         bra     readrtn                 | Test a long word
-2$:
-        lea     3$, a5                  | Return point if no error
+2:
+        lea     3f, a5                  | Return point if no error
         bra     readrtn                 | Test a long word
-3$:
-        lea     1$, a5                  | Return point if no error
+3:
+        lea     1b, a5                  | Return point if no error
         bra     readrtn                 | Test a long word
 
 end_mod3:
@@ -2433,18 +2433,23 @@ end_mod3:
 readrtn:
         movl    a0@+, d0                | Read pattern from memory
         cmpl    d0, d1                  | Compare the pattern
-        bne     1$                      | If not equal, set error flag
+        bne     1f                      | If not equal, set error flag
         rorl    #8, d1                  | Next long word pattern
         cmpl    a0, a1                  | Check if at end of memory
-        jne     a5@                     | If not, continue test
-        bra     2$                      | Else, exit mod3read
-1$:
+		| tjt - this won't assemble 8-1-2025
+		| the idea is to return to the above
+        | jne     a5@                   | If not, continue test
+        jeq     13f                     | If not, continue test
+		jra		a5@
+13:
+        bra     2f                      | Else, exit mod3read
+1:
         tstl    a0@-                    | Back up address pointer
         movl    a0, g_mod3addr          | Save the memory address
         movl    d1, g_mod3exp           | Save the expected value
         movl    d0, g_mod3obs           | Save the observed value
         clrl    d0                      | Error: d0 = 0
-2$:
+2:
         jra     end_mod3                | Return to end of mod3read
 
 |----------------------------------------------------------------------------
@@ -2458,21 +2463,21 @@ unex_bus_err:
         bclr    #bit_exc_err,d7         | set exception err bit 
         movsb   d7,LEDREG               | and display it with test #
         lea     unex_be_txt,a4
-        lea     10$,a6
+        lea     10f,a6
         movl    sp@(pc_index),d0        | get pc off stack      
         jra     print$                  | "unexpected bus error"
-10$:
+10:
         movl    sp@(access_index),d0
         lea     access_txt,a4
-        lea     20$,a6
+        lea     20f,a6
         jra     print$                  | print access address from stack
-20$:
+20:
         clrl    d0
         movsb   BERRREG,d0              | get pc at bus error
         lea     berr_txt,a4
-        lea     30$,a6
+        lea     30f,a6
         jra     print$                  | print bus error register contents
-30$:
+30:
         movl    #0x800,sp               | reinit stack pointer
         movw    #0x3700,sr              | to access master sp
         movl    sp,a0
@@ -2494,12 +2499,12 @@ unex_par_int:
 #else
         lea     unex_pe_txt,a4
 #endif SIRIUS
-        lea     10$,a6
+        lea     10f,a6
         movl    sp@(pc_index),d0        | get pc at bus error
         clrl    d5
         movb    MERR_BASE,d5            | read parity error register
         jra     print$                  | "unexpected bus error"
-10$:
+10:
         movb    #0,MERR_ADDR            | ***clr parity interrupt***
         rts
 
@@ -2513,17 +2518,17 @@ unex_trap_err:
         bclr    #bit_tst_err,d7         | set exception err bit
         movsb   d7,LEDREG               | and display it with test #
         lea     unex_trap_txt,a4
-        lea     10$,a6
+        lea     10f,a6
         movl    sp@(pc_index),d0        | get pc at bus error
         jra     print$                  | "unexpected bus error"
-10$:
+10:
         lea     trap_txt,a4
         clrl    d0
         movw    sp@(vector_index),d0    | get vector offset from stack
         andw    #0xfff,d0               | mask off all but vector offset
-        lea     20$,a6
+        lea     20f,a6
         jra     print$
-20$:    
+20:    
         movl    #0x800,sp               | reinit stack pointer
         movw    #0x3700,sr              | to access master sp
         movl    sp,a0
@@ -2563,13 +2568,13 @@ test$:
         movc    d0,dfc
         movsb   d7,LEDREG               | output test # to LEDs
         movl    #0xFFFF,d0
-10$:
+10:
         subql   #1,d0
-        bgt     10$
+        bgt     10b
         btst    #bit_no_print,d7        | print test name?
-        bne     30$     
+        bne     30f     
         jra     print$                  | print test descriptor text
-30$:
+30:
         jra     a6@                     | return
 
 |-----------------------------------------------------------------------------
@@ -2599,10 +2604,10 @@ loop$:
 
 error$:
         btst    #bit_print_all,d7       | print all errors?
-        bne     10$                     | if yes        
+        bne     10f                     | if yes        
         btst    #bit_tst_err,d7         | 1st error in test?
-        beq     20$                     | if not first error
-10$:
+        beq     20f                     | if not first error
+10:
         movl    d0,a3
         moveq   #FC_MMU,d0              | setup sfc,dfc to MMU for "movs" 
         movc    d0,sfc                  | instruction
@@ -2612,9 +2617,9 @@ error$:
         movsb   d7,LEDREG               | output test # to LEDs
         movl    a3,d0
         btst    #bit_no_print,d7        | print error messages?
-        bne     20$
+        bne     20f
         jra     print$                  | print error message
-20$:
+20:
         jra     a6@                     | return
 
 |----------------------------------------------------------------------------
@@ -2626,7 +2631,7 @@ error$:
 
 loop$end:
         btst    #bit_no_read,d7         | read char from port A?
-        bne     40$
+        bne     40f
         moveq   #FC_MMU,d0
         movc    d0,sfc                  | set sfc to MMU
 #ifdef  M25
@@ -2635,30 +2640,30 @@ loop$end:
         movsb   UARTACNTL,d0            | read SCC status
 #endif M25
         btst    #RXREADY,d0             | char rec'd?
-        beq     1$                      | if so
+        beq     1f                      | if so
 
 #ifdef  M25
         movb    UARTADATA,d0            | read char from Port A
 #else
         movsb   UARTADATA,d0            | read char from Port A
 #endif M25
-        jra     2$                      | Skip over reading Port B
-1$:
+        jra     2f                      | Skip over reading Port B
+1:
 #ifdef  M25
         movb    UARTBCNTL,d0            | read SCC status
 #else
         movsb   UARTBCNTL,d0            | read SCC status
 #endif M25
         btst    #RXREADY,d0             | char rec'd?
-        beq     40$                     | if so
+        beq     40f                     | if so
 #ifdef  M25  
         movb    UARTBDATA,d0            | read char
 #else
         movsb   UARTBDATA,d0            | read char
 #endif M25
-2$:
+2:
         cmpb    #op_skip_end,d0         |drop out of self test?
-        bne     9$                      | nope
+        bne     9f                      | nope
 #ifndef MJC 
         bclr    #bit_burn_in,d7
         clrl    d0
@@ -2666,20 +2671,20 @@ loop$end:
 
         movl    #SEGOFF, a5             | Set up Segment Map
         movl    #0xff, d4
-3$:
+3:
         movsb   d0, a5@                 | Write to Segment Map
         addl    #1, d0
         addl    #SEGINCR, a5
-        dbra    d4, 3$
+        dbra    d4, 3b
 
         movl    #MEMPAGE, d0
         movl    #PAGEOFF, a5            | Set up Page Map 
         movl    #0xfff, d4 
-4$: 
+4: 
         movsl   d0, a5@                 | Write to Page Map 
         addl    #1, d0 
         addl    #PAGEINCR, a5 
-        dbra    d4, 4$
+        dbra    d4, 4b
 
         movl    #PAGEOFF,a5
         lea     SCC_PAGE,a0
@@ -2709,52 +2714,52 @@ loop$end:
 #endif  SIRIUS
         jra     esckey                  | bail out to end
 #endif  MJC
-9$:
+9:
         cmpb    #op_next,d0             | go to next test?
-        bne     10$                     | if not
+        bne     10f                     | if not
         bset    #bit_tst_err,d7         | clear test error flag bit
-        bra     40$
-10$:
+        bra     40f
+10:
         cmpb    #op_restart,d0          | restart test?
-        bne     14$                     | if not
+        bne     14f                     | if not
         jra     _selftest               | yes, restart selftest
-14$:
+14:
         cmpb    #op_no_print,d0         | no print option?
-        bne     22$
+        bne     22f
         btst    #bit_no_print,d7        | already set?
-        beq     20$                     | if not
+        beq     20f                     | if not
         bclr    #bit_no_print,d7        | if so, then clear
-        bra     22$
-20$:    
+        bra     22f
+20:    
         bset    #bit_no_print,d7        | then set no print bit 
-22$:    
+22:    
         cmpb    #op_burn_in,d0          | execute burn in test
-        bne     30$                     | if not
+        bne     30f                     | if not
         btst    #bit_burn_in,d7         | already set?
-        beq     24$                     | if not
+        beq     24f                     | if not
         bclr    #bit_burn_in,d7         | if so, then clear
-        bra     30$
-24$:
+        bra     30f
+24:
         bset    #bit_burn_in,d7         | then set burn in bit
-30$:
+30:
         cmpb    #op_print_all,d0        | print all errors?
-        bne     40$                     | if not
+        bne     40f                     | if not
         btst    #bit_print_all,d7       | already set?
-        beq     34$                     | if not
+        beq     34f                     | if not
         bset    #bit_print_all,d7       | then set print all errs/no loop
-        bra     40$
-34$:
+        bra     40f
+34:
         bclr    #bit_print_all,d7       | then clr print all errs/no loop
-40$:
+40:
         btst    #bit_print_all,d7       | don't loop on error?
-        bne     100$                    | if yes
+        bne     100f                    | if yes
         btst    #bit_tst_err,d7         | has this test failed?
-        bne     100$                    | if not
+        bne     100f                    | if not
         movw    #0x3700,sr              | master mode
         movl    sp,a0                   | get msp--saved top of loop
         movw    #0x2700,sr              | nonmaster mode
         jra     a0@                     | return, top of loop
-100$:
+100:
         jra     a6@                     | next instruction after call
         
 |----------------------------------------------------------------------------
@@ -2771,7 +2776,7 @@ print$:
 |
         movsb   ENABLEOFF,d0            | read diag switch
         btst    #DIAGSW,d0              | diag sw = 0?
-        beq     15$                     | if 0, skip printout
+        beq     15f                     | if 0, skip printout
 |
 |       Set Port A flag and save message address in upper bits of a4
 |
@@ -2780,34 +2785,34 @@ print$:
 |
 |       Check next character of message 
 |
-1$:     clrl    d3                      | clear reg & digit counters
+1:     clrl    d3                      | clear reg & digit counters
         movl    #FC_SP, d0             
         movc    d0, sfc
         movsb   a4@, d0
         tstb    d0                      | Has message been displayed?
-        jne     100$                    | If not, continue displaying it
+        jne     100f                    | If not, continue displaying it
 |
 |       Check if this display was Port A or B
 |
         btst    #bit_port_flag, d7      | Port A or B?
-        jne     15$                     | If this was Port B, we are done
+        jne     15f                     | If this was Port B, we are done
 
         bset    #bit_port_flag, d7      | Else, Set Port flag to B
         movl    d4, a4                  | Restore the message pointer
-        jra     1$                      | Start displaying message
+        jra     1b                      | Start displaying message
 |
 |       Check for registers to be displayed
 |
-100$:
+100:
         cmpb    #0x25, d0               | Is this a '%'?
-        jne     125$                    | If not, this is a character
+        jne     125f                    | If not, this is a character
 |
 |       This is a register to be displayed
 |
         addql   #1, a4                  | waste the %
         movsb   a4@+, d0                | and find register to print
         cmpb    #0x64, d0               | is 'd'??
-        jne     2$                      | branch to see if 'a'
+        jne     2f                      | branch to see if 'a'
 |
 |       This is a data register
 |
@@ -2816,20 +2821,20 @@ print$:
         movl    usp, a0
         movl    a0, d2
         cmpb    #0, d0                  | Is this register d0 ?
-        jeq     10$
+        jeq     10f
         movl    a1, d2 
         cmpb    #1, d0                  | Is this register d1 ? 
-        jeq     10$
+        jeq     10f
         movl    a2, d2 
         cmpb    #2, d0                  | Is this register d2 ? 
-        jeq     10$
+        jeq     10f
         movl    a3, d2                  | Then it is register d3 ?
-        jra     10$
+        jra     10f
 
 |       Check if it is an address register 
 |
-2$:     cmpb    #0x61, d0               | is 'a'??
-        jne     125$                    | nope, print char
+2:     cmpb    #0x61, d0               | is 'a'??
+        jne     125f                    | nope, print char
 |
 |       This is an address register
 |
@@ -2838,7 +2843,7 @@ print$:
 |
 |       Determine the contents of the register to be displayed
 |
-10$:    movl    #FC_SP, d0
+10:    movl    #FC_SP, d0
         movc    d0, sfc
         movl    d2, d0
         roll    #4, d0                  | get next highest digit
@@ -2856,43 +2861,43 @@ print$:
         movc    d0, dfc
 
         btst    #bit_port_flag, d7      | Port A?
-        jne     120$                    | If not, print to Port B
+        jne     120f                    | If not, print to Port B
 |
 |       Display to Port A
 |
         moveq   #-1, d0                 
 #ifdef  M25
-11$:    movb    UARTACNTL,d1            | wait for SCC to be ready
+11:    movb    UARTACNTL,d1            | wait for SCC to be ready
 #else
-11$:    movsb   UARTACNTL, d1
+11:    movsb   UARTACNTL, d1
 #endif M25
         btst    #TXREADY, d1            | Wait for SCC to be ready
-        dbne    d0, 11$                 | Loop until ready or timeout
+        dbne    d0, 11b                 | Loop until ready or timeout
 
         moveq   #0xf, d0
-12$:    dbra    d0, 12$                 | Wait for character to be transmitted
+12:    dbra    d0, 12b                 | Wait for character to be transmitted
 
 #ifdef  M25
         movb    d6, UARTADATA           | Send the character out
 #else
         movsb   d6, UARTADATA           | Send the character out
 #endif M25
-        jra     123$                    | else go on printing
+        jra     123f                    | else go on printing
 | 
 |       Display to Port B 
 |
-120$:
+120:
         moveq   #-1, d0
 #ifdef  M25
-121$:   movb    UARTBCNTL,d1            | wait for SCC to be ready
+121:   movb    UARTBCNTL,d1            | wait for SCC to be ready
 #else  
-121$:   movsb   UARTBCNTL, d1
+121:   movsb   UARTBCNTL, d1
 #endif M25
         btst    #TXREADY, d1            | Wait for SCC to be ready
-        dbne    d0, 121$                | Loop until ready or timeout
+        dbne    d0, 121b                | Loop until ready or timeout
  
         moveq   #0xf, d0
-122$:   dbra    d0, 122$                | Wait for character to be transmitted
+122:   dbra    d0, 122b                | Wait for character to be transmitted
  
 #ifdef  M25
         movb    d6, UARTBDATA           | Send the character out
@@ -2900,70 +2905,70 @@ print$:
         movsb   d6, UARTBDATA           | Send the character out
 #endif M25
  
-123$:
+123:
         addql   #1, d3                  | bump digit counter
         btst    #3, d3                  | check digit count == 8
-        jeq     10$                     | it bit for 8*4 not set , go on
-        jra     1$                      | else go on printing
+        jeq     10b                     | it bit for 8*4 not set , go on
+        jra     1b                      | else go on printing
 |
 |       Send the character to the terminal
 |
-125$:   movsb   a4@+, d6
+125:   movsb   a4@+, d6
 
         moveq   #FC_MMU, d0             | set up source and dest fc
         movc    d0, sfc
         movc    d0, dfc
 
         btst    #bit_port_flag, d7      | Port A?
-        jne     140$                    | If not, print to Port B
+        jne     140f                    | If not, print to Port B
 | 
 |       Display to Port A 
 |
         moveq   #-1, d0
 #ifdef  M25
-13$:    movb    UARTACNTL,d1            | wait for SCC to be ready
+13:    movb    UARTACNTL,d1            | wait for SCC to be ready
 #else
-13$:    movsb   UARTACNTL, d1
+13:    movsb   UARTACNTL, d1
 #endif M25
         btst    #TXREADY, d1            | Wait for SCC to be ready
-        dbne    d0, 13$                 | Loop until ready or timeout
+        dbne    d0, 13b                 | Loop until ready or timeout
 
         moveq   #0xf, d0
-14$:    dbra    d0, 14$
+14:    dbra    d0, 14b
 
 #ifdef  M25
         movb    d6,UARTADATA            | Send the character out
 #else
         movsb   d6, UARTADATA           | Send the character out
 #endif M25
-        jra     143$
+        jra     143f
 | 
 |       Display to Port B 
 |
-140$:
+140:
         moveq   #-1, d0
 #ifdef  M25
-141$:   movb    UARTBCNTL,d1            | wait for SCC to be ready
+141:   movb    UARTBCNTL,d1            | wait for SCC to be ready
 #else   
-141$:   movsb   UARTBCNTL, d1
+141:   movsb   UARTBCNTL, d1
 #endif M25
         btst    #TXREADY, d1            | Wait for SCC to be ready
-        dbne    d0, 141$                | Loop until ready or timeout
+        dbne    d0, 141b                | Loop until ready or timeout
  
         moveq   #0xf, d0
-142$:   dbra    d0, 142$
+142:   dbra    d0, 142b
  
 #ifdef  M25
         movb    d6,UARTBDATA            | Send the character out
 #else   
         movsb   d6, UARTBDATA           | Send the character out
 #endif M25
-143$:   jra     1$
+143:   jra     1b
 |       
 |       Message has been displayed.
 |       Return to main program.
 |
-15$:    moveq   #FC_MMU, d0             | set up source and dest fc
+15:    moveq   #FC_MMU, d0             | set up source and dest fc
         movc    d0, sfc
         movc    d0, dfc
         movl    usp, a0
