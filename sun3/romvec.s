@@ -21,6 +21,12 @@
 #include "../sun3/assym.h"
 #include "../h/fbio.h"
 
+#define SHORT
+
+#ifdef SHORT
+ .long  INITSP          | Initial SSP for hardware RESET
+ .long  _hardreset      | Initial PC  for hardware RESET
+#else
  .long  INITSP          | Initial SSP for hardware RESET
  .long  _hardreset      | Initial PC  for hardware RESET
  .long  _diag_berr      | Bus error handler for diagnostics
@@ -78,6 +84,7 @@
  .long  0               | dummy2z
  .long  0               | dummy3z
  .long  0               | dummy4z
+#endif
 
 |
 | Indirect pointer to boot parameters, for historical reasons

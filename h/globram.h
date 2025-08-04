@@ -60,7 +60,9 @@ struct globram {
 	struct pgmapent		g_nextmainmap;	/* Next physmem to resalloc() */
 	long			*g_busbuf;	/* setbus() save area ptr */
 	struct diag_state	g_diag_state;	/* Info from powerup diags */
-	void			(*g_vector_cmd)(); /* Addr of vector cmd */
+
+	// void			(*g_vector_cmd)(); /* Addr of vector cmd */
+	void			(*g_vector_cmd)( char *, char *); /* Addr of vector cmd */
 
 /* Command line input for monitor */
 	unsigned char		g_linebuf[BUFSIZE+2];	/* data input buffer */

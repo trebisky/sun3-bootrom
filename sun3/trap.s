@@ -86,10 +86,10 @@
 #endif  SIRIUS
 
 
-        .globl  _hardreset, _reset_common, _bootreset, _softreset, _set_evec
-        .globl  _exit_to_mon, _trap, _addr_error, _bus_error, _nmi
-        .globl  _abortent, _sendtokbd, _get_enable, _peek, _pokec
-        .globl  _set_enable, _set_leds, _resetinstr, _setbus, _unsetbus
+        .globl  _hardreset, _reset_common, _bootreset, _softreset, set_evec
+        .globl  _exit_to_mon, trap, addr_error, bus_error, nmi
+        .globl  _abortent, _sendtokbd, get_enable, _peek, _pokec
+        .globl  set_enable, _set_leds, _resetinstr, _setbus, _unsetbus
         .globl  _getidprom, _k2reset, _menureset
 
 |*CC*****************************************************************************
@@ -236,7 +236,7 @@ bootsoft:
         movsb   d0,LEDOFF
 
         movl    d6,sp@-                 | Size of working memory...
-        jbsr    _mapmem                 | Go map/zap it.
+        jbsr    mapmem                  | Go map/zap it.
         addql   #4,sp
         movl    d0,g_memoryavail        | Available memory in the system
         movb    #0,g_loop               | initialize loop option
@@ -256,7 +256,7 @@ _exit_to_mon:
 |
 |       Entry point for all traps except reset, address, and bus error.
 |
-_trap:
+trap:
         subw    #mis_sr,sp              | SP was pointing at SR, back it
                                         | up so sp@(mis_sr) points there.
         moveml  #0xFFFF,sp@(mis_d0)     | Store all registers, including SSP
@@ -281,7 +281,7 @@ _resettrap:
         orw     #0x0700,sr              | Run at interrupt level 7 now.
         tstl    d7                      | For resets, call monreset() first.
         jeq     tomon
-        jbsr    _monreset               | The args are modifiable if desired.
+        jbsr    monreset               | The args are modifiable if desired.
 tomon:
         jbsr    _monitor                | Call the interactive monitor
 
@@ -328,8 +328,8 @@ samestack:
 |       (that we save in low memory) and rts'ing.  But that's not the
 |       default.
 |
-_addr_error:
-_bus_error:
+addr_error:
+bus_error:
         moveml  #0xFFFF,g_beregs        | Store all regs
         bfextu  sp@(6){#0:#4},d0        | Get format of stack
 |       movb    pc@(format_size,d0),d0  | Get size of stack
@@ -362,7 +362,7 @@ BEloop:
         movl    g_beregs   ,d0          | Restore d0, a0, and a1
         movl    g_beregs+32,a0          | (Since we clobberred them.)
         movl    g_beregs+36,a1
-        jra     _trap                   | Enter "normal" trap code
+        jra     trap                   | Enter "normal" trap code
 
 format_size:
         .byte   8, 8, 12, 0, 0, 0, 0, 0 | short, throwaway, sixword
@@ -373,7 +373,7 @@ format_size:
 |
 |       Entry point for non-maskable interrupts, used to scan keyboard.
 |
-_nmi:
+nmi:
         movl    d0,sp@-                 | Save a scratch register
         movb    MEMORY_ERR_BASE+MR_ER,d0 | Get parity error indicator
 #ifndef SIRIUS
@@ -429,7 +429,7 @@ _nmi:
 10:     movw    #EVEC_MEMERR,sp@(4+i_fvo) | Indicate that this is memory err
 trapout:
         movl    sp@+,d0                 | Restore saved register
-        jra     _trap                   | And just trap out as usual.
+        jra     trap                   | And just trap out as usual.
 
 not_parity:
         movb    CLOCK_BASE+clk_intrreg,d0 | Is the clock chip interrupting?
@@ -533,7 +533,7 @@ abort:
         movl    sp@+,d0                 | Restore saved register
 _abortent:
         movw    #EVEC_ABORT,sp@(i_fvo)  | Indicate that this is an abort.
-        jra     _trap                   | And just trap out as usual.
+        jra     trap                   | And just trap out as usual.
         
 |
 | Send a command byte to the keyboard if possible.
@@ -560,7 +560,7 @@ sendret:rts                             | Return to caller.
 |
 | Gets the current value of the enable register.
 |
-_get_enable:
+get_enable:
         moveq   #0,d0
         movc    sfc,a0                  | Save SOURCE function code
         moveq   #FC_MAP,d1              | Set up for map access
@@ -572,7 +572,7 @@ _get_enable:
 |
 | Sets the enable register to the specified value.
 |
-_set_enable:
+set_enable:
         movw    sp@(6),d0               | Grab desired value from stack
         movc    dfc,a0                  | Save dest function code
         moveq   #FC_MAP,d1              | Set up for map access
@@ -697,7 +697,7 @@ _pokec:
 |               int offset;             /* Offset to vector, eg 8 for berr */
 |               int (*func)();          /* Function to call for it */
 |
-_set_evec:
+set_evec:
         movc    vbr,a0                  | Get current vector base
         addl    sp@(4),a0               | Add desired exception vector offset
         movl    a0@,d0                  | Return old value.

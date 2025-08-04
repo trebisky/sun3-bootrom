@@ -121,7 +121,7 @@ struct pginit mapinit[] = {
  * its own stack to, to avoid unpleasant surprises.
  */
 unsigned long
-mapmem( unsigned long memsize)
+mapmem( unsigned long memsize )
 {
         register char *i;
         register unsigned short j;

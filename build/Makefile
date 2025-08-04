@@ -31,7 +31,10 @@ SIZE = m68k-linux-gnu-size
 DUMP = m68k-linux-gnu-objdump -d
 
 OBJS = romvec.o trap.o mapmem.o reset.o cpu.map.o \
-	diag.o banner.o
+	diag.o banner.o \
+	printf.o
+
+#	diag.o banner.o commands.o
 
 # This defines the link order
 ORIG_OBJS = romvec.o trap.o mapmem.o reset.o cpu.map.o diag.o banner.o commands.o \
@@ -83,6 +86,14 @@ diag.o: ../diag/diag.s
 banner.o: ../sys/banner.c
 	$(CC) -c $<
 
+commands.o: ../sys/commands.c
+	$(CC) -c $<
+
+# ,,,
+
+printf.o: ../sys/printf.c
+	$(CC) -c $<
+
 
 bootrom: Makefile $(OBJS)
 	@echo linking bootrom
@@ -90,6 +101,12 @@ bootrom: Makefile $(OBJS)
 	#$(LD) -o bootrom -T bootrom.lds ${OBJS} ${LDFLAGS}
 	#$(SIZE) bootrom
 	@echo not yet!!
+
+link: Makefile $(OBJS)
+	@echo linking bootrom
+	@rm -f bootrom
+	$(LD) -o bootrom -T bootrom.lds ${OBJS} ${LDFLAGS}
+	$(SIZE) bootrom
 
 clean:
 	rm -f $(OBJS)

@@ -41,7 +41,11 @@ static void close_window ( void );
 static void test_mem ( int, int ); 
 static void banner_test ( void );
 
-int     trap(), bus_error(), addr_error(), nmi();
+int     trap(), bus_error(), addr_error();
+
+#ifdef NOTANSI
+int nmi();
+#endif
 
 int cpudelay =  3;
 
@@ -324,10 +328,14 @@ monreset ( struct monintstack monintstack )
 
         r_usp = gp->g_memorysize;       /* reset User Stack pointer */
 
+#ifdef NOTANSI
         {
                 extern  void  vector_default();
                 gp->g_vector_cmd = vector_default;
         }
+#else
+		gp->g_vector_cmd = vector_default;
+#endif
 
         gp->g_breaking = 0;     /* no break in progress */
         gp->g_breakaddr = 0;    /* initialize break address */

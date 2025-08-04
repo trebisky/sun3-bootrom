@@ -2850,7 +2850,7 @@ print$:
         movl    d0, d2                  | and save back
         andl    #0xf, d0                | mask it
         movl    d0, a0                  | set up byte grab
-        addl    #_chardigs, a0          | convert it to an ascii digit
+        addl    #chardigs, a0           | convert it to an ascii digit
 |
 |       Send a digit to the terminal
 |

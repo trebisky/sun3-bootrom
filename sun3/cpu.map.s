@@ -61,8 +61,8 @@
 _PAGE_INVALID:
         .long   PME_INVALID     | "The" invalid page entry.
 
-        .globl  _getpgmap
-_getpgmap:
+        .globl  getpgmap
+getpgmap:
         movl    sp@(4),d0       | Get access address
         andl    #MAPADDRMASK,d0 | Mask out irrelevant bits
         addl    #PMAPOFF,d0     | Offset to map address
@@ -74,8 +74,8 @@ _getpgmap:
         movc    d1,sfc          | Restore source function code
         rts                     | done
 
-        .globl  _getsegmap
-_getsegmap:
+        .globl  getsegmap
+getsegmap:
         movl    sp@(4),d0       | Get access address
         andl    #MAPADDRMASK,d0 | Mask out irrelevant bits
         addl    #SMAPOFF,d0     | Bump to segment map offset
@@ -88,8 +88,8 @@ _getsegmap:
         movc    d1,sfc          | Restore source function code
         rts                     | done
 
-        .globl  _setpgmap
-_setpgmap:
+        .globl  setpgmap
+setpgmap:
         movl    sp@(4),d0       | Get access address
         andl    #MAPADDRMASK,d0 | Mask out irrelevant bits
         addl    #PMAPOFF,d0     | Offset to page maps
@@ -123,8 +123,8 @@ _setpgmap:
         movc    d1,dfc          | Restore dest function code
         rts                     | done
 
-        .globl  _setsegmap
-_setsegmap:
+        .globl  setsegmap
+setsegmap:
         movl    sp@(4),d0       | Get access address
         andl    #MAPADDRMASK,d0 | Mask out irrelevant bits
         addl    #SMAPOFF,d0     | Bump to segment map offset
@@ -137,8 +137,8 @@ _setsegmap:
         movc    d1,dfc          | Restore dest function code
         rts                     | done
 
-        .globl  _getcontext
-_getcontext:
+        .globl  getcontext
+getcontext:
         movc    sfc,d1          | Save source function code
         lea     FC_MAP,a1       | Get function code in a reg
         movc    a1,sfc          | Set source function code
@@ -148,8 +148,8 @@ _getcontext:
         movc    d1,sfc          | Restore source function code
         rts
 
-        .globl  _setcontext
-_setcontext:
+        .globl  setcontext
+setcontext:
         movb    sp@(7),d0       | Get context value to set
         movc    dfc,d1          | Save dest function code
         lea     FC_MAP,a1       | Get function code in a reg
@@ -161,8 +161,8 @@ _setcontext:
 |
 | Setcxsegmap
 |
-        .globl  _setcxsegmap
-_setcxsegmap:
+        .globl  setcxsegmap
+setcxsegmap:
         movb    INTERRUPT_BASE,d0       | Save old interrupt mask
         movl    d0,sp@-
         andb    #~IR_ENA_INT,d0         | Disable all ints (but don't
@@ -170,7 +170,7 @@ _setcxsegmap:
         movl    sp@(16),sp@-            | Copy three parameters
         movl    sp@(16),sp@-
         movl    sp@(16),sp@-
-        jbsr    _setcxsegmap_noint      | Call the real routine
+        jbsr    setcxsegmap_noint      | Call the real routine
         lea     sp@(12),sp
         movl    sp@+,d0
         movb    d0,INTERRUPT_BASE       | Restore interrupt mask
@@ -179,8 +179,8 @@ _setcxsegmap:
 |
 | The guts of setcxsegmap, called from mapmem() early in initialization.
 |
-        .globl  _setcxsegmap_noint
-_setcxsegmap_noint:
+        .globl  setcxsegmap_noint
+setcxsegmap_noint:
 | d0 = context, and segmap entry
 | d1 = temp
 | d2 = saved enable reg value
@@ -222,3 +222,4 @@ _setcxsegmap_noint:
         movl    sp@+,d2
         rts                     | done
 
+| THE END
