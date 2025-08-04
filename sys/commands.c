@@ -73,8 +73,10 @@ char menu_msg[] = "\nOptional Menu Tests\r\nType a character within 10 seconds t
  */
 #define OPC_TRAP1       0x4E41          /* trap 1 */
 
+#ifdef NOTANSI
 int trap();             /* Trap handler for trace and bkpt traps */
 int bootreset();        /* Call it (no return) to reset and boot */
+#endif
 
 /*
  * Prints and/or modifies a location.  The address and length (2, 4, or 8
@@ -191,7 +193,7 @@ dobreak ( int space )
         register short *bp= gp->g_breakaddr;
         register short *bpa;
 
-        if (bp && (getsw(bp,space) != OPC_TRAP1))
+        if (bp && (getsw((int)bp,space) != OPC_TRAP1))
             bp = 0;
 
         if (peekchar() == '\r') {
@@ -201,15 +203,15 @@ dobreak ( int space )
                 bpa= (short*)getnum();
                 if (bp) {
                         /* Restore user's old instruction */
-                        putsw(bp, space, gp->g_breakval);
+                        putsw((int)bp, space, gp->g_breakval);
                         /* Restore supervisor's TRAP #1 routine */
                         (void) set_evec (EVEC_TRAP1, gp->g_breakvec);
                 }
                 if (bpa) {
                         /* Save new instruction */
-                        gp->g_breakval = getsw(bpa, space);
+                        gp->g_breakval = getsw((int)bpa, space);
                         /* Install bkpt atop new instruction */
-                        putsw(bpa, space, OPC_TRAP1);
+                        putsw((int)bpa, space, OPC_TRAP1);
                         /* Install new TRAP #1 vector in supervisor space */
                         gp->g_breakvec = set_evec (EVEC_TRAP1, trap);
                         printf ("Break %x installed\n", gp->g_breakval);
@@ -356,9 +358,9 @@ BootHere:
         case EVEC_TRACE:
                 if (gp->g_breaking) {
                     /* this is single step past broken instruction */
-                    if (getsw(gp->g_breakaddr, space) == gp->g_breakval) {
+                    if (getsw((int)gp->g_breakaddr, space) == gp->g_breakval) {
                         /* good - not bashed since we set it, so reset it */
-                        putsw(gp->g_breakaddr, space, OPC_TRAP1);
+                        putsw((int)gp->g_breakaddr, space, OPC_TRAP1);
                     }
                     if (gp->g_breaking == 1) {
                         /* Trace was not previously enabled.  Cancel it and
@@ -551,7 +553,7 @@ TraceCont:
                                 r_pc = getnum();
                 ContinueTrace:
                         if ( (long)gp->g_breakaddr == r_pc) {
-                            putsw(gp->g_breakaddr, space, gp->g_breakval);
+                            putsw((int)gp->g_breakaddr, space, gp->g_breakval);
                             gp->g_breaking = 1 + (r_sr & SR_TRACE);
                             gp->g_breaktrvec = set_evec(EVEC_TRACE, trap);
                             r_sr |= SR_TRACE;
@@ -1077,24 +1079,25 @@ eeprom_update ( int *adx, int space)
  *      Calculate a new checksum for the altered area of the EEPROM
  */
         for (eeprom_addr = start; eeprom_addr < end; eeprom_addr++) 
-                sum = sum + getsb(eeprom_addr, space);
+                sum = sum + getsb((int)eeprom_addr, space);
 
         checksum = 256 - sum;   /* sum of bytes + checksum = 8 bit zero */
-        putsb(sum_addr, space, checksum);  /* Write the checksum */
+        putsb((int)sum_addr, space, checksum);  /* Write the checksum */
 /*
  *      Get the current write count & increment by 1
  */
-        count = getsb(count_addr++, space) << 8; /* Get the new count */
+        count = getsb((int)count_addr++, space) << 8; /* Get the new count */
         DELAY(10000);                            /* Delay for EEPROM recovery */
-        count += getsb(count_addr--, space, count) + 1; /* Get the new count */
+		// tjt - only 2 args
+        count += getsb((int)count_addr--, space) + 1; /* Get the new count */
 
 /*
  *      Write the updated write count in all 4 locations
  */
         for (i = 0; i < 4; i++){
-                putsb(count_addr++, space, count >> 8);/* Write the new count */
+                putsb((int)count_addr++, space, count >> 8);/* Write the new count */
                 DELAY(10000);                   /* Delay for EEPROM recovery */
-                putsb(count_addr++, space, count); /* Write the new count */
+                putsb((int)count_addr++, space, count); /* Write the new count */
                 DELAY(10000);                   /* Delay for EEPROM recovery */
         }
 }

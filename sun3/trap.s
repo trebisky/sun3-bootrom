@@ -64,7 +64,7 @@
 |*CC*   
 |*CC*           Changed dfc to sfc in 'get_enable' for correct operation.
 |*CC*   
-|*CC*           NOTE: New info on the _k2reset routine (see _k2reset in here)   
+|*CC*           NOTE: New info on the k2reset routine (see k2reset in here)   
 |*CC*   
 |*CC*************************************************************************** 
 |
@@ -85,12 +85,9 @@
 #define EER_CE          0x01    | r/o - CE, correctable (single bit) error 
 #endif  SIRIUS
 
-
-        .globl  _hardreset, _reset_common, _bootreset, _softreset, set_evec
-        .globl  _exit_to_mon, trap, addr_error, bus_error, nmi
         .globl  _abortent, _sendtokbd, get_enable, _peek, _pokec
-        .globl  set_enable, _set_leds, _resetinstr, _setbus, _unsetbus
-        .globl  _getidprom, _k2reset, _menureset
+        .globl  _resetinstr, _setbus, _unsetbus
+        .globl  _getidprom,
 
 |*CC*****************************************************************************
 |*CC*   _k2reset:
@@ -101,7 +98,8 @@
 |*CC*
 |*CC*****************************************************************************
 
-_k2reset:
+.globl k2reset
+k2reset:
         movl    #0x77770000, d7
 
 | 
@@ -110,6 +108,9 @@ _k2reset:
 |       This routine does the final details in preparing for a
 |       hard reset.  it does NOT do the functions of a K2 command
 |
+| only for romvec table
+
+.globl  _hardreset
 _hardreset:
         movw    #CACR_CLEAR+CACR_ENABLE,a7      | Cache clear and enable bits
         movc    a7,cacr
@@ -172,7 +173,9 @@ dogreset:
 
 |
 | The following is common to power-up, boot, soft, and watchdog resets.
-|
+| also called from diag.s
+
+.globl  _reset_common
 _reset_common:
         movw    #FC_MAP,a7              | Set map function code
         movc    a7,dfc
@@ -182,7 +185,7 @@ _reset_common:
         movl    #TRAPVECTOR_BASE,a7     | Set up our vector base (not at 0,
         movc    a7,vbr                  | which is where CPU resets put it).
 
-        movl    #_exit_to_mon,INITSP-4  | return address if user rts'es to us
+        movl    #exit_to_mon,INITSP-4  | return address if user rts'es to us
         lea     INITSP-6,sp             | Reset stack ptr below stored stuff
         pea     USERCODE                | fake PC = User code start addr
         movw    sr,sp@-                 | Save current SR (oughta be 2700)
@@ -194,19 +197,23 @@ _reset_common:
 |
 | SCC Menu: fake stack as if we'd taken "Diagnostic Menus reset" interrupt
 |
-_menureset:
+.globl menureset
+menureset:
         movw    #EVEC_MENU_TSTS,d7      | Fake FVO
         jra     bootsoft
 |
 | Bootstrap reset: fake stack as if we'd taken "Bootstrap reset" interrupt
 |
-_bootreset:
+.globl bootreset
+bootreset:
         movw    #EVEC_BOOTING,d7        | Fake FVO
         jra     bootsoft
 |
 | Soft resets (K1): fake stack as if we'd taken a "K command reset" interrupt
 |
-_softreset:
+
+.globl softreset
+softreset:
         movw    #EVEC_KCMD,d7           | Fake FVO
 bootsoft:
         jsr     _resetinstr             | Zap out Mainbus devices
@@ -248,14 +255,17 @@ bootsoft:
 | a "boot" command).  We just pretend she did a TRAP #1.
 | Note that the trap vector might not be set, so we fake it.
 |
-_exit_to_mon:
-        pea     _exit_to_mon            | For the next rts...
+.globl  exit_to_mon
+exit_to_mon:
+        pea     exit_to_mon            | For the next rts...
         movw    #EVEC_TRAPE,sp@-        | Fake FVO
-        pea     _exit_to_mon            | Push fake PC that brings us back
+        pea     exit_to_mon            | Push fake PC that brings us back
         movw    #0x2700,sp@-            | Push fake SR
+
 |
 |       Entry point for all traps except reset, address, and bus error.
 |
+.globl trap
 trap:
         subw    #mis_sr,sp              | SP was pointing at SR, back it
                                         | up so sp@(mis_sr) points there.
@@ -328,6 +338,7 @@ samestack:
 |       (that we save in low memory) and rts'ing.  But that's not the
 |       default.
 |
+.globl  addr_error, bus_error
 addr_error:
 bus_error:
         moveml  #0xFFFF,g_beregs        | Store all regs
@@ -373,6 +384,7 @@ format_size:
 |
 |       Entry point for non-maskable interrupts, used to scan keyboard.
 |
+.globl  nmi
 nmi:
         movl    d0,sp@-                 | Save a scratch register
         movb    MEMORY_ERR_BASE+MR_ER,d0 | Get parity error indicator
@@ -560,6 +572,7 @@ sendret:rts                             | Return to caller.
 |
 | Gets the current value of the enable register.
 |
+.globl get_enable
 get_enable:
         moveq   #0,d0
         movc    sfc,a0                  | Save SOURCE function code
@@ -572,6 +585,7 @@ get_enable:
 |
 | Sets the enable register to the specified value.
 |
+.globl set_enable
 set_enable:
         movw    sp@(6),d0               | Grab desired value from stack
         movc    dfc,a0                  | Save dest function code
@@ -584,7 +598,8 @@ set_enable:
 |
 | Set the LEDs.
 |
-_set_leds:
+.globl set_leds
+set_leds:
         movc    dfc,a0                  | Save dest function code
         moveq   #FC_MAP,d1              | Set up for map access
         movc    d1,dfc
@@ -697,6 +712,8 @@ _pokec:
 |               int offset;             /* Offset to vector, eg 8 for berr */
 |               int (*func)();          /* Function to call for it */
 |
+
+.globl  set_evec
 set_evec:
         movc    vbr,a0                  | Get current vector base
         addl    sp@(4),a0               | Add desired exception vector offset

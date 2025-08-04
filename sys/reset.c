@@ -42,9 +42,8 @@ static void close_window ( void );
 static void test_mem ( int, int ); 
 static void banner_test ( void );
 
-int     trap(), bus_error(), addr_error();
-
 #ifdef NOTANSI
+int     trap(), bus_error(), addr_error();
 int nmi();
 #endif
 

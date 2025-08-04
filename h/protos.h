@@ -16,9 +16,22 @@ typedef int (*vfptr) ( void );
 
 /* in sun3/trap.s */
 vfptr set_evec ( int, vfptr );
+int trap ( void );
 int nmi ( void );
+int addr_error ( void );
+int bus_error ( void );
+
+void exit_to_mon ( void );
+
+void set_leds ( int );
 void set_enable ( int );
 int get_enable ( void );
+
+void menureset ( void );
+void bootreset ( void );
+void k2reset ( void );
+void softreset ( void );
+
 
 /* in sys/mapmem.c */
 /* ?? */
@@ -66,10 +79,30 @@ int getnum ( void );
 void skipblanks ( void );
 int ishex ( unsigned char );
 
-/* ... */
+/* in sys/busyio.c */
+void putchar ( unsigned char );
+int mayput ( unsigned char );
 
-/* in printf.c */
+/* in sys/printf.c */
 void printf ( char *, ...);
 void printhex ( int, int );
+
+/* ... */
+
+/* in sun3/space.s */
+int getsb ( int, int );
+int getsw ( int, int );
+int getsl ( int, int );
+
+int putsb ( int, int, int );
+int putsw ( int, int, int );
+int putsl ( int, int, int );
+
+void vac_flush_all ( void );
+void vac_ctxflush ( int );
+void vac_pageflush ( int, int );
+void vac_segflush ( int, int );
+void cache_dei ( int );
+
 
 /* THE END */

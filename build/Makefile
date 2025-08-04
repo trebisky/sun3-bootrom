@@ -32,9 +32,8 @@ DUMP = m68k-linux-gnu-objdump -d
 
 OBJS = romvec.o trap.o mapmem.o reset.o cpu.map.o \
 	diag.o banner.o commands.o idprom.o usecmd.o  \
-	getline.o printf.o
-
-#	diag.o banner.o commands.o
+	getline.o printf.o busyio.o \
+	space.o
 
 # This defines the link order
 ORIG_OBJS = romvec.o trap.o mapmem.o reset.o cpu.map.o diag.o banner.o commands.o \
@@ -64,6 +63,7 @@ check: chkalign.c
 	$(CC) -c chkalign.c
 	$(DUMP) chkalign.o >check.dump
 
+# ---------------------------------------------------
 
 romvec.o: ../sun3/romvec.s
 	$(AS) -c $<
@@ -98,10 +98,16 @@ usecmd.o: ../sys/usecmd.c
 getline.o: ../sys/getline.c
 	$(CC) -c $<
 
-# ,,,
-
 printf.o: ../sys/printf.c
 	$(CC) -c $<
+
+busyio.o: ../sys/busyio.c
+	$(CC) -c $<
+
+# -------
+
+space.o: ../sun3/space.s
+	$(AS) -c $<
 
 
 bootrom: Makefile $(OBJS)

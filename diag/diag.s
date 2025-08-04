@@ -2356,7 +2356,7 @@ enbl_ecc:
         moveq   #~L_SETUP_MAP,d0        | 
         movsb   d0,LEDREG               | tell LEDs we're setting up MAP
         pea     a6@                     | push top of mem arg on stack
-        jbsr    _mapmem                 | for Map Memory call
+        jbsr    mapmem                 | for Map Memory call
         addql   #4,sp                   
         movl    a6,g_memoryworking      | total amt of working memory
         movl    d0,g_memoryavail        | available memory after we steal
