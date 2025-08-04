@@ -13,7 +13,7 @@ IDENT='-DID="Rev 2.1"' -DSUN3 -DCARRERA
 # Now this is in bootrom.lds
 #RELOC=0FEF0000
 
-COPTS= -Wno-endif-labels -Wno-implicit-function-declaration
+COPTS= -Wno-endif-labels -Wno-implicit-function-declaration -Wno-multichar
 # CFLAGS = -I../h -I. ${COPTS} ${IDENT} -DMC68000
 #CFLAGS = -I../h ${COPTS} ${IDENT} -DMC68000
 CFLAGS = -I../h ${COPTS} ${IDENT} -DANSI
@@ -31,7 +31,7 @@ SIZE = m68k-linux-gnu-size
 DUMP = m68k-linux-gnu-objdump -d
 
 OBJS = romvec.o trap.o mapmem.o reset.o cpu.map.o \
-	diag.o banner.o \
+	diag.o banner.o commands.o idprom.o  \
 	printf.o
 
 #	diag.o banner.o commands.o
@@ -87,6 +87,9 @@ banner.o: ../sys/banner.c
 	$(CC) -c $<
 
 commands.o: ../sys/commands.c
+	$(CC) -c $<
+
+idprom.o: ../sys/idprom.c
 	$(CC) -c $<
 
 # ,,,

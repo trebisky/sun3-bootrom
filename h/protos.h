@@ -51,6 +51,10 @@ void help ( void );
 /* in sys/commands.c */
 void vector_default ( char *, char * );
 
+/* in sys/idprom.c */
+int idprom ( unsigned char, struct idprom * );
+
+
 /* ... */
 
 /* in printf.c */

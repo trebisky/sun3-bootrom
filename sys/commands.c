@@ -45,6 +45,8 @@
 #include "../dev/saio.h"
 #include "../h/enable.h"
 #include "../h/eeprom.h"
+#include "../h/idprom.h"
+
 #include "../diag/diagmenus.h" /* required for struct involving the SCSI */
                                  /* logic and reseting it with the K2 cmd  */
 
@@ -59,6 +61,9 @@
 
 static void openreg ( long *, long * );
 static void dobreak ( int );
+static void map_mainmem ( void );
+static void eeprom_update ( int *, int );
+static void menutests ( int );
 
 extern unsigned char peekchar(), getone();
 
@@ -156,6 +161,14 @@ char reg_names[][3]= {
  * Display a register, get new value (if any)
  * If right answer:increment and repeat until last reg
  * Arguments are first reg (&r_d0) and first reg to print.
+ *
+ * tjt - gcc did not like the call here to printf
+ *  a simple cast fixes things.
+ *
+ * This routine depends on the order of things in monintstack,
+ *  which is defined in h/montrap.c
+ * rbase is something like &monintstack.d0
+ * radx is something like &monintstack.a0
  */
 static void
 openreg ( long *rbase, long *radx )
@@ -165,8 +178,9 @@ openreg ( long *rbase, long *radx )
         radx += (getnum()&0xF); /* only use last hex digit */
         r = reg_names + (radx - rbase);
         for(; r < reg_names+(sizeof reg_names/sizeof *reg_names); r++, radx++) {
-                printf(r);      
-                if (!queryval ((int)radx, 8, FC_SD)) break;
+                printf ((char *) r);      
+                if (!queryval ((int)radx, 8, FC_SD))
+					break;
         }
 }
 
@@ -204,7 +218,6 @@ dobreak ( int space )
 
         };
 }
-struct pgmapent mainmem_pagemap = {1, PMP_ALL, VPM_MEMORY, 0, 0, 0};
 
 /*
  * This mini-monitor does only a few things:
@@ -819,7 +832,7 @@ TraceCont:
                                         modified = 1;
                         }
                         if (modified)
-                                eeprom_update(--adx, space);
+                                eeprom_update((int *) --adx, space);
                         break;
                 case 'R':       /* open registers */
                         openreg(&r_d0, &r_isp);
@@ -964,8 +977,8 @@ TraceCont:
  * Just copy the string to linbuf so it won't get trashed, and call
  * bootreset() which will do all the rest.
  */
-boot_me(string)
-        char *string;
+void
+boot_me ( char *string )
 {
 
         gp->g_lineptr = gp->g_linebuf;
@@ -987,29 +1000,43 @@ vector_default ( char *addr, char *string )
                 printf("Try again.\n");
 }
 
+struct pgmapent mainmem_pagemap = {1, PMP_ALL, VPM_MEMORY, 0, 0, 0};
+
 /*
  * Map all of main memory
+ *
+ * tjt - this business of pgmapent being either a struct
+ *  or an 32 bit int is annoying at best.  I introduced the
+ *  union (see sun3/cpu.map.h) that gets used here, but this
+ *  whole mess ought to get cleaned up.
  */
-void
-map_mainmem ( void ) {
+static void
+map_mainmem ( void )
+{
         register char *i;
-        struct pgmapent pg;
+        // struct pgmapent pg;
+		union pgmap_un pg_u;
 
-        pg = mainmem_pagemap;   /* map in main memory */
+        pg_u.u_pgmap = mainmem_pagemap;   /* map in main memory */
 
-        for (i = (char *)0; i < (char *)MAINMEM_MAP_SIZE; pg.pm_page++) {
-                setpgmap(i, pg);
+        for (i = (char *)0; i < (char *)MAINMEM_MAP_SIZE; pg_u.u_pgmap.pm_page++) {
+                setpgmap ( i, pg_u.u_val );
                 i += BYTESPERPG;
         }
+
+#ifdef oldcode
+        for (i = (char *)0; i < (char *)MAINMEM_MAP_SIZE; pg.pm_page++) {
+                setpgmap (i, pg);
+                i += BYTESPERPG;
+        }
+#endif
 }
 
 /*
  * Update EEPROM write count and checksum
  */
-void
-eeprom_update(adx, space)
-        register int    *adx;
-        int     space;
+static void
+eeprom_update ( int *adx, int space)
 {
         register unsigned char  sum = 0, checksum;
         register char   *sum_addr, *count_addr, *eeprom_addr;
@@ -1072,8 +1099,8 @@ eeprom_update(adx, space)
         }
 }
 
-menutests(space) 
-        int     space;
+static void
+menutests ( int space ) 
 {
         register char   c;
         int             l;
@@ -1122,6 +1149,9 @@ menutests(space)
                 c = getone() & UPCASE;
                 l = (l<<8) + (int) c;
         
+				/* tjt - gcc warns about these multichar constants.
+				 * I turned off the warning, but we shall see how this plays out.
+				 */
                 switch (l) {
  
 #ifdef  M25
@@ -1219,3 +1249,4 @@ menutests(space)
         }                     /* end of for loop */
 }
 
+/* THE END */
