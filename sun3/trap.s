@@ -283,7 +283,7 @@ _resettrap:
         jeq     tomon
         jbsr    monreset               | The args are modifiable if desired.
 tomon:
-        jbsr    _monitor                | Call the interactive monitor
+        jbsr    monitor                | Call the interactive monitor
 
         movl    sp@(mis_usp),a0         | Get usp out of memory image
         movc    a0,usp                  | Cram it into the hardware.

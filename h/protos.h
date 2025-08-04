@@ -54,14 +54,22 @@ void vector_default ( char *, char * );
 /* in sys/idprom.c */
 int idprom ( unsigned char, struct idprom * );
 
+/* in sys/usecmd.c */
+void usecmd ( void );
+void reset_uart ( unsigned char *, int );
+
+/* in sys/getline.c */
+void getline ( int );
+unsigned char getone ( void );
+unsigned char peekchar ( void );
+int getnum ( void );
+void skipblanks ( void );
+int ishex ( unsigned char );
 
 /* ... */
 
 /* in printf.c */
 void printf ( char *, ...);
 void printhex ( int, int );
-
-/* in usecmd.c */
-void reset_uart ( unsigned char *, int );
 
 /* THE END */
