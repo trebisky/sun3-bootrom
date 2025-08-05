@@ -33,6 +33,8 @@ DUMP = m68k-linux-gnu-objdump -d
 OBJS = romvec.o trap.o mapmem.o reset.o cpu.map.o \
 	diag.o banner.o commands.o idprom.o usecmd.o  \
 	getline.o printf.o busyio.o \
+	keypress.o getkey.o ktab.s2.o \
+	boot.o \
 	space.o
 
 # This defines the link order
@@ -102,6 +104,18 @@ printf.o: ../sys/printf.c
 	$(CC) -c $<
 
 busyio.o: ../sys/busyio.c
+	$(CC) -c $<
+
+keypress.o: ../sys/keypress.c
+	$(CC) -c $<
+
+getkey.o: ../sys/getkey.c
+	$(CC) -c $<
+
+ktab.s2.o: ../sys/ktab.s2.c
+	$(CC) -c $<
+
+boot.o: ../sys/boot.c
 	$(CC) -c $<
 
 # -------

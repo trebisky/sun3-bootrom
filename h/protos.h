@@ -32,6 +32,14 @@ void bootreset ( void );
 void k2reset ( void );
 void softreset ( void );
 
+int sendtokbd ( int );
+int peek ( int );
+int pokec ( int, int );
+void resetinstr ( void );
+
+int setbus ( void * );
+void unsetbus ( void * );
+void getidprom ( int, int );
 
 /* in sys/mapmem.c */
 /* ?? */
@@ -83,9 +91,21 @@ int ishex ( unsigned char );
 void putchar ( unsigned char );
 int mayput ( unsigned char );
 
+/* in sys/keypress.c */
+int keypress ( unsigned char );
+
+/* in sys/getkey.c */
+void initgetkey ( void );
+void abortfix ( void );
+int getkey ( void );
+
 /* in sys/printf.c */
 void printf ( char *, ...);
 void printhex ( int, int );
+
+/* in sys/boot.c */
+int boot ( char * );
+int nullsys ( void );
 
 /* ... */
 

@@ -27,5 +27,7 @@ struct busbuf {
 
 typedef struct busbuf bus_buf[1];
 
+#ifdef NOTANSI
 int setbus();
 void unsetbus();
+#endif

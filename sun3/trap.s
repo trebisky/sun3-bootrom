@@ -85,9 +85,6 @@
 #define EER_CE          0x01    | r/o - CE, correctable (single bit) error 
 #endif  SIRIUS
 
-        .globl  _abortent, _sendtokbd, get_enable, _peek, _pokec
-        .globl  _resetinstr, _setbus, _unsetbus
-        .globl  _getidprom,
 
 |*CC*****************************************************************************
 |*CC*   _k2reset:
@@ -108,7 +105,7 @@ k2reset:
 |       This routine does the final details in preparing for a
 |       hard reset.  it does NOT do the functions of a K2 command
 |
-| only for romvec table
+| This is the first code that runs on power up (or physical reset)
 
 .globl  _hardreset
 _hardreset:
@@ -185,7 +182,7 @@ _reset_common:
         movl    #TRAPVECTOR_BASE,a7     | Set up our vector base (not at 0,
         movc    a7,vbr                  | which is where CPU resets put it).
 
-        movl    #exit_to_mon,INITSP-4  | return address if user rts'es to us
+        movl    #exit_to_mon,INITSP-4   | return address if user rts'es to us
         lea     INITSP-6,sp             | Reset stack ptr below stored stuff
         pea     USERCODE                | fake PC = User code start addr
         movw    sr,sp@-                 | Save current SR (oughta be 2700)
@@ -216,7 +213,7 @@ bootreset:
 softreset:
         movw    #EVEC_KCMD,d7           | Fake FVO
 bootsoft:
-        jsr     _resetinstr             | Zap out Mainbus devices
+        jsr     resetinstr             | Zap out Mainbus devices
         clrb    INTERRUPT_BASE          | Shut off all interrupts.
 |
 | Reset the world's maps.
@@ -257,9 +254,9 @@ bootsoft:
 |
 .globl  exit_to_mon
 exit_to_mon:
-        pea     exit_to_mon            | For the next rts...
+        pea     exit_to_mon             | For the next rts...
         movw    #EVEC_TRAPE,sp@-        | Fake FVO
-        pea     exit_to_mon            | Push fake PC that brings us back
+        pea     exit_to_mon             | Push fake PC that brings us back
         movw    #0x2700,sp@-            | Push fake SR
 
 |
@@ -271,6 +268,7 @@ trap:
                                         | up so sp@(mis_sr) points there.
         moveml  #0xFFFF,sp@(mis_d0)     | Store all registers, including SSP
         subl    d7,d7                   | Clear "reset or trap" indicator.
+
 _resettrap:
         addl    #mis_sr,sp@(mis_a7)     | Make visible SSP == trap frame
         movc    usp,a0                  | Drag usp out of the hardware
@@ -291,9 +289,9 @@ _resettrap:
         orw     #0x0700,sr              | Run at interrupt level 7 now.
         tstl    d7                      | For resets, call monreset() first.
         jeq     tomon
-        jbsr    monreset               | The args are modifiable if desired.
+        jbsr    monreset                | The args are modifiable if desired.
 tomon:
-        jbsr    monitor                | Call the interactive monitor
+        jbsr    monitor                 | Call the interactive monitor
 
         movl    sp@(mis_usp),a0         | Get usp out of memory image
         movc    a0,usp                  | Cram it into the hardware.
@@ -543,6 +541,9 @@ NotSerial:
 abort:
         movl    sp@+,d1                 | Restore other register
         movl    sp@+,d0                 | Restore saved register
+
+| only for romvec
+.globl  _abortent
 _abortent:
         movw    #EVEC_ABORT,sp@(i_fvo)  | Indicate that this is an abort.
         jra     trap                   | And just trap out as usual.
@@ -551,7 +552,8 @@ _abortent:
 | Send a command byte to the keyboard if possible.
 | Return 1 if done, 0 if not done (Uart transmit queue full).
 |
-_sendtokbd:
+.globl  sendtokbd
+sendtokbd:
         movl    g_keybzscc,a0
         tstb    a0@(zscc_control)       | Read to flush previous pointer.
 
@@ -611,8 +613,10 @@ set_leds:
 |
 | Issue a reset instruction.
 |
-_resetinstr:
+.globl resetinstr
+resetinstr:
         reset                           | That's all.
+
 |following added to make sure int's are cleared from tod
 | taken from locore.s
 #ifdef  SIRIUS
@@ -635,7 +639,10 @@ del_2sec:
 |       register variables are trashed (restored to their values on
 |       entry, even though future code may have modified them).
 |
-_setbus:
+| tjt - this pair is used only in xxprobe.c
+
+.globl  setbus
+setbus:
         movl    sp@(4),a0               | Get bus buffer area
         movl    sp@,a0@                 | Save return address of setbus().
         moveml  a2-a7/d2-d7,a0@(12)     | Save volatile regs
@@ -654,7 +661,9 @@ buserr:
         movl    a0@,sp@                 | Restore return PC of setbus()
         moveq   #1,d0                   | Result is 1, indicating bus error
         jra     unsetout                | Unset it and get out
-_unsetbus:
+
+.globl  unsetbus
+unsetbus:
         movl    sp@(4),a0               | Get bus buffer area
 unsetout:
         movc    vbr,a1                  | Find vectors
@@ -668,8 +677,10 @@ unsetout:
 | Temporarily re-routes Bus Errors, and then tries to
 | read a byte from the specified address.  If a Bus Error occurs,
 | we return -1. 
-|
-_peek:
+| tjt - certain drivers use this
+
+.globl  peek
+peek:
         movl    a7@(4),a0               | Get address to probe
         movc    vbr,a1                  | Find trap vectors
         movl    a1@(EVEC_BUSERR),d1     | Save old bus error vector.
@@ -695,7 +706,9 @@ BEhand:                                 | Entered when a bus error occurs
 |
 | if (pokec (charpointer, bytevalue)) itfailed;
 |
-_pokec:
+| tjt - used only by the xt driver
+.globl  pokec
+pokec:
         movl    a7@(4),a0       | Get address to probe
         movc    vbr,a1          | Find trap vectors
         movl    a1@(EVEC_BUSERR),d1     | Save old bus error vector.
@@ -726,7 +739,8 @@ set_evec:
 | Read back <size> bytes of the ID prom and store them at <addr>.
 | Typical use:  getidprom(&idprom_struct, sizeof(idprom_struct));
 |
-_getidprom:
+.globl  getidprom,
+getidprom:
         movl    sp@(4),a0       | address to move ID prom bytes to
         movl    sp@(8),d1       | How many bytes to move
         movl    d2,sp@-         | save a reg
@@ -741,10 +755,10 @@ _getidprom:
         movc    d0,sfc          | restore sfc
         movl    sp@+,d2         | restore d2
         rts
+
 |**********************
+
         .data
         .even
 ecc_txt:
         .ascii  "CE memory error at %x+%x\12\0"
-
-
