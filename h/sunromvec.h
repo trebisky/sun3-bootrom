@@ -184,11 +184,11 @@ struct bootparam {
  */
 struct boottab {
 	char	b_dev[2];		/* Two char name of dev */
-	int	(*b_probe)( void * );		/* probe() --> -1 or found ctlr # */
-	int	(*b_boot)( struct bootparam * );		/* boot(bp) --> -1 or start address */
-	int	(*b_open)();		/* open(iobp) --> -1 or 0 */
-	int	(*b_close)();		/* close(iobp) --> -1 or 0 */
-	int	(*b_strategy)();	/* strategy(iobp,rw) --> -1 or 0 */
+	int	(*b_probe) ( void * );		/* probe() --> -1 or found ctlr # */
+	int	(*b_boot) ( struct bootparam * );		/* boot(bp) --> -1 or start address */
+	int	(*b_open) ( void * );		/* open(iobp) --> -1 or 0 */
+	int	(*b_close) ( void * );		/* close(iobp) --> -1 or 0 */
+	int	(*b_strategy) ();	/* strategy(iobp,rw) --> -1 or 0 */
 	char	*b_desc;		/* Printable string describing dev */
 	struct devinfo *b_devinfo;	/* Info to configure device */
 };
