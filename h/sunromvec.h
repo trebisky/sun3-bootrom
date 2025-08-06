@@ -184,8 +184,8 @@ struct bootparam {
  */
 struct boottab {
 	char	b_dev[2];		/* Two char name of dev */
-	int	(*b_probe)();		/* probe() --> -1 or found ctlr # */
-	int	(*b_boot)();		/* boot(bp) --> -1 or start address */
+	int	(*b_probe)( void * );		/* probe() --> -1 or found ctlr # */
+	int	(*b_boot)( struct bootparam * );		/* boot(bp) --> -1 or start address */
 	int	(*b_open)();		/* open(iobp) --> -1 or 0 */
 	int	(*b_close)();		/* close(iobp) --> -1 or 0 */
 	int	(*b_strategy)();	/* strategy(iobp,rw) --> -1 or 0 */

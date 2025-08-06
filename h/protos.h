@@ -87,6 +87,10 @@ int getnum ( void );
 void skipblanks ( void );
 int ishex ( unsigned char );
 
+/* in sys/printf.c */
+void printf ( char *, ...);
+void printhex ( int, int );
+
 /* in sys/busyio.c */
 void putchar ( unsigned char );
 int mayput ( unsigned char );
@@ -99,13 +103,26 @@ void initgetkey ( void );
 void abortfix ( void );
 int getkey ( void );
 
-/* in sys/printf.c */
-void printf ( char *, ...);
-void printhex ( int, int );
-
 /* in sys/boot.c */
 int boot ( char * );
 int nullsys ( void );
+
+/* in sys/monalloc.c */
+// char * resalloc ( enum RESOURCES type, unsigned bytes);
+char * resalloc ( int, unsigned int );
+// char * devalloc ( enum MAPTYPES devtype, char *physaddr, unsigned bytes );
+char * devalloc ( int, char *, unsigned int );
+void reset_alloc ( void );
+
+/* in sys/common.c */
+void bzero ( char *, int );
+void bcopy ( char *, char *, int );
+int chklabel ( void * );
+int isspinning ( int (*isready)(char *, int), char *, int );
+
+/* in sun3/blts.s */
+void bltshort ( int a0, int a1, int a2 );
+void setshort ( int lo, int hi, unsigned short fillval );
 
 /* ... */
 
