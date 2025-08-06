@@ -35,7 +35,7 @@ OBJS = romvec.o trap.o mapmem.o reset.o cpu.map.o \
 	getline.o printf.o busyio.o \
 	keypress.o getkey.o ktab.s2.o \
 	boot.o monalloc.o common.o blts.o \
-	expand.o finit.o fwritestr.o \
+	expand.o finit.o fwritestr.o gallmash.o \
 	space.o
 
 # This defines the link order
@@ -135,6 +135,9 @@ finit.o: ../sys/finit.c
 	$(CC) -c $<
 
 fwritestr.o: ../sys/fwritestr.c
+	$(CC) -c $<
+
+gallmash.o: ../sys/gallmash.c
 	$(CC) -c $<
 
 # -------
