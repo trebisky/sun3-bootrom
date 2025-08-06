@@ -35,7 +35,7 @@ OBJS = romvec.o trap.o mapmem.o reset.o cpu.map.o \
 	getline.o printf.o busyio.o \
 	keypress.o getkey.o ktab.s2.o \
 	boot.o monalloc.o common.o blts.o \
-	expand.o finit.o fwritestr.o gallmash.o \
+	expand.o finit.o fwritestr.o gallmash.o mem_grab.o \
 	if_ie.o \
 	space.o
 
@@ -142,6 +142,9 @@ gallmash.o: ../sys/gallmash.c
 	$(CC) -c $<
 
 if_ie.o: ../dev/if_ie.c
+	$(CC) -c $<
+
+mem_grab.o: ../sys/mem_grab.c
 	$(CC) -c $<
 
 # -------

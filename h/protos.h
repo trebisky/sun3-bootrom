@@ -138,6 +138,8 @@ void fwritechar ( unsigned char );
 void fwritestr ( unsigned char *, int );
 void pos ( int, int );
 
+/* in sys/mem_grab.c */
+void prom_mem_grab ( struct pr_prpos dst, int op, struct pr_prpos *src, short count );
 
 /* ... */
 
