@@ -73,7 +73,8 @@ void help ( void );
 void vector_default ( char *, char * );
 
 /* in sys/idprom.c */
-int idprom ( unsigned char, struct idprom * );
+// int idprom ( unsigned char, struct idprom * );
+int idprom ( unsigned char, void * );
 
 /* in sys/usecmd.c */
 void usecmd ( void );

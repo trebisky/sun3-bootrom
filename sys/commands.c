@@ -45,7 +45,6 @@
 #include "../dev/saio.h"
 #include "../h/enable.h"
 #include "../h/eeprom.h"
-#include "../h/idprom.h"
 
 #include "../diag/diagmenus.h" /* required for struct involving the SCSI */
                                  /* logic and reseting it with the K2 cmd  */

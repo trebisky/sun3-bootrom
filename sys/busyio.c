@@ -12,7 +12,6 @@
 #include "../dev/zsreg.h"
 #include "../sun3/sunmon.h"
 #include "../h/globram.h"
-#include "../h/idprom.h"
 
 #include "../h/protos.h"
 

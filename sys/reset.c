@@ -33,7 +33,6 @@
 #include "../sun3/memerr.h"
 #include "../sun3/structconst.h"
 #include "../h/eeprom.h"
-#include "../h/idprom.h"
 
 #include "../h/protos.h"
 

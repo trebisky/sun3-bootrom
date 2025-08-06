@@ -40,7 +40,6 @@
 #include "../dev/saio.h"
 #include "../sun3/cpu.addrs.h"
 #include "../h/eeprom.h"
-#include "../h/idprom.h"
 
 #include "../h/protos.h"
 

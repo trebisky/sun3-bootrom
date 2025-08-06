@@ -17,8 +17,6 @@
 #include "../h/cache.h"
 #endif  SIRIUS
 
-#include "../h/idprom.h"
-
 #include "../h/protos.h"
 
 static char * gethex ( char *, int * );

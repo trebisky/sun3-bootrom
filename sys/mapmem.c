@@ -18,7 +18,7 @@
 #include "../h/pginit.h"
 #include "../h/globram.h"
 #include "../h/enable.h"
-#include "../h/idprom.h"
+
 #include "../sun3/structconst.h"
 
 #include "../h/protos.h"
