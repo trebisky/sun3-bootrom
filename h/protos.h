@@ -125,6 +125,20 @@ int isspinning ( int (*isready)(char *, int), char *, int );
 void bltshort ( int a0, int a1, int a2 );
 void setshort ( int lo, int hi, unsigned short fillval );
 
+/* in sys/expand.c */
+/* used in finit.c */
+void fexpand ( unsigned short *, unsigned char *, int ,
+        unsigned char *, unsigned char *, unsigned char * );
+
+/* in sys/finit.c */
+void finit ( unsigned int, unsigned int );
+
+/* in sys/fwritestr.c */
+void fwritechar ( unsigned char );
+void fwritestr ( unsigned char *, int );
+void pos ( int, int );
+
+
 /* ... */
 
 /* in sun3/space.s */

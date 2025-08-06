@@ -34,7 +34,8 @@ OBJS = romvec.o trap.o mapmem.o reset.o cpu.map.o \
 	diag.o banner.o commands.o idprom.o usecmd.o  \
 	getline.o printf.o busyio.o \
 	keypress.o getkey.o ktab.s2.o \
-	boot.o monalloc.o common.o blts.o  \
+	boot.o monalloc.o common.o blts.o \
+	expand.o finit.o fwritestr.o \
 	space.o
 
 # This defines the link order
@@ -127,6 +128,14 @@ common.o: ../sys/common.c
 blts.o: ../sun3/blts.s
 	$(AS) -c $<
 
+expand.o: ../sys/expand.c
+	$(CC) -c $<
+
+finit.o: ../sys/finit.c
+	$(CC) -c $<
+
+fwritestr.o: ../sys/fwritestr.c
+	$(CC) -c $<
 
 # -------
 

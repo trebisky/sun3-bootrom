@@ -57,12 +57,11 @@
         THIS CODE DEPENDS ON CHRWIDTH = 12.
 */
 
+/* tjt - one call from sys/finit.c */
 
-fexpand(ptable, pbitmap, bitmaplen, pindex, pdata_hi, pdata_lo)
-        register unsigned short *ptable;
-        register unsigned char *pbitmap;
-        register unsigned char *pindex;
-        unsigned char *pdata_hi, *pdata_lo;
+void
+fexpand ( unsigned short *ptable, unsigned char *pbitmap, int bitmaplen,
+		unsigned char *pindex, unsigned char *pdata_hi, unsigned char *pdata_lo )
 {
         register short i, j;
         register unsigned short curshort;
@@ -94,3 +93,5 @@ fexpand(ptable, pbitmap, bitmaplen, pindex, pdata_hi, pdata_lo)
                 }
         }
 }
+
+/* THE END */
