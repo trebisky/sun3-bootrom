@@ -18,6 +18,7 @@
 #include "../h/pginit.h"
 #include "../h/globram.h"
 #include "../h/enable.h"
+#include "../dev/saio.h"
 
 #include "../sun3/structconst.h"
 

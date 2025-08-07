@@ -106,7 +106,7 @@ int getkey ( void );
 
 /* in sys/boot.c */
 int boot ( char * );
-int nullsys ( void );
+int nullsys ( void * );
 
 /* in sys/monalloc.c */
 // char * resalloc ( enum RESOURCES type, unsigned bytes);
@@ -141,7 +141,18 @@ void pos ( int, int );
 /* in sys/mem_grab.c */
 void prom_mem_grab ( struct pr_prpos dst, int op, struct pr_prpos *src, short count );
 
+/* in dev/sc.c */
+void sc_error ( char * );
+// only st.c and sd.c use this, they keep their own prototype
+// int scdoit ( struct scsi_cdb *cdb, struct scsi_scb *scb, struct saioreq *sip );
+
 /* ... */
+
+/* in sys/xxboot.c */
+int xxboot ( struct bootparam * );
+
+/* in sys/xxprobe.c */
+int xxprobe ( struct saioreq * );
 
 /* in sun3/space.s */
 int getsb ( int, int );

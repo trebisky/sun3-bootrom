@@ -1,4 +1,3 @@
-
 /*
  * @(#)boot.c 1.1 86/09/27
  * Copyright (c) 1986 by Sun Microsystems, Inc.
@@ -10,6 +9,7 @@
 #include "../dev/saio.h"
 #include "../h/eeprom.h"
 #include "../sun3/cpu.addrs.h"
+
 #ifdef  SIRIUS
 #include "../h/enable.h"
 #include "../h/globram.h"
@@ -26,6 +26,25 @@ static char * puthex ( char *, int );
  * nullsys is used as the probe routine address if the device is
  * not to be booted by default.
  */
+
+/* tjt - a much pruned list for the 3/160 */
+extern struct boottab sddriver;         /* SCSI disk driver */
+extern struct boottab stdriver;         /* SCSI tape driver */
+extern struct boottab ledriver;         /* AMD Ethernet driver */
+extern struct boottab iedriver;         /* Intel Ethernet driver */
+
+struct boottab *(boottab[]) = {
+        &sddriver,
+        &stdriver,
+#ifdef M25
+        &ledriver,
+#else M25
+        &iedriver,
+#endif 
+        0,
+};
+
+#ifdef ORIGINAL
 extern struct boottab xddriver;         /* VME Xylogics disk driver */
 extern struct boottab xydriver;         /* Xylogics disk driver */
 
@@ -91,6 +110,7 @@ struct boottab *(boottab[]) = {
 #endif
         0,
 };
+#endif  /* ORIGINAL */
 
 #define skipblank(p)    { while (*(p) == ' ') (p)++; }
 
@@ -285,7 +305,7 @@ puthex ( char *p, int n )
 }
  
 int
-nullsys ( void )
+nullsys ( void * )
 {
         return (-1);
 }

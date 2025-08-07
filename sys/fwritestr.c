@@ -19,6 +19,7 @@
 #include "../sun3/cpu.addrs.h"
 #include "../h/enable.h"
 #include "../h/keyboard.h"
+#include "../dev/saio.h"
 
 #include "../h/protos.h"
 
@@ -32,6 +33,9 @@ static void rectfill ( int, int, int, int );
 static void cursorcomp ( void );
 static void screencomp ( void );
 static void blinkscreen ( void );
+
+// We can't find this anywhere !!
+// prom_mem_batchrop(fbpos, f, &charpos, 1);
 
 #ifndef GRUMMAN
 

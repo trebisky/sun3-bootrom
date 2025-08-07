@@ -10,6 +10,7 @@
 
 #include "../sun3/sunmon.h"
 #include "../h/globram.h"
+#include "../dev/saio.h"
 
 #include "../h/protos.h"
 
