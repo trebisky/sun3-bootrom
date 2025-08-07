@@ -59,9 +59,9 @@ struct saioreq {
  * Ethernet interface descriptor
  */
 struct saif {
-        int     (*sif_xmit) ( void *, char *, int);      /* transmit packet */
-        int     (*sif_poll) ( void *, char * );          /* check for and receive packet */
-        int     (*sif_reset) ( void *, void * );          /* reset interface */
+        int     (*sif_xmit) ( void *, char *, int);     /* transmit packet */
+        int     (*sif_poll) ( void *, char * );         /* check for and receive packet */
+        int     (*sif_reset) ( void * );          		/* reset interface */
 };
 
 /*

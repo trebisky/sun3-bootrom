@@ -156,8 +156,6 @@ int tftpboot ( struct bootparam * );
 /* in sys/xxprobe.c */
 int xxprobe ( struct saioreq * );
 
-/* ... */
-
 /* in sun3/space.s */
 int getsb ( int, int );
 int getsw ( int, int );
@@ -172,5 +170,13 @@ void vac_ctxflush ( int );
 void vac_pageflush ( int, int );
 void vac_segflush ( int, int );
 void cache_dei ( int );
+
+/* in sys/inet.c */
+// all prototypes in tftp.c
+
+/* in sys/tftp.c */
+int etheropen ( struct saioreq * );
+int etherstrategy ( struct saioreq *, int );
+int tftpload ( struct saioreq * );
 
 /* THE END */

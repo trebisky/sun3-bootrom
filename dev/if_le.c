@@ -42,6 +42,9 @@ static  char sccsid[] = "@(#)if_le.c 1.1 86/09/27 Copyr 1986 Sun Micro";
 #include "../h/idprom.h"
 #include "../sun3/cpu.map.h"
 
+// in sys/inet.c
+void myetheraddr ( struct ether_addr * );
+
 /* Determine whether we are PROM or not. */
 /* #define PROM 1 */
 

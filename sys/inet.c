@@ -1,4 +1,3 @@
-
 /*
  * @(#)inet.c 1.1 86/09/27
  * Copyright (c) 1986 by Sun Microsystems, Inc.
@@ -19,6 +18,10 @@
 #include "../h/sunromvec.h"
 #include "../h/idprom.h"
 
+#include "../h/cpu.map.h"
+#include "../h/pixrect.h"
+#include "../h/protos.h"
+
 #define millitime() (*romp->v_nmiclock)
 
 struct ether_addr etherbroadcastaddr = { 
@@ -34,11 +37,22 @@ struct arp_packet {
 
 #define WAITCNT 2       /* 4 seconds before bitching about arp/revarp */
 
+static void ether_print( struct ether_addr * );
+static int ipcksum ( caddr_t, int );
+static void arp ( struct saioreq *, struct sainet *, char * );
+static void revarp ( struct saioreq *, struct sainet *, char * );
+static void comarp ( struct saioreq *, struct sainet *, struct arp_packet *, char * );
+static int in_lnaof ( struct in_addr );
+
+// also used by tftp.c
+void inet_print ( struct in_addr );
+
 /*
  * Fetch our Ethernet address from the ID prom
+ * tjt - used by ie and le drivers
  */
-myetheraddr(ea)
-        struct ether_addr *ea;
+void
+myetheraddr ( struct ether_addr *ea )
 {
         struct idprom id;
 
@@ -54,11 +68,11 @@ myetheraddr(ea)
  * Find out our Ethernet address and call Reverse ARP
  * to find out our Internet address
  * Set the ARP cache to the broadcast host
+ *
+ * tjt - only called from tftp.c
  */
-inet_init(sip, sain, tmpbuf)
-        register struct saioreq *sip;
-        register struct sainet *sain;
-        char *tmpbuf;
+void
+inet_init ( struct saioreq *sip, struct sainet *sain, char *tmpbuf )
 {
         myetheraddr(&sain->sain_myether);
         sain->sain_hisaddr.s_addr = 0;
@@ -70,12 +84,10 @@ inet_init(sip, sain, tmpbuf)
 /*
  * Output an IP packet
  * Cause ARP to be invoked if necessary
+ * -- called from tftp.c
  */
-ip_output(sip, buf, len, sain, tmpbuf)
-        register struct saioreq *sip;
-        caddr_t buf, tmpbuf;
-        short len;
-        register struct sainet *sain;
+int
+ip_output ( struct saioreq *sip, caddr_t buf, int len, struct sainet *sain, caddr_t tmpbuf )
 {
         register struct ether_header *eh;
         register struct ip *ip;
@@ -103,10 +115,8 @@ ip_output(sip, buf, len, sain, tmpbuf)
  * that wish to know about us.
  * Returns a length for any IP packet addressed to us, 0 otherwise.
  */
-ip_input(sip, buf, sain)
-        register struct saioreq *sip;
-        caddr_t buf;
-        register struct sainet *sain;
+int
+ip_input ( struct saioreq *sip, caddr_t buf, struct sainet *sain )
 {
         register short len;
         register struct ether_header *eh;
@@ -151,10 +161,8 @@ ip_input(sip, buf, sain)
  * Broadcasts to determine Ethernet address given IP address
  * See RFC 826
  */
-arp(sip, sain, tmpbuf)
-        register struct saioreq *sip;
-        register struct sainet *sain;
-        char *tmpbuf;
+static void
+arp ( struct saioreq *sip, struct sainet *sain, char *tmpbuf)
 {
         struct arp_packet out;
 
@@ -175,10 +183,8 @@ arp(sip, sain, tmpbuf)
  * Determine our Internet address given our Ethernet address
  * See RFC 903
  */
-revarp(sip, sain, tmpbuf)
-        register struct saioreq *sip;
-        register struct sainet *sain;
-        char *tmpbuf;
+static void
+revarp ( struct saioreq *sip, struct sainet *sain, char *tmpbuf)
 {
         struct arp_packet out;
 
@@ -194,11 +200,8 @@ revarp(sip, sain, tmpbuf)
  * Broadcast the packet and wait for the right response.
  * Fills in *sain with the results
  */
-comarp(sip, sain, out, tmpbuf)
-        register struct saioreq *sip;
-        register struct sainet *sain;
-        register struct arp_packet *out;
-        char *tmpbuf;
+static void
+comarp ( struct saioreq *sip, struct sainet *sain, struct arp_packet *out, char *tmpbuf )
 {
         register struct arp_packet *in = (struct arp_packet *)tmpbuf;
         register int e, count, time, feedback,len, delay = 2;
@@ -283,8 +286,8 @@ comarp(sip, sain, out, tmpbuf)
 /*
  * Return the host portion of an internet address.
  */
-in_lnaof(in)
-        struct in_addr in;
+static int
+in_lnaof ( struct in_addr in )
 {
         register u_long i = ntohl(in.s_addr);
 
@@ -300,9 +303,8 @@ in_lnaof(in)
  * Compute one's complement checksum
  * for IP packet headers 
  */
-ipcksum(cp, count)
-        caddr_t cp;
-        register unsigned short count;
+static int
+ipcksum ( caddr_t cp, int count )
 {
         register unsigned short *sp = (unsigned short *)cp;
         register unsigned long  sum = 0;
@@ -319,8 +321,10 @@ ipcksum(cp, count)
         return (~sum);
 }
 
-inet_print(s)
-        struct in_addr s;
+// tjt - used by tftp.c
+
+void
+inet_print ( struct in_addr s )
 {
         int     len = 2;
 
@@ -334,10 +338,12 @@ inet_print(s)
         printf("\n");
 }
 
-ether_print(ea)
-        struct ether_addr *ea;
+static void
+ether_print ( struct ether_addr *ea )
 {
         register u_char *p = &ea->ether_addr_octet[0];
 
         printf("%x:%x:%x:%x:%x:%x\n", p[0], p[1], p[2], p[3], p[4], p[5]);
 }
+
+/* THE END */

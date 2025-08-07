@@ -22,6 +22,11 @@
 #undef MAX
 #include "../h/tftp.h"
 
+void inet_print ( struct in_addr );
+void inet_init ( struct saioreq *, struct sainet *, char * );
+int ip_output ( struct saioreq *, caddr_t, int, struct sainet *, caddr_t );
+int ip_input ( struct saioreq *, caddr_t, struct sainet * );
+
 
 char    *tftp_errs[] = {
         "not defined",
@@ -64,8 +69,9 @@ struct tftpglob {
 
 #define REXMIT_MSEC     4000    /* 4 seconds between retransmits */
 
-etheropen(sip)
-        register struct saioreq *sip;
+/* Called by both ie and le driver */
+int
+etheropen ( struct saioreq *sip )
 {
         register struct tftpglob *tf = TFTPBASE;
 
@@ -74,16 +80,17 @@ etheropen(sip)
         return (0);
 }
 
-etherstrategy(sip, rw)
-        register struct saioreq *sip;
-        int rw;
+/* Called by both ie and le driver */
+int
+etherstrategy ( struct saioreq *sip, int rw )
 {
         printf("tftp: random access attempted - code error.\n");
         return (-1);
 }
 
-tftpload(sip)
-        register struct saioreq *sip;
+/* Called by xxboot.c */
+int
+tftpload ( struct saioreq *sip )
 {
         register struct tftpglob *tf = TFTPBASE;
         register struct tftp_pack *out = &tf->tf_out;
@@ -237,3 +244,4 @@ top:
         return (-1);
 }
 
+/* THE END */

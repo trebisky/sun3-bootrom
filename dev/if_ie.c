@@ -44,6 +44,10 @@
 #include "../h/idprom.h"
 #include "../sun3/cpu.map.h"    
 
+// in sys/inet.c
+void myetheraddr ( struct ether_addr * );
+
+
 #define IEVVSIZ         1024            /* # of pages in page map */
 #define IEPHYMEMSIZ     (8*1024)
 #define IEVIRMEMSIZ     (8*1024)

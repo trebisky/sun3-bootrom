@@ -65,14 +65,14 @@ struct	ip_timestamp {
 	u_char	ipt_len;		/* size of structure (variable) */
 	u_char	ipt_ptr;		/* index of current entry */
 	u_char	ipt_flg:4,		/* flags, see below */
-		ipt_oflw:4;		/* overflow counter */
+		ipt_oflw:4;			/* overflow counter */
 	union {
 		n_long	ipt_time[1];
 		struct	ipt_ta {
 			struct in_addr ipt_addr;
 			n_long ipt_time;
 		} ipt_ta[1];
-	}
+	};
 };
 
 /* flag bits for ipt_flg */
