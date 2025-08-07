@@ -1,1 +1,0 @@
-int scdoit ( struct scsi_cdb *cdb, struct scsi_scb *scb, struct saioreq *sip );
