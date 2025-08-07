@@ -188,7 +188,7 @@ struct boottab {
 	int	(*b_boot) ( struct bootparam * );		/* boot(bp) --> -1 or start address */
 	int	(*b_open) ( void * );		/* open(iobp) --> -1 or 0 */
 	int	(*b_close) ( void * );		/* close(iobp) --> -1 or 0 */
-	int	(*b_strategy) ();	/* strategy(iobp,rw) --> -1 or 0 */
+	int	(*b_strategy) ( void *, int );	/* strategy(iobp,rw) --> -1 or 0 */
 	char	*b_desc;		/* Printable string describing dev */
 	struct devinfo *b_devinfo;	/* Info to configure device */
 };

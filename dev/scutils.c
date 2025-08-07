@@ -41,7 +41,7 @@ struct cg2statusreg zero_statreg = {0};
    ====================================================================== */
 
 int
-init_scolor()
+init_scolor ( void )
 {
         register unsigned short *cmp, *endp;
         register unsigned short *reg = TEMP_PAGE;
@@ -106,3 +106,4 @@ init_scolor()
         return result;
 }
 
+/* THE END */

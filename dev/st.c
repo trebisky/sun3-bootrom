@@ -14,6 +14,16 @@
 #include "../dev/streg.h"
 #include "../h/idprom.h"
 
+#include "../h/cpu.map.h"
+#include "../h/pixrect.h"
+#include "../h/protos.h"
+
+static int stopen ( struct saioreq * );
+static int stclose ( struct saioreq * );
+static int ststrategy ( struct saioreq *, int  );
+static int st_probe ( struct saioreq * );
+static int stcmd ( int, struct saioreq *, int );
+
 /*
  * Driver for Sysgen SC4000 and EMULEX MT-02 SCSI tape controllers.
  * Supports qic11 format only.
@@ -23,17 +33,13 @@
 // in sc.c
 int scdoit ( struct scsi_cdb *cdb, struct scsi_scb *scb, struct saioreq *sip );
 
-#ifdef SUN3
-extern int sidoit();
-#endif
-
 #define min(a,b)        ((a)<(b)? (a): (b))
 
 #define NSD 1
 unsigned long staddrs[NSD] = { 0x0, };
 
-extern int xxprobe(), ttboot();
-int stopen(), stclose(), ststrategy();
+// extern int xxprobe(), ttboot();
+// int stopen(), stclose(), ststrategy();
 
 
 struct stparam {
@@ -82,8 +88,12 @@ struct devinfo stinfo = {
 };
 
 struct boottab stdriver = {
-        "st",   xxprobe, ttboot,
-        stopen, stclose, ststrategy,
+        "st",
+		(void *) xxprobe,
+		(void *) ttboot,
+        (void *) stopen,
+		(void *) stclose,
+		(void *) ststrategy,
         "st: SCSI tape", &stinfo
 };
 
@@ -98,8 +108,8 @@ struct boottab stdriver = {
  * Determine type of host adaptor interface, si or sc.
  * Returns 1 if si host adaptor and 0 if sc host adaptor.
  */
-st_probe(sip)
-        struct saioreq *sip;
+static int
+st_probe ( struct saioreq *sip )
 {
         if (siprobe(sip)) {
                 return (1);
@@ -112,9 +122,8 @@ st_probe(sip)
 /*
  * Open the SCSI Tape controller
  */
-int
-stopen(sip)
-        register struct saioreq *sip;
+static int
+stopen ( struct saioreq *sip )
 {
         register struct stparam *stp;
         register int r;
@@ -282,8 +291,8 @@ stopen(sip)
 /*
  * Close the tape drive.
  */
-stclose(sip)
-        register struct saioreq *sip;
+static int
+stclose ( struct saioreq *sip )
 {
         register struct stparam *stp;
 
@@ -311,10 +320,8 @@ stclose(sip)
 /*
  * Perform a read or write of the SCSI tape.
  */
-int
-ststrategy(sip, rw)
-        register struct saioreq *sip;
-        int rw;
+static int
+ststrategy ( struct saioreq *sip, int rw )
 {
         register struct stparam *stp;
 
@@ -329,11 +336,8 @@ ststrategy(sip, rw)
 /*
  * Execute a scsi tape command
  */
-int
-stcmd(cmd, sip, errprint)
-        int cmd;
-        register struct saioreq *sip;
-        int errprint;
+static int
+stcmd ( int cmd, struct saioreq *sip, int errprint )
 {
         register struct st_emulex_mspl *mode;
         register int r, i, c;
@@ -400,7 +404,7 @@ stcmd(cmd, sip, errprint)
 MODE:
         case SC_MODE_SELECT:
                 mode = (struct st_emulex_mspl *)STSBUF;
-                bzero(mode, sizeof(*mode));
+                bzero ( (char *) mode, sizeof(*mode));
                 mode->hdr.bufm = 1;
                 mode->bd.density = qic;
                 mode->hdr.bd_len = EM_MS_BD_LEN;

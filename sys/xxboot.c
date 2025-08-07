@@ -13,13 +13,12 @@
 #include "../h/bootparam.h"
 #include "../h/sunromvec.h"
 
-extern char *devalloc();
-extern char *resalloc();
-extern int tftpboot();
+#include "../h/cpu.map.h"
+#include "../h/pixrect.h"
+#include "../h/protos.h"
 
 int
-xxboot(bp)
-        register struct bootparam *bp;
+xxboot ( struct bootparam *bp )
 {
         struct saioreq req;
         int blkno;
@@ -46,8 +45,7 @@ xxboot(bp)
 }
 
 int
-devopen(sip)
-        register struct saioreq *sip;
+devopen ( struct saioreq *sip )
 {
         register struct devinfo *dp;
         char *a;
@@ -61,7 +59,7 @@ devopen(sip)
                 }
                 /* Map in device itself */
                 if (dp->d_devbytes) {
-                        a = devalloc(dp->d_devtype, sip->si_ctlr,
+                        a = devalloc ( dp->d_devtype, (char *) sip->si_ctlr,
                                 dp->d_devbytes);
                         if (!a)
                                 return (-1);
@@ -88,15 +86,15 @@ devopen(sip)
  * FIXME, prom HAS no resources!!!
  */
 int
-devclose(sip)
-        struct saioreq *sip;
+devclose ( struct saioreq *sip )
 {
         return ((*sip->si_boottab->b_close)(sip));
 }
 
+// tape drivers use this (including st.c)
+
 int
-ttboot(bp)
-        register struct bootparam *bp;
+ttboot ( struct bootparam *bp )
 {
         struct saioreq req;
         int blkno;
@@ -128,8 +126,7 @@ ttboot(bp)
 }
 
 int
-tftpboot(bp)
-        register struct bootparam *bp;
+tftpboot ( struct bootparam *bp )
 {
         struct saioreq req;
         int blkno;
@@ -149,3 +146,5 @@ tftpboot(bp)
                 return LOADADDR;
         }
 }
+
+/* THE END */

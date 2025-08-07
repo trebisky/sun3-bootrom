@@ -16,11 +16,14 @@
 #include "../h/setbus.h"
 #include "../dev/saio.h"
 
-extern int devopen();
+#include "../h/cpu.map.h"
+#include "../h/pixrect.h"
+#include "../h/protos.h"
+
+// extern int devopen();
 
 int
-xxprobe(sip)
-        struct saioreq *sip;
+xxprobe ( struct saioreq *sip )
 {
         int i, r;
         bus_buf busbuf[4];
@@ -39,3 +42,5 @@ xxprobe(sip)
         }
         return -1;              /* Not found */
 }
+
+/* THE END */

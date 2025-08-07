@@ -37,11 +37,10 @@ OBJS = romvec.o trap.o mapmem.o reset.o cpu.map.o \
 	boot.o monalloc.o common.o blts.o \
 	expand.o finit.o fwritestr.o gallmash.o mem_grab.o \
 	if_ie.o \
-	sc.o sd.o \
-	space.o
+	sc.o sd.o xxboot.o xxprobe.o \
+	scutils.o space.o st.o
 
-XXX = xxboot.o xxprobe.o scutils.o space.o st.o \
-    inet.o tftp.o diagmenus.o machdep.o cmp.o patt.o db.o si.o
+XXX = inet.o tftp.o diagmenus.o machdep.o cmp.o patt.o db.o si.o
 
 # These are devices we never intend to deal with
 ALT_OBJS = xy.o tm.o xt.o xd.o
@@ -159,6 +158,20 @@ sc.o: ../dev/sc.c
 
 sd.o: ../dev/sd.c
 	$(CC) -c $<
+
+xxboot.o: ../sys/xxboot.c
+	$(CC) -c $<
+
+xxprobe.o: ../sys/xxprobe.c
+	$(CC) -c $<
+
+# used only by finit.c -- sets up color framebuffer
+scutils.o: ../dev/scutils.c
+	$(CC) -c $<
+
+st.o: ../dev/st.c
+	$(CC) -c $<
+
 
 # -------
 
