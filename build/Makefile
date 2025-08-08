@@ -188,7 +188,8 @@ diagmenus.o: ../diag/diagmenus.c
 	$(CC) -c $<
 
 machdep.o: ../sun3/machdep.c
-	$(CC) -c $<
+	$(CC) -O -c $<
+	#make dump
 
 # -----------------------------------------------------
 

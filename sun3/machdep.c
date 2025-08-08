@@ -69,7 +69,7 @@ register u_long                 size, *addr;
         return(size);
 }
 
-u_long
+void
 setfc3(size,addr,entry)
 register u_long                 size, *addr,entry;
 {
@@ -88,22 +88,51 @@ u_long
 getfc3 ( u_long size, char *addr )
 {
 		u_long rv;
-		asm volatile ( "moveq #3, %d0" );
-		asm volatile ( "movec %d0, %dfc" );
-		// MOVSB(a5@, d7);
-		// A O I C
-		// asm volatile("movq %%cr8,%0" : "=r" (val));
-		// asm volatile("movq %0,%%cr8" :: "r" (val) : "memory");
-		asm volatile ( "movel #5, %0" : "=d" (rv) );
-		// asm ( "movesb %0, %1@" : "=r" (rv) : "r" (addr) );
+
+        // asm volatile ( "moveq #3, %d0; \
+        //                 movec %d0, %dfc" );
+
+		// This works, but I shouldn't have to put the useless "r" constraint in.
+		// but it complains if the field is empty
+        asm volatile ( "moveq #3, %%d0; \
+                        movec %%d0, %%dfc" : : "r" (size) : "%d0" );
+
+        if ( size == sizeof(u_char) ) {
+			asm volatile ( "movesb %1, %0" : "=r" (rv) : "m" (addr) );
+			return rv;
+		}
+
+        if ( size == sizeof(u_short) ) {
+			asm volatile ( "movesw %1, %0" : "=r" (rv) : "m" (addr) );
+			return rv;
+		}
+
+		asm volatile ( "movesl %1, %0" : "=r" (rv) : "m" (addr) );
 		return rv;
+}
+
+void
+setfc3 ( u_long size, char *addr, u_long entry)
+{
+        asm volatile ( "moveq #3, %%d0; \
+                        movec %%d0, %%dfc" : : "r" (size) : "%d0" );
+
+        if ( size == sizeof(u_char) ) {
+			asm volatile ( "movesb %0, %1" : : "r" (entry), "m" (addr) );
+		}
+
+        if ( size == sizeof(u_short) ) {
+			asm volatile ( "movesw %0, %1" : : "r" (entry), "m" (addr) );
+		}
+
+		asm volatile ( "movesl %0, %1" : : "r" (entry), "m" (addr) );
 }
 
 /* Never used */
 cx_size
 getcxreg ( void )
 {
-        return (cx_size) getfc3 ( sizeof(cx_size), (char *)CX_OFF);
+        return (cx_size) getfc3 ( sizeof(cx_size), (char *) CX_OFF);
 }
 
 /* Never used */
@@ -112,7 +141,7 @@ setcxreg ( cx_size entry)
 {
         register cx_size ret = getcxreg();
 
-        setfc3(sizeof(cx_size), CX_OFF, entry);
+        setfc3(sizeof(cx_size), (char *) CX_OFF, entry);
 
         return(ret);
 }
@@ -132,7 +161,7 @@ setsmreg ( u_long addr, sm_size entry)
         register sm_size ret = getsmreg(addr);
 
         addr = ((addr & ~SEGMASK) + SM_OFF) & ADDRMASK;
-        setfc3(sizeof(sm_size), addr, entry);
+        setfc3(sizeof(sm_size), (char *) addr, entry);
 
         return(ret);
 }
@@ -152,7 +181,7 @@ setpgreg ( u_long addr, pg_size entry )
         register pg_size ret = getpgreg(addr);
 
         addr = ((addr & ~PAGEMASK) + PG_OFF) & ADDRMASK;
-        setfc3(sizeof(pg_size), addr, entry);
+        setfc3(sizeof(pg_size), (char *) addr, entry);
 
         return(ret);
 }
@@ -183,7 +212,7 @@ map ( u_long virt,  u_long size, u_long phys, enum pm_type space )
 berr_size
 getberrreg()
 {
-        return (berr_size) getfc3(sizeof(berr_size), (char * )BERR_OFF);
+        return (berr_size) getfc3(sizeof(berr_size), (char * ) BERR_OFF);
 }
 #endif
 
