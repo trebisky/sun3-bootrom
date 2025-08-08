@@ -18,6 +18,8 @@
 #include "../h/pixrect.h"
 #include "../h/protos.h"
 
+int sidoit ( struct scsi_cdb *, struct scsi_scb *, struct saioreq * );
+
 static int stopen ( struct saioreq * );
 static int stclose ( struct saioreq * );
 static int ststrategy ( struct saioreq *, int  );

@@ -2283,7 +2283,7 @@ enbl_ecc:
         btst    #DIAGSW,d1              | is diag switch set?
         beq     100f                    | if not, proceed to Unix boot
         movw    #EVEC_BOOT_EXEC,d3      | Fake Boot Diag Exec fvo
-        lea     _menu_msg,a4            | "Optional Tests
+        lea     menu_msg,a4            | "Optional Tests
         lea     55f,a6                  | Menu"
         jra     print$
 55:
@@ -2379,12 +2379,12 @@ enbl_ecc:
         movl    a5,a6                   | restore memory size
         jra     _reset_common           | return to trap.s module
 
-        .globl  _mod3write
+        .globl  mod3write
 |
 |       _mod3write: Write the modulo 3 pattern test from address a0 to a1.
 |                   Start with pattern in d1, and return ending patten in d0.
 |
-_mod3write:
+mod3write:
         movl    sp@(4), a0              | Get starting address
         movl    sp@(8), a1              | Get ending address
         movl    sp@(12), d1             | Get starting pattern
@@ -2404,12 +2404,12 @@ _mod3write:
 2:
         rts
 
-        .globl  _mod3read
+        .globl  mod3read
 | 
 |       _mod3read: Read the modulo 3 pattern test from address a0 to a1. 
 |                  Start with pattern in d1, and return ending patten in d0. 
 |
-_mod3read:
+mod3read:
         movl    sp@(4), a0              | Get starting address
         movl    sp@(8), a1              | Get ending address
         movl    sp@(12), d4             | Get starting pattern

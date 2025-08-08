@@ -492,7 +492,7 @@ Trykey:
 
         moveml  #0x00C0,sp@-            | Save a0, a1.  d0&d1 already saved.
         movl    d0,sp@-                 | Push it as argument to keypress().
-        jbsr    _keypress
+        jbsr    keypress
         addql   #4,sp
         moveml  sp@+,#0x0300            | Restore saved registers
         tstl    d0                      | See if keypress() wants us to abort.

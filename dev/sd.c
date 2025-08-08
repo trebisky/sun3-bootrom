@@ -23,6 +23,8 @@
 
 #include "../h/protos.h"
 
+int sidoit ( struct scsi_cdb *, struct scsi_scb *, struct saioreq * );
+
 static int sdspin ( struct saioreq *, int );
 static int sdcmd ( int , struct saioreq *, int );
 static void sd_pr_sense ( char *, int );

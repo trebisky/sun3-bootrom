@@ -11,10 +11,12 @@
 |
 
         .text
-        .globl  _bcmp, _wcmp, _lcmp
 
-        .globl  bdb_unpack, wdb_unpack, ldb_unpack
-        .globl  bdb_pack, wdb_pack, ldb_pack
+        //.globl  _bcmp, _wcmp, _lcmp
+
+		// what are these?
+        //.globl  bdb_unpack, wdb_unpack, ldb_unpack
+        //.globl  bdb_pack, wdb_pack, ldb_pack
 
 cmpstart:
         movl    sp@+, a1
@@ -31,29 +33,34 @@ cmpend:
         unlk    a6
         rts
 
-_bcmp:
+.globl bcmp
+bcmp:
         jsr     cmpstart                | set up cmp registers
         jsr     bdb_unpack              | get d0 setup for dbra
-1$:     cmpmb   a0@+, a1@+              | compare
-        dbne    d0, 1$                  | decrement until not equal
-        dbne    d1, 1$                  | decrement until not equal
+1:      cmpmb   a0@+, a1@+              | compare
+        dbne    d0, 1b                  | decrement until not equal
+        dbne    d1, 1b                  | decrement until not equal
         jsr     bdb_pack                | repack db count
         jra     cmpend                  | do cleanup
 
-_wcmp:
+.globl wcmp
+wcmp:
         jsr     cmpstart                | set up cmp registers
         jsr     wdb_unpack              | get d0 setup for dbra
-1$:     cmpmw   a0@+, a1@+              | compare
-        dbne    d0, 1$                  | decrement until not equal
-        dbne    d1, 1$                  | decrement until not equal
+1:      cmpmw   a0@+, a1@+              | compare
+        dbne    d0, 1b                  | decrement until not equal
+        dbne    d1, 1b                  | decrement until not equal
         jsr     wdb_pack                | repack db count
         jra     cmpend                  | do cleanup
 
-_lcmp:
+.globl lcmp
+lcmp:
         jsr     cmpstart                | set up cmp registers
         jsr     ldb_unpack              | get d0 setup for dbra
-1$:     cmpml   a0@+, a1@+              | compare
-        dbne    d0, 1$                  | decrement until not equal
-        dbne    d1, 1$                  | decrement until not equal
+1:      cmpml   a0@+, a1@+              | compare
+        dbne    d0, 1b                  | decrement until not equal
+        dbne    d1, 1b                  | decrement until not equal
         jsr     ldb_pack                | repack db count
         jra     cmpend                  | do cleanup
+
+| THE END

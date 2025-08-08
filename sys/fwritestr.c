@@ -34,8 +34,15 @@ static void cursorcomp ( void );
 static void screencomp ( void );
 static void blinkscreen ( void );
 
+// tjt
 // We can't find this anywhere !!
 // prom_mem_batchrop(fbpos, f, &charpos, 1);
+// We hack in a stub to satisfy the link.
+
+void
+prom_mem_batchrop ( struct pr_prpos a1, int a2, struct pr_prpos *a3, int a4 )
+{
+}
 
 #ifndef GRUMMAN
 

@@ -42,7 +42,6 @@ static int ipcksum ( caddr_t, int );
 static void arp ( struct saioreq *, struct sainet *, char * );
 static void revarp ( struct saioreq *, struct sainet *, char * );
 static void comarp ( struct saioreq *, struct sainet *, struct arp_packet *, char * );
-static int in_lnaof ( struct in_addr );
 
 // also used by tftp.c
 void inet_print ( struct in_addr );
@@ -286,7 +285,8 @@ comarp ( struct saioreq *sip, struct sainet *sain, struct arp_packet *out, char 
 /*
  * Return the host portion of an internet address.
  */
-static int
+// tjt -- called by tftp.c
+int
 in_lnaof ( struct in_addr in )
 {
         register u_long i = ntohl(in.s_addr);

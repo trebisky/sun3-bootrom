@@ -1,8 +1,3 @@
-
-#ifndef lint
-/* static       char sccsid[] = "@(#)si.c 1.1 86/09/27 Copyr 1986 Sun Micro"; */
-#endif
-
 /*
  * Copyright (c) 1986 by Sun Microsystems, Inc.
  * 
@@ -22,6 +17,17 @@
 #include "../dev/saio.h"
 #include "../h/sunromvec.h"
 #include "../h/idprom.h"
+
+#include "../h/cpu.map.h"
+#include "../h/pixrect.h"
+#include "../h/protos.h"
+
+static void si_reset ( struct scsi_si_reg *, int );
+static int si_getbyte ( struct scsi_si_reg *, u_short );
+static int si_putbyte ( struct scsi_si_reg *, u_short, u_char *, int );
+static int si_wait ( u_short *, u_short, int );
+static int si_sbc_wait ( caddr_t reg, u_char cond, int set );
+static void si_dma_cleanup ( struct scsi_si_reg *, int  );
 
 /*
  * Low-level routines common to all devices on the SCSI bus.
@@ -50,14 +56,16 @@ struct sidma {
 /*
  * The interfaces we export
  */
-extern char *devalloc();
-extern char *resalloc();
-extern int nullsys();
-int siopen();
+// extern char *devalloc();
+// extern char *resalloc();
+// extern int nullsys();
+// int siopen();
+
+static int siopen ( struct saioreq * );
 
 struct boottab sidriver =
-        {"sd",  nullsys,        nullsys,        siopen,         nullsys,
-                nullsys,        "",     0};
+        {"sd",  (void *) nullsys,        (void *) nullsys,        (void *) siopen,         (void *) nullsys,
+                (void *) nullsys,        "",     0};
 
 
 #define SI_VME_BASE     0x200000
@@ -68,9 +76,9 @@ struct boottab sidriver =
  * Probe for si host adaptor interface. 
  * Return 1 if found one, 0 otherwise.
  */
+// tjt - called from sd.c
 int
-siprobe(sip)
-        register struct saioreq *sip;
+siprobe ( struct saioreq *sip )
 {
         register struct scsi_si_reg *sir;
         struct idprom id;
@@ -106,7 +114,7 @@ siprobe(sip)
         }
 
         /* now map it in */
-        if ((sir = (struct scsi_si_reg *)devalloc(space, ctlr, 
+        if ((sir = (struct scsi_si_reg *) devalloc(space, (char *) ctlr, 
             sizeof(struct scsi_si_reg))) == 0) {
                 return (0);
         }
@@ -128,9 +136,8 @@ siprobe(sip)
 /*
  * Open the SCSI host adapter.
  */
-int
-siopen(sip)
-        register struct saioreq *sip;
+static int
+siopen ( struct saioreq *sip )
 {
         register struct scsi_si_reg *sir;
         struct idprom id;
@@ -165,7 +172,7 @@ siopen(sip)
         }
 
         /* now map it in */
-        sip->si_devaddr = devalloc(space, sip->si_ctlr, 
+        sip->si_devaddr = devalloc (space, (char *) sip->si_ctlr, 
             sizeof(struct scsi_si_reg));
         if (sip->si_devaddr == 0) {
                 return (-1);
@@ -209,11 +216,10 @@ siopen(sip)
  * to allow host adap to switch.
  * Must pass cdb, scb in sip somewhere...
  */
+
+// tjt - called from sd.c and st.c
 int
-sidoit(cdb, scb, sip)
-        struct scsi_cdb *cdb;
-        struct scsi_scb *scb;
-        register struct saioreq *sip;
+sidoit ( struct scsi_cdb *cdb, struct scsi_scb *scb, struct saioreq *sip )
 {
         register struct scsi_si_reg *sir;
         register char *cp;
@@ -474,9 +480,8 @@ si_ob_dma_setup(sir, udct, cmd, cc, ma)
 /*
  * Reset some register information after a dma operation.
  */
-si_dma_cleanup(sir, ob)
-        register struct scsi_si_reg *sir;
-        register int ob;
+static void
+si_dma_cleanup ( struct scsi_si_reg *sir, int ob )
 {
 #ifdef M25
         sir->udc_raddr = UDC_ADR_COMMAND;
@@ -494,10 +499,8 @@ si_dma_cleanup(sir, ob)
 /*
  * Wait for a condition to be (de)asserted.
  */
-si_wait(reg, cond, set)
-        register u_short *reg;
-        register u_short cond;
-        register int set;
+static int
+si_wait ( u_short *reg, u_short cond, int set )
 {
         register int i;
         register u_short regval;
@@ -518,10 +521,8 @@ si_wait(reg, cond, set)
 /*
  * Wait for a condition to be (de)asserted on the scsi bus.
  */
-si_sbc_wait(reg, cond, set)
-        register caddr_t reg;
-        register u_char cond;
-        register int set;
+static int
+si_sbc_wait ( caddr_t reg, u_char cond, int set )
 {
         register int i;
         register u_char regval;
@@ -542,11 +543,8 @@ si_sbc_wait(reg, cond, set)
 /*
  * Put a byte onto the scsi bus.
  */
-si_putbyte(sir, phase, data, numbytes)
-        register struct scsi_si_reg *sir;
-        register u_short phase;
-        register u_char *data;
-        register int numbytes;
+static int
+si_putbyte ( struct scsi_si_reg *sir, u_short phase, u_char *data, int numbytes )
 {
         register int i;
 
@@ -593,9 +591,8 @@ si_putbyte(sir, phase, data, numbytes)
 /*
  * Get a byte from the scsi bus.
  */
-si_getbyte(sir, phase)
-        register struct scsi_si_reg *sir;
-        register u_short phase;
+static int
+si_getbyte ( struct scsi_si_reg *sir, u_short phase )
 {
         register u_char data;
         register int i;
@@ -650,9 +647,8 @@ si_getbyte(sir, phase)
 /*
  * Reset SCSI control logic.
  */
-si_reset(sir, ob)
-        register struct scsi_si_reg *sir;
-        register int ob;
+static void
+si_reset ( struct scsi_si_reg *sir, int ob )
 {
         register u_char junk;
 
@@ -674,3 +670,5 @@ si_reset(sir, ob)
         DELAY(10000000);
 }
 #endif SUN3
+
+/* THE END */

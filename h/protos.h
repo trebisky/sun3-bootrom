@@ -187,6 +187,12 @@ int ports_test ( int );
 int ether_test ( void );
 int amd_ether_test ( void );
 int boot_test ( char * );
+int get_cmd ( void );
+
+/* in dev/si.c */
+int siprobe ( struct saioreq * );
+// int sidoit ( struct scsi_cdb *, struct scsi_scb *, struct saioreq * );
+
 
 
 /* THE END */

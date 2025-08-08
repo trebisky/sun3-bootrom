@@ -21,7 +21,6 @@
 
         .globl  bdb_unpack, wdb_unpack, ldb_unpack
         .globl  bdb_pack, wdb_pack, ldb_pack
-        .globl  _obs_value, _exp_value
 
 ldb_unpack:
         lsrl    #1, d0
@@ -50,8 +49,11 @@ bdb_pack:
 
 |       .asciz  "@(#)db.s 1.5 1/12/85 Copyright Sun Micro"
 |       .even
+
+        .globl  obs_value, exp_value
+
         .data
-_obs_value:
+obs_value:
         .long   0
-_exp_value:
+exp_value:
         .long   0

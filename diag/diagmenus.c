@@ -36,7 +36,6 @@ static int scc_errmsg ( char *, char, char );
 static int endtest ( int error, int pass, int errors );
 static void invalid_selmsg ( void );
 static void display_msg ( char * );
-static int get_cmd ( void );
 static void test_hdr ( char *tstmsg, int tstinfo );
 static void get_options ( void );
 static int loopback ( struct ereg *, struct etherblock *, int );
@@ -2730,7 +2729,8 @@ display_opt ( char *optcmd, char *optmsg )
  *      Display command prompt and wait for command
  */
 
-static int
+// tjt -- called from commands.c
+int
 get_cmd ( void )
 {
         printf("\nCmd=>");

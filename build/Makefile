@@ -40,9 +40,7 @@ OBJS = romvec.o trap.o mapmem.o reset.o cpu.map.o \
 	sc.o sd.o xxboot.o xxprobe.o \
 	scutils.o space.o st.o \
 	inet.o tftp.o \
-	diagmenus.o machdep.o
-
-XXX = cmp.o patt.o db.o si.o
+	diagmenus.o machdep.o cmp.o patt.o db.o si.o
 
 # These are devices we never intend to deal with
 ALT_OBJS = xy.o tm.o xt.o xd.o
@@ -191,8 +189,20 @@ machdep.o: ../sun3/machdep.c
 	$(CC) -O -c $<
 	#make dump
 
-# -----------------------------------------------------
+cmp.o: ../sun3/cmp.s
+	$(AS) -c $<
 
+patt.o: ../sun3/patt.s
+	$(AS) -c $<
+
+db.o: ../sun3/db.s
+	$(AS) -c $<
+
+si.o: ../dev/si.c
+	$(CC) -c $<
+
+
+# -----------------------------------------------------
 
 bootrom: Makefile $(OBJS)
 	@echo linking bootrom
@@ -209,6 +219,6 @@ link: Makefile $(OBJS)
 
 clean:
 	rm -f $(OBJS)
-	rm bootrom.dump
+	rm -f bootrom.dump
 
 # THE END
