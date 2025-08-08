@@ -1173,9 +1173,12 @@ menutests ( int space )
                                  * keybd_test just checks gp->g_insource to
                                  * see which device (keyboard or port A or B)
                                  * to test.
+								 * tjt - the above comment contradicts itself.
+								 * It doesn't (and cannot) check anything.
                                  */
                 case (int)'BK': /* Keyboard test */
-                        keybd_test(gp->g_insource);
+                        // keybd_test(gp->g_insource);
+                        keybd_test();
                         break; 
 
 #ifndef GRUMMAN  

@@ -22,8 +22,34 @@
                 pg_size         setpgreg(addr,entry)
                 berr_size       getberrreg()
                 int  %          map(virt, size, phys, space)
- *
  */
+
+/* tjt
+ * The original code here is interesting.
+ * apparently they knew the Sun compiler well
+ * enough to be sure that the a5 register
+ * would get the value of the "addr" variable.
+ * I would have just written these in assembler
+ * and put them in some other file.
+ * Perhaps in "space.s"
+ * Interestingly, I looked at the disassembly of the
+ * sun 3/80 bootrom and there is only one reference
+ * to the "%sfc" and "%dfc" registers.
+ * The 3/60 bootrom has plenty of references to these
+ * registers, but I don't find these routines.
+ * It is also curious that this routine does not
+ * save (then restore) the original sfc value
+ */
+
+#ifdef ORIGINAL
+// tjt -- moved here from machdep.h
+#define MOVC(from, to)  asm("   movc    from, to")
+#define MOVL(from, to)  asm("   movl    from, to")
+#define MOVSB(from, to) asm("   movsb   from, to")
+#define MOVSW(from, to) asm("   movsw   from, to")
+#define MOVSL(from, to) asm("   movsl   from, to")
+
+
 /*
  * get/set fc3 are to eliminate the assembly all over the place,
  * and to let users do their own self abuse
@@ -56,68 +82,88 @@ register u_long                 size, *addr,entry;
         else if (size == sizeof(u_long))
                 MOVSL(d6, a5@);
 }
-cx_size
-getcxreg()
+#endif /* ORIGINAL */
+
+u_long
+getfc3 ( u_long size, char *addr )
 {
-        return((cx_size) getfc3(sizeof(cx_size), CX_OFF));
+		u_long rv;
+		asm volatile ( "moveq #3, %d0" );
+		asm volatile ( "movec %d0, %dfc" );
+		// MOVSB(a5@, d7);
+		// A O I C
+		// asm volatile("movq %%cr8,%0" : "=r" (val));
+		// asm volatile("movq %0,%%cr8" :: "r" (val) : "memory");
+		asm volatile ( "movel #5, %0" : "=d" (rv) );
+		// asm ( "movesb %0, %1@" : "=r" (rv) : "r" (addr) );
+		return rv;
 }
+
+/* Never used */
 cx_size
-setcxreg(entry)
-register cx_size                entry;
+getcxreg ( void )
 {
-        register cx_size        ret = getcxreg();
+        return (cx_size) getfc3 ( sizeof(cx_size), (char *)CX_OFF);
+}
+
+/* Never used */
+cx_size
+setcxreg ( cx_size entry)
+{
+        register cx_size ret = getcxreg();
 
         setfc3(sizeof(cx_size), CX_OFF, entry);
+
         return(ret);
 }
 
+/* Never used */
 sm_size
-getsmreg(addr)
-register u_long                 addr;
+getsmreg ( u_long addr )
 {
         addr = ((addr & ~SEGMASK) + SM_OFF) & ADDRMASK;
-        return((sm_size) getfc3(sizeof(sm_size), addr));
+        return (sm_size) getfc3(sizeof(sm_size), (char *) addr);
 }
 
+/* Used in diagmenus.c */
 sm_size
-setsmreg(addr,entry)
-register u_long                 addr;
-register sm_size                entry;
+setsmreg ( u_long addr, sm_size entry)
 {
-        register sm_size        ret = getsmreg(addr);
+        register sm_size ret = getsmreg(addr);
 
         addr = ((addr & ~SEGMASK) + SM_OFF) & ADDRMASK;
         setfc3(sizeof(sm_size), addr, entry);
+
         return(ret);
 }
 
+/* Never used */
 pg_size
-getpgreg(addr)
-register u_long                 addr;
+getpgreg ( u_long addr )
 {
         addr = ((addr & ~PAGEMASK) + PG_OFF) & ADDRMASK;
-        return((pg_size) getfc3(sizeof(pg_size), addr));
+        return (pg_size) getfc3(sizeof(pg_size), (char *) addr);
 }
 
+/* Used below in map() */
 pg_size
-setpgreg(addr,entry)
-register u_long                 addr;
-register pg_size                entry;
+setpgreg ( u_long addr, pg_size entry )
 {
-        register pg_size        ret = getpgreg(addr);
+        register pg_size ret = getpgreg(addr);
 
         addr = ((addr & ~PAGEMASK) + PG_OFF) & ADDRMASK;
         setfc3(sizeof(pg_size), addr, entry);
+
         return(ret);
 }
 
-map(virt, size, phys, space)
-register u_long                         virt, size, phys;
-register enum pm_type                   space;
+/* Used in diagmenus.c */
+void
+map ( u_long virt,  u_long size, u_long phys, enum pm_type space )
 {
         pg_t                            page;
         register struct pg_field        *pgp = &page.pg_field;
-        register                        i;
+        register int                    i;
 
         pgp->pg_valid = 1;
         pgp->pg_permission = PMP_ALL;
@@ -132,12 +178,13 @@ register enum pm_type                   space;
         }
 }
 
-
+#ifdef notdef
+// tjt - never used
 berr_size
 getberrreg()
 {
-        return((berr_size) getfc3(sizeof(berr_size), BERR_OFF));
+        return (berr_size) getfc3(sizeof(berr_size), (char * )BERR_OFF);
 }
+#endif
 
-
-
+/* THE END */

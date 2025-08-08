@@ -179,4 +179,14 @@ int etheropen ( struct saioreq * );
 int etherstrategy ( struct saioreq *, int );
 int tftpload ( struct saioreq * );
 
+/* in diag/diagmenus.c */
+void display_opt ( char *, char * );
+int memory_test ( int, int );
+void keybd_test ( void );
+int ports_test ( int );
+int ether_test ( void );
+int amd_ether_test ( void );
+int boot_test ( char * );
+
+
 /* THE END */

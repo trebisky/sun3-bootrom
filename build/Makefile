@@ -39,9 +39,10 @@ OBJS = romvec.o trap.o mapmem.o reset.o cpu.map.o \
 	if_ie.o \
 	sc.o sd.o xxboot.o xxprobe.o \
 	scutils.o space.o st.o \
-	inet.o tftp.o
+	inet.o tftp.o \
+	diagmenus.o machdep.o
 
-XXX = diagmenus.o machdep.o cmp.o patt.o db.o si.o
+XXX = cmp.o patt.o db.o si.o
 
 # These are devices we never intend to deal with
 ALT_OBJS = xy.o tm.o xt.o xd.o
@@ -68,7 +69,8 @@ ORIG_OBJS = romvec.o trap.o mapmem.o reset.o cpu.map.o diag.o banner.o commands.
 all: $(OBJS)
 
 dump:
-	$(DUMP) trap.o >bootrom.dump
+#	$(DUMP) trap.o >bootrom.dump
+	$(DUMP) machdep.o >bootrom.dump
 
 check: chkalign.c
 	$(CC) -c chkalign.c
@@ -182,6 +184,11 @@ inet.o: ../sys/inet.c
 tftp.o: ../sys/tftp.c
 	$(CC) -c $<
 
+diagmenus.o: ../diag/diagmenus.c
+	$(CC) -c $<
+
+machdep.o: ../sun3/machdep.c
+	$(CC) -c $<
 
 # -----------------------------------------------------
 
@@ -201,8 +208,6 @@ link: Makefile $(OBJS)
 
 clean:
 	rm -f $(OBJS)
+	rm bootrom.dump
 
 # THE END
-
-
-

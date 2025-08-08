@@ -59,14 +59,15 @@ typedef unsigned short mieoff_t;                /* offsets from iscp_base */
 typedef unsigned short mieint_t;                /* 16 bit integers */
 typedef unsigned long  mieaddr_t;               /* 24-bit addresses */
 
+#ifdef NOTANSI
 mieoff_t to_mieoff();
 mieaddr_t to_mieaddr();
 caddr_t from_mieoff();
 caddr_t from_mieaddr();
+#endif
 
 mieint_t to_ieint();
 #define from_ieint      (unsigned short) to_ieint
-
 
 /*
  * Now for the control structures in shared memory

@@ -43,14 +43,11 @@
  * END of Defines for AMD lance chip
  */
 
-
-
 /*
  * Definitions of structures used by these tests
  */
-
 struct amd_init         /* AMD Initilization block */
-        {
+{
         u_short mode;           /* Mode control                         */
         u_short padr_lo;        /* Lo 16 bits of physical address       */
         u_short padr_mid;       /* Mid 16 bits                          */
@@ -61,27 +58,29 @@ struct amd_init         /* AMD Initilization block */
         u_short ladr_hi;        /* Hi 16 bits                           */
         u_short rdra_lo;        /* Lo 16 bits of pointer to discriptor  */
                                 /* rings for receive                    */
-        u_short rdra_hi;                /* Hi 8 bits of pointer to discriptor   */
+        u_short rdra_hi;        /* Hi 8 bits of pointer to discriptor   */
                                 /* rings for receive & rcv ring length  */
         u_short tdra_lo;        /* Lo 16 bits of pointer to discriptor  */
                                 /* rings for txmit                      */
-        u_short tdra_hi         /* Hi 8 bits of pointer to discriptor   */
+        u_short tdra_hi;         /* Hi 8 bits of pointer to discriptor   */
                                 /* rings for txmit & rcv ring length    */
-        };
+};
 
 struct amd_rcv_ring
-        {
+{
         u_short rmd0_ladr;      /* lo address of data buffer pointed to */
         u_short rmd1_hadr;      /* Hi 8 bits of buffer & info bits      */
         u_short rmd2_bcnt;      /* size of data buffer                  */
         u_short rmd3_mcnt;      /* size of message in this buffer       */
-        };
+};
 
 struct amd_txmt_ring
-        {
+{
         u_short tmd0_ladr;      /* lo address of data buffer pointed to */
         u_short tmd1_hadr;      /* Hi 8 bits of buffer & info bits      */
         u_short tmd2_bcnt;      /* size of data buffer                  */
         u_short tmd3_tdr;       /* size of message in this buffer       */
-        };
+};
+
+/* THE END */
 

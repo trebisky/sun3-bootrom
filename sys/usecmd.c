@@ -53,11 +53,14 @@ char inchars[] = "kab";                 /* InSource chars */
 char outchars[]= "sab";                 /* OutSink chars */
 /* ***** End of order-dependent tables */
 
+#ifdef nothere
+// tjt - moved to dev/zsreg.h
 /* Generate a baud rate clock count from the baud rate */
 struct sptab {
 	int speeds;
 	int counts;
 };
+#endif
 
 #define B(speed)        ZSTIMECONST(ZSCC_PCLK, speed)
 

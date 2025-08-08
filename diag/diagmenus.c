@@ -1,8 +1,3 @@
-
-#ifndef lint
-/*static  char sccsid[] = "@(#)diagmenus.c 1.1 86/09/27 Copyr 1985 Sun Micro";*/
-#endif
-
 /*
  * Copyright (c) 1986 by Sun Microsystems, Inc.
  */
@@ -26,8 +21,33 @@
 #include "../dev/amd_ether.h"
 #include "../diag/diagmenus.h"
 
+#include "../h/cpu.map.h"
+#include "../h/pixrect.h"
+#include "../h/protos.h"
+
 extern  struct sptab speedtab[];
-extern  struct sptab {int speeds, counts};
+// extern  struct sptab {int speeds, counts};
+
+// tjt XXX - how does a char argument compile ?
+static void wr_rd_char ( char, char, char *, char * );
+static int scc_wait ( char *, char );
+static int scc_derr ( char *, char, char, char );
+static int scc_errmsg ( char *, char, char );
+static int endtest ( int error, int pass, int errors );
+static void invalid_selmsg ( void );
+static void display_msg ( char * );
+static int get_cmd ( void );
+static void test_hdr ( char *tstmsg, int tstinfo );
+static void get_options ( void );
+static int loopback ( struct ereg *, struct etherblock *, int );
+static int ethercommand ( struct ereg *, struct etherblock *, int );
+static int etherconf ( struct ereg *, struct etherblock *, int, int, int, int, int );
+static int ether_reset ( struct ereg *, struct etherblock * );
+static void ether_loop ( struct ereg *, struct etherblock *, int, int, int, int, int );
+
+static mieaddr_t to_mieaddr ( struct etherblock *, caddr_t );
+static mieoff_t to_mieoff ( struct etherblock *, caddr_t );
+static caddr_t from_mieaddr ( struct etherblock *, mieaddr_t );
 
 
 /* Subroutine to perform bootpath test for all storage class peripheral
@@ -39,9 +59,8 @@ extern  struct sptab {int speeds, counts};
  * reporting of each device driver.
  */
 
-
-boot_test(string)
-        char *string;
+int
+boot_test ( char *string)
 {
         int  boot_try, error, errors = 0, pass = 0;
         char *st_ptr;
@@ -66,13 +85,14 @@ boot_test(string)
                 }
         } while (endtest(error, ++pass, errors));
 }
+
 #ifndef M25
 /* 
  * Intel Ethernet Tests
  */
 
-ether_test()
-
+int
+ether_test ( void )
 {
         char    cmd;
         register struct ereg       *eregp = (struct ereg *)ETHER_BASE;
@@ -130,10 +150,9 @@ ether_test()
  *      External => intloop = 0, extloop = 1, cable = 1
  */
 
-ether_loop(eregp, blockp, blocksize, fifo_lim, intloop, extloop, cable)
-        int     fifo_lim, blocksize, intloop, extloop, cable;
-        register struct ereg            *eregp;
-        register struct etherblock      *blockp;
+static void
+ether_loop ( struct ereg *eregp, struct etherblock *blockp,
+	int blocksize, int fifo_lim, int intloop, int extloop, int cable )
 {
         int     passed_ok, error, pass = 0, errors = 0;
 
@@ -153,9 +172,9 @@ ether_loop(eregp, blockp, blocksize, fifo_lim, intloop, extloop, cable)
 
 etheraddr       myaddr = {0x12, 0x34, 0x56, 0x78, 0x9a, 0xbc};
 
-etherca(blockp, eregp)
-        struct etherblock       *blockp;
-        register struct ereg    *eregp;
+// tjt XXX - first argument is never used
+static void
+etherca ( struct etherblock *blockp, struct ereg *eregp )
 {
         eregp->obie_ca = 1;     /* toggle CA for us */
         eregp->obie_ca = 0;
@@ -167,31 +186,29 @@ etherca(blockp, eregp)
  * Returns 1 for OK, 0 for nogood.
  */
 
-int
-ether_reset(eregp, blockp)
-        register struct ereg            *eregp;
-        register struct etherblock      *blockp;
+static int
+ether_reset ( struct ereg *eregp, struct etherblock *blockp )
 {
         struct escp     *scpp = &blockp->scp;    
         struct eiscp    *iscpp = &blockp->iscp;
         struct escb     *scbp = &blockp->scb;
-        long            i;
+        int            i;
+
         /*
          * Take the chip off the cable, and set up maps and parity.
          */
-        BCLEAR(eregp);
-        BCLEAR(scpp);           /* clear it first */
+        BCLEAR((char *)eregp);
+        BCLEAR((char *)scpp);           /* clear it first */
         scpp->iscp_addr = to_mieaddr(blockp, (caddr_t)iscpp);
-        BCLEAR(iscpp);          /* clear it first */
+        BCLEAR((char *)iscpp);          /* clear it first */
         iscpp->iscp_busy = 1;           
-        iscpp->iscb_base = to_mieaddr(blockp, blockp);
-        iscpp->iscb_offset = to_mieoff(blockp, scbp);
-        BCLEAR(scbp);           /* clear it first */
+        iscpp->iscb_base = to_mieaddr(blockp, (caddr_t)blockp);
+        iscpp->iscb_offset = to_mieoff(blockp, (caddr_t) scbp);
+        BCLEAR((char *)scbp);           /* clear it first */
         eregp->obie_noreset = 0;
         DELAY(1);
         eregp->obie_noreset = 1;
         DELAY(1);
-
 
        /* 
         * Initialize SCP (0xFFFFF6 in EDLC address space) 
@@ -201,6 +218,7 @@ ether_reset(eregp, blockp)
                                                 /* at 0FFFFFFC */
         
         etherca(blockp, eregp);                 /* toggle CA to start ball */
+
         i = 100000;
         while(iscpp->iscp_busy && --i);
 
@@ -216,10 +234,8 @@ ether_reset(eregp, blockp)
  * Reset and configure the Ethernet chip.
  * Return 0 for error, 1 for OK.
  */
-etherconf(eregp, blockp, intloop, extloop, cable, fifolim, framelen)
-        register struct ereg            *eregp;
-        register struct etherblock      *blockp;
-        int             intloop, extloop, cable, fifolim, framelen;
+static int
+etherconf ( struct ereg *eregp, struct etherblock *blockp, int intloop, int extloop, int cable, int fifolim, int framelen )
 {
         register struct conf_ext        *confp = &blockp->cbl[0].cb_ext.conf;
         struct escb     *scbp = &blockp->scb;
@@ -232,7 +248,7 @@ etherconf(eregp, blockp, intloop, extloop, cable, fifolim, framelen)
         /* Now put us on the cable if desired. */
         eregp->obie_noloop = cable;
 
-        BCLEAR(confp);
+        BCLEAR((char *)confp);
 
         confp->conf_fifolim     = fifolim;
         confp->conf_count       = 12;
@@ -266,10 +282,8 @@ etherconf(eregp, blockp, intloop, extloop, cable, fifolim, framelen)
 /*
  * Execute one command
  */
-ethercommand(eregp, blockp, cmd)
-        register struct ereg            *eregp;
-        register struct etherblock      *blockp;
-        register                        cmd;
+static int
+ethercommand ( struct ereg *eregp, struct etherblock *blockp, int cmd )
 {
         register struct escb    *scbp = &blockp->scb;
         register struct ecb     *cbp = &blockp->cbl[0].cb;
@@ -288,7 +302,7 @@ ethercommand(eregp, blockp, cmd)
                 return(0);
         }
                 
-        scbp->scb_cbloff = to_mieoff(blockp, cbp);      /* set up offset */
+        scbp->scb_cbloff = to_mieoff(blockp, (caddr_t) cbp);      /* set up offset */
         scbp->scb_cuc = CUC_START;              /* start CU on cbl */
 
         etherca(blockp, eregp);                         /* toggle CA */
@@ -332,10 +346,8 @@ ethercommand(eregp, blockp, cmd)
  * just subtract off the start of the memory space (==es).  For Model 50,
  * the Ethernet chip has full access to supervisor virtual memory.
  */
-mieaddr_t
-to_mieaddr(blockp, cp)
-        struct etherblock *blockp;
-        caddr_t cp;
+static mieaddr_t
+to_mieaddr ( struct etherblock *blockp, caddr_t cp )
 {
         union {
                 int     n;
@@ -353,10 +365,8 @@ to_mieaddr(blockp, cp)
 /*
  * Convert an EDLC virtual address to a CPU virtual address
  */
-caddr_t
-from_mieaddr(blockp, n)
-        struct etherblock *blockp;
-        mieaddr_t n;
+static caddr_t
+from_mieaddr ( struct etherblock *blockp, mieaddr_t n )
 {
         union {
                 long    n;
@@ -379,10 +389,8 @@ from_mieaddr(blockp, n)
  * on the absolute address supplied in the initial system configuration
  * block -- which we customize for Multibus or Onboard.
  */
-mieoff_t
-to_mieoff(blockp, addr)
-        register struct etherblock *blockp;
-        caddr_t addr;
+static mieoff_t
+to_mieoff ( struct etherblock *blockp, caddr_t addr )
 {
         union {
                 short   s;
@@ -397,10 +405,8 @@ to_mieoff(blockp, addr)
 
 unsigned int MAXBUF = NTXBUF;           /* Hack to simplify debug */
 
-loopback(eregp, blockp, blocksize)
-        register struct ereg            *eregp;
-        register struct etherblock      *blockp;
-        int                             blocksize;
+static int
+loopback ( struct ereg *eregp, struct etherblock *blockp, int blocksize )
 {
         struct escb             *scbp = &blockp->scb;
         struct cbl              *cblp = blockp->cbl;
@@ -414,11 +420,11 @@ loopback(eregp, blockp, blocksize)
 
                 /* clear all lists */
 
-        bzero(scbp, sizeof(blockp->scb));
-        bzero(cblp, sizeof(blockp->cbl));
-        bzero(tbdp, sizeof(blockp->tbd));
-        bzero(rfdp, sizeof(blockp->rfd));
-        bzero(rbdp, sizeof(blockp->rbd));
+        bzero((char *)scbp, sizeof(blockp->scb));
+        bzero((char *)cblp, sizeof(blockp->cbl));
+        bzero((char *)tbdp, sizeof(blockp->tbd));
+        bzero((char *)rfdp, sizeof(blockp->rfd));
+        bzero((char *)rbdp, sizeof(blockp->rbd));
 
                 /* set up lists */
 
@@ -427,12 +433,12 @@ loopback(eregp, blockp, blocksize)
                 /* command block for transmit */
 
                 cblp[i].cb.cb_cmd = CMD_TRANSMIT;
-                cblp[i].cb.cb_link = to_mieoff(blockp, &cblp[i+1]);
+                cblp[i].cb.cb_link = to_mieoff(blockp, (caddr_t) &cblp[i+1]);
 
                 /* command tx extension block for transmit */
 
                 cblp[i].cb_ext.tx.tx_bdptr = 
-                        blocksize ? to_mieoff(blockp, &tbdp[i]) : 0xffff;
+                        blocksize ? to_mieoff(blockp, (caddr_t) &tbdp[i]) : 0xffff;
                 bcopy(myaddr, cblp[i].cb_ext.tx.tx_addr, sizeof(etheraddr));
                 cblp[i].cb_ext.tx.tx_type = 1<<i;
 
@@ -447,12 +453,12 @@ loopback(eregp, blockp, blocksize)
 
                 /* received frame descriptor for the receive */
 
-                rfdp[i].rfd_link = to_mieoff(blockp, &rfdp[i+1]);
+                rfdp[i].rfd_link = to_mieoff(blockp, (caddr_t) &rfdp[i+1]);
                 rfdp[i].rfd_bdptr = 0xffff;
 
                 /* received buffer descriptor for rx */
 
-                rbdp[i].rbd_bdptr = to_mieoff(blockp, &rbdp[i+1]);
+                rbdp[i].rbd_bdptr = to_mieoff(blockp, (caddr_t) &rbdp[i+1]);
                 rbdp[i].rbd_addr = to_mieaddr(blockp, blockp->rxbuf[i]);
                 rbdp[i].rbd_size_hi = ETHERBUFSIZE >> 8; 
                 rbdp[i].rbd_size_lo = ETHERBUFSIZE & 0xFF;
@@ -461,12 +467,12 @@ loopback(eregp, blockp, blocksize)
                 /* now do special setups in lists */
 
         cblp[MAXBUF -1].cb.cb_el = 1;           /* terminate command list */
-        rfdp[0].rfd_bdptr = to_mieoff(blockp, rbdp);
+        rfdp[0].rfd_bdptr = to_mieoff(blockp, (caddr_t) rbdp);
         rfdp[MAXBUF -1].rfd_el = 1;             /* terminate rfd list */
 
                 /* setup two bogus rbd's for step B0 chips to eat */
 
-        rbdp[MAXBUF].rbd_bdptr = to_mieoff(blockp, &rbdp[MAXBUF + 1]);
+        rbdp[MAXBUF].rbd_bdptr = to_mieoff(blockp, (caddr_t) &rbdp[MAXBUF + 1]);
         rbdp[MAXBUF].rbd_addr = to_mieaddr(blockp, blockp->rxbogus[0]);
         rbdp[MAXBUF].rbd_size_hi = 0;
         rbdp[MAXBUF].rbd_size_lo = 16;
@@ -497,8 +503,8 @@ loopback(eregp, blockp, blocksize)
 
         scbp->scb_cuc = CUC_START;
         scbp->scb_ruc = RUC_START;
-        scbp->scb_cbloff = to_mieoff(blockp, cblp);
-        scbp->scb_rfaoff = to_mieoff(blockp, rfdp);
+        scbp->scb_cbloff = to_mieoff(blockp, (caddr_t) cblp);
+        scbp->scb_rfaoff = to_mieoff(blockp, (caddr_t) rfdp);
 
         etherca(blockp, eregp);         /* knock their lights out */
 
@@ -544,13 +550,13 @@ loopback(eregp, blockp, blocksize)
         if (scbp->scb_rus != RUS_NORESOURCES)
                 display_msg("loop: scb RU not NO RES\n"); 
 
-        if (scbp->scb_cbloff != to_mieoff(blockp, cblp) && gp->g_option != 'N')
+        if (scbp->scb_cbloff != to_mieoff(blockp, (caddr_t) cblp) && gp->g_option != 'N')
                 printf("loop: scb @cbl e(0x%x) o(0x%x)\n",
-                        to_mieoff(blockp, cblp), scbp->scb_cbloff); 
+                        to_mieoff(blockp, (caddr_t) cblp), scbp->scb_cbloff); 
 
-        if (scbp->scb_rfaoff != to_mieoff(blockp, rfdp) && gp->g_option != 'N')
+        if (scbp->scb_rfaoff != to_mieoff(blockp, (caddr_t) rfdp) && gp->g_option != 'N')
                 printf("loop: scb @rfa e(0x%x) o(0x%x)\n",
-                        to_mieoff(blockp, rfdp), scbp->scb_rfaoff);
+                        to_mieoff(blockp, (caddr_t) rfdp), scbp->scb_rfaoff);
 
         if (scbp->scb_crcerrs || scbp->scb_alnerrs || scbp->scb_rscerrs ||
             scbp->scb_ovrnerrs)
@@ -573,13 +579,14 @@ loopback(eregp, blockp, blocksize)
         return(1);
 }
 #endif  M25
+
 #ifdef  M25
 /*
  * AMD Ethernet Tests
  */
 
-amd_ether_test()
-
+int
+amd_ether_test( void )
 {
         char    cmd;
         int     input, wdata;
@@ -699,7 +706,6 @@ amd_wr_rd_test(wdata)
 
 
 amd_ether_loop(mode, vadrs)
-        
         u_short mode;
         u_long  vadrs;  
 {
@@ -1995,9 +2001,10 @@ scsi_loopback_test()
 #endif  M25
 
 /* Serial Ports Test */
+// tjt - return value is ignored
 
-ports_test(mouse)
-        int     mouse;
+int
+ports_test ( int mouse )
 {
     register struct sptab *sp;
     int l, j, baud, error, errors, pass;
@@ -2181,10 +2188,8 @@ ports_test(mouse)
     }                                   /* end for */
 }                                       /* end function */
 
-wr_rd_char(pattn, port, p_SCC_ctl, p_SCC_data)
-
-        char pattn, port;
-        char *p_SCC_ctl, *p_SCC_data;
+static void
+wr_rd_char ( char pattn, char port, char *p_SCC_ctl, char *p_SCC_data )
 {
         int  pass = 0, error, errors = 0; 
         char rdata, rstatus;
@@ -2219,10 +2224,8 @@ wr_rd_char(pattn, port, p_SCC_ctl, p_SCC_data)
  *      Generic SCC wait routine.  Condition is set to either Rx or Tx
  */
 
-scc_wait(p_SCC_ctl, cond)
-
-        char    *p_SCC_ctl;
-        char    cond;
+static int
+scc_wait ( char *p_SCC_ctl, char cond )
 {
         char rstatus;
         int cnt = 100000;
@@ -2241,7 +2244,8 @@ scc_wait(p_SCC_ctl, cond)
  * device specified by the calling argument.
  */
 
-keybd_test()
+void
+keybd_test ( void )
 {
         char character, rstatus;
         char  *p_SCC_ctl;
@@ -2294,10 +2298,11 @@ keybd_test()
  */
 /*
  * Memory & Video Test 
+ * tjt - this returns a value, but the caller (commands.c) never checks it
  */
 
-memory_test(space, video)
-        int space, video;
+int
+memory_test ( int space, int video)
 {
         register int address;
         int     lower, upper, pattern, rdata;
@@ -2430,20 +2435,21 @@ memory_test(space, video)
 
 #ifdef PRISM
 
-memory_test(space, test_type)
-    int space,
-        test_type;              /* 0: memory test;
-                                 * 1: monochrome frame buffer test
-                                 * 2: enable plane test
-                                 * 3: color frame buffer test
-                                 * 4: color map test
-                                 */
+/* test_type --
+        0: memory test;
+        1: monochrome frame buffer test
+        2: enable plane test
+        3: color frame buffer test
+        4: color map test
+ */
+int
+memory_test ( int space, int test_type )
 {
     register int address;
     int         lower, upper, upper_limit, maxaddr, pattern, rdata;
     int         error, base, errors = 0, input = 0, pass, feedback = 0;
     char        cmd;
-    char    *ind = "-\\|/";
+    char        *ind = "-\\|/";
     char        *testname; /* string for name of test. */ /* not good chr[] */
 
     for (;;) {
@@ -2484,7 +2490,8 @@ memory_test(space, test_type)
                 break;
         default:
                 printf("test_type %1d does not exist for memory_test()\n");
-                return('Q');    /* return to calling routine (monitor()). */
+                return('Q');
+								/* return to calling routine (monitor()). */
                                 /* This case should never be called.  test_type
                                  * is set only by the boot prom.  So this is
                                  * just a precaution.
@@ -2671,7 +2678,8 @@ fill_colormaps()
  * Get_options routine gets test control option after presenting menu and
  * checking syntax.  Returns the option character: 'F','H', 'L', 'Q' or 0.
  */
-get_options()
+static void
+get_options ( void )
 {
         for (;;) {
                 printf("\nTest Options: (Enter 'q' to return to Test Menu)\n\n");
@@ -2698,9 +2706,8 @@ get_options()
 /*
  *      Displays test menu header
  */
-test_hdr(tstmsg, tstinfo)
-        char    *tstmsg;
-        char    tstinfo;
+static void
+test_hdr ( char *tstmsg, int tstinfo )
 {
         printf("\n%s Tests:  (Enter 'q' to return to Test Menu)\n\n", tstmsg);
         if (!tstinfo)
@@ -2709,10 +2716,12 @@ test_hdr(tstmsg, tstinfo)
 
 /*
  *      Display an option string
+ *
+ * tjt - used by commands.c
  */
 
-display_opt(optcmd, optmsg)
-        char    *optcmd, *optmsg;
+void
+display_opt ( char *optcmd, char *optmsg )
 {
         printf("  %s - %s Test\n", optcmd, optmsg);
 }
@@ -2721,19 +2730,21 @@ display_opt(optcmd, optmsg)
  *      Display command prompt and wait for command
  */
 
-get_cmd() {
+static int
+get_cmd ( void )
+{
         printf("\nCmd=>");
         getline(1);                             /* get command line */
         skipblanks();
-        return(getone() & UPCASE);              /* return the command */
+        return ( getone() & UPCASE );           /* return the command */
 }
 
 /*
  *      Displays messages when gp->g_option != 'N'
  */
 
-display_msg(message)
-        char    *message;
+static void
+display_msg ( char *message )
 {
         if (gp->g_option != 'N')
                 printf("%s", message);
@@ -2743,7 +2754,9 @@ display_msg(message)
  *      Display Invalid Selection Message
  */
 
-invalid_selmsg() {
+static void
+invalid_selmsg ( void )
+{
         printf("\nInvalid Selection!\n");
 }
 
@@ -2751,8 +2764,8 @@ invalid_selmsg() {
  *      Set End Test flag if proper conditions are met
  */
 
-endtest(error, pass, errors)
-        int     error, pass, errors;
+static int
+endtest ( int error, int pass, int errors )
 {
         if (gp->g_option != 'N') {
                 printf("Test %sed during pass %d.  Total errors = %d.\n", 
@@ -2771,9 +2784,8 @@ endtest(error, pass, errors)
  *      Display SCC timeout errors
  */
 
-scc_errmsg(str, port, status)
-        char    *str;
-        char    port, status;
+static int
+scc_errmsg ( char *str, char port, char status )
 {
         if (gp->g_option != 'N') {
                 printf("%s ready timeout: Port = %c, SCC status = %x.\n",
@@ -2786,9 +2798,8 @@ scc_errmsg(str, port, status)
  *      Display SCC data compare errors
  */
 
-scc_derr(str, port, pattn, rdata)
-        char    *str;
-        char    port, pattn, rdata;
+static int
+scc_derr ( char *str, char port, char pattn, char rdata )
 {
         if (gp->g_option != 'N') {
             printf("%sData Error: Port = %c, Exp = %x, Obs = %x, Xor = %x.\n",
@@ -2797,3 +2808,4 @@ scc_derr(str, port, pattn, rdata)
         return(1);
 }
 
+/* THE END */

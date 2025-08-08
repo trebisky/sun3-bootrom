@@ -14,6 +14,15 @@
  * brain damage around addressing, write-onlyness, etc.
  */
 
+// tjt - moved this here.
+// shared between usecmd.c and diagmenus.c
+/* Generate a baud rate clock count from the baud rate */
+struct sptab {
+    int speeds;
+    int counts;
+};
+
+
 /*
  * Uart registers:
  *

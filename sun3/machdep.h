@@ -21,8 +21,13 @@
  */
 #define BTOP(x)         ((u_long)(x)>>PAGESHIFT)        /* byte to page */
 #define PTOB(x)         ((u_long)(x)<<PAGESHIFT)        /* page to byte */
+
+// tjt
+#ifdef never_used
 #define GETPHYS(x)      ((PTOB(getpgreg(x))& ADDRMASK)+((u_long)(x)&PAGEMASK))
 #define ISVALID(x)      ((getpgreg(x) & (u_long)0x80000000) == 0x80000000)
+#endif
+
 /*
  *      for parity(gen,check)  mnemonics
  */
@@ -39,6 +44,7 @@
 #define UDVMA_OFF       (0x50000000)    /* user dvma enable */
 #define BERR_OFF        (0x60000000)    /* buserror register */
 #define LED_OFF         (0x70000000)    /* led (diagnostic register) */
+
 /*
  *      physical addresses of devices
  */
@@ -51,15 +57,19 @@
 #define pa_ethernet     (0x000c0000)
 #define pa_color        (0x000e0000)
 #define pa_eprom        (0x00100000)
+
 /*
  *      assembly setups (for internal use)
  *              users should use get/set/fc3()
  */
+#ifdef nothere
 #define MOVC(from, to)  asm("   movc    from, to")
 #define MOVL(from, to)  asm("   movl    from, to")
 #define MOVSB(from, to) asm("   movsb   from, to")
 #define MOVSW(from, to) asm("   movsw   from, to")
 #define MOVSL(from, to) asm("   movsl   from, to")
+#endif
+
 /*
  *      permissions available
  */
