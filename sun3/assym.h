@@ -32,7 +32,7 @@
 #define PME_MEM_1 0x2005
 #define PME_CLOCK 0x6000d
 #define PME_PROM 0x10000d
-#define PME_INVALID 0x2
+#define PME_INVALID 0x20000000
 #define PME_DES 0x1c000d
 #define PME_COLOR_STAT 0xff708015
 #define PME_COLOR_ZOOM 0xff70c015
