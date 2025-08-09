@@ -132,4 +132,7 @@ sdone:
         movl    sp@+,a2         | restore saved reg(s)
         rts
 
+# Idiotic junk to avoid complaints from the Gnu linker
+.section        .note.GNU-stack,"",%progbits
+
 /* THE END */

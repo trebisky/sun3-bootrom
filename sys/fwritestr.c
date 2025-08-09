@@ -39,7 +39,7 @@ static void blinkscreen ( void );
 // prom_mem_batchrop(fbpos, f, &charpos, 1);
 // We hack in a stub to satisfy the link.
 
-void
+static void
 prom_mem_batchrop ( struct pr_prpos a1, int a2, struct pr_prpos *a3, int a4 )
 {
 }

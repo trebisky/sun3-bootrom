@@ -222,4 +222,7 @@ setcxsegmap_noint:
         movl    sp@+,d2
         rts                     | done
 
-| THE END
+# Idiotic junk to avoid complaints from the Gnu linker
+.section        .note.GNU-stack,"",%progbits
+
+/* THE END */

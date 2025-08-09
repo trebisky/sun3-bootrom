@@ -168,4 +168,7 @@ o_lpcheck:
         jsr     ldb_pack                | construct return
         jra     fillend                 | then finish up
 
-| THE END
+# Idiotic junk to avoid complaints from the Gnu linker
+.section        .note.GNU-stack,"",%progbits
+
+/* THE END */

@@ -300,6 +300,7 @@ cache_i:
 
 |*************************************************
 
+# Idiotic junk to avoid complaints from the Gnu linker
+.section        .note.GNU-stack,"",%progbits
+
 /* THE END */
-
-

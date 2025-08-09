@@ -1,4 +1,3 @@
-
 |
 |       @(#)trap.s 1.6 86/05/24 
 |       Copyright (c) 1986 by Sun Microsystems, Inc.
@@ -170,7 +169,7 @@ dogreset:
 
 |
 | The following is common to power-up, boot, soft, and watchdog resets.
-| also called from diag.s
+| also called from diag.s  (tjt - once it is satisfied)
 
 .globl  _reset_common
 _reset_common:
@@ -762,3 +761,8 @@ getidprom:
         .even
 ecc_txt:
         .ascii  "CE memory error at %x+%x\12\0"
+
+# Idiotic junk to avoid complaints from the Gnu linker
+.section        .note.GNU-stack,"",%progbits
+
+/* THE END */

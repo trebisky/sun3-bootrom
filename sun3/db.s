@@ -57,3 +57,8 @@ obs_value:
         .long   0
 exp_value:
         .long   0
+
+# Idiotic junk to avoid complaints from the Gnu linker
+.section        .note.GNU-stack,"",%progbits
+
+/* THE END */

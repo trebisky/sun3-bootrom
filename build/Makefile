@@ -13,13 +13,15 @@ IDENT='-DID="Rev 2.1"' -DSUN3 -DCARRERA
 # Now this is in bootrom.lds
 #RELOC=0FEF0000
 
-COPTS= -Wno-endif-labels -Wno-implicit-function-declaration -Wno-multichar
+COPTS= -O -Wno-endif-labels -Wno-implicit-function-declaration -Wno-multichar
 # CFLAGS = -I../h -I. ${COPTS} ${IDENT} -DMC68000
 #CFLAGS = -I../h ${COPTS} ${IDENT} -DMC68000
 CFLAGS = -I../h ${COPTS} ${IDENT} -DANSI
 
 #AFLAGS = -m68020 -x assembler-with-cpp -Wno-endif-labels
 AFLAGS = -march=68020 -mcpu=68020 -x assembler-with-cpp -Wa,--register-prefix-optional -Wno-endif-labels
+
+LFLAGS = -T bootrom.lds --no-warn-rwx-segments
 
 # For cross compile to m68k target
 CC = m68k-linux-gnu-gcc -m68020 -fno-builtin $(CFLAGS)
@@ -63,13 +65,14 @@ ORIG_OBJS = romvec.o trap.o mapmem.o reset.o cpu.map.o diag.o banner.o commands.
 # $^ - all prerequisites, no duplicates
 # $+ - all prerequisites, including duplicates
 
-#all: bootrom
-all: $(OBJS)
+#all: $(OBJS)
 
-dump:
-#	$(DUMP) trap.o >bootrom.dump
-	$(DUMP) machdep.o >bootrom.dump
+all: bootrom.elf bootrom.bin bootrom.dump
 
+xdump:
+	$(DUMP) machdep.o >machdep.dump
+
+# Does gcc pad structure elements?
 check: chkalign.c
 	$(CC) -c chkalign.c
 	$(DUMP) chkalign.o >check.dump
@@ -204,21 +207,28 @@ si.o: ../dev/si.c
 
 # -----------------------------------------------------
 
-bootrom: Makefile $(OBJS)
+bootrom.elf: Makefile $(OBJS)
 	@echo linking bootrom
 	@rm -f bootrom
-	#$(LD) -o bootrom -T bootrom.lds ${OBJS} ${LDFLAGS}
-	#$(SIZE) bootrom
-	@echo not yet!!
+	$(LD) $(LFLAGS) -o bootrom.elf ${OBJS}
+	$(SIZE) bootrom.elf
+
+bootrom.bin: Makefile $(OBJS)
+	$(LD) $(LFLAGS) --oformat binary -s -o bootrom.bin ${OBJS}
+	ls -l bootrom.bin
+
+bootrom.dump: bootrom.elf
+	$(DUMP) bootrom.elf >bootrom.dump
 
 link: Makefile $(OBJS)
 	@echo linking bootrom
 	@rm -f bootrom
-	$(LD) -o bootrom -T bootrom.lds ${OBJS} ${LDFLAGS}
-	$(SIZE) bootrom
+	$(LD) $(LFLAGS) -o bootrom.elf ${OBJS}
+	$(SIZE) bootrom.elf
 
 clean:
 	rm -f $(OBJS)
 	rm -f bootrom.dump
+	rm -f bootrom.elf
 
 # THE END

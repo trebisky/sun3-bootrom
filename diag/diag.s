@@ -2283,7 +2283,7 @@ enbl_ecc:
         btst    #DIAGSW,d1              | is diag switch set?
         beq     100f                    | if not, proceed to Unix boot
         movw    #EVEC_BOOT_EXEC,d3      | Fake Boot Diag Exec fvo
-        lea     menu_msg,a4            | "Optional Tests
+        lea     menu_msg,a4             | "Optional Tests
         lea     55f,a6                  | Menu"
         jra     print$
 55:
@@ -2350,13 +2350,14 @@ enbl_ecc:
         jra     UARTinit                | reinit UART prior to return
 90:
         movw    #EVEC_MENU_TSTS,d3      | Fake vfo for menu tests
-100:                                   | from serial port A    
+
+100:                                    | from serial port A    
         movl    d2,a6                   | memory size
         moveml  #0xFFFF,sp@-            | save all registers
         moveq   #~L_SETUP_MAP,d0        | 
         movsb   d0,LEDREG               | tell LEDs we're setting up MAP
         pea     a6@                     | push top of mem arg on stack
-        jbsr    mapmem                 | for Map Memory call
+        jbsr    mapmem                  | for Map Memory call
         addql   #4,sp                   
         movl    a6,g_memoryworking      | total amt of working memory
         movl    d0,g_memoryavail        | available memory after we steal
@@ -3191,3 +3192,8 @@ m_op_tests:
         .asciz  " (e for echo mode) "
 echo_msg:
         .asciz  "\015\012Echo mode: Output will echo to Video!\015\012"
+
+# Idiotic junk to avoid complaints from the Gnu linker
+.section        .note.GNU-stack,"",%progbits
+
+/* THE END */
