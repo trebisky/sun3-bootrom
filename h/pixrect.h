@@ -62,6 +62,8 @@
  *	struct pr_subregion	is a pixrect, a position and a size,
  *				specifying a rectangular sub-region.
  */
+#ifndef PIXRECT
+#define PIXRECT
 struct pr_pos {
 	int	x, y;
 };
@@ -228,3 +230,5 @@ struct pixrectops {
 struct	singlecolor {
 	u_char	red, green, blue;
 };
+
+#endif // PIXRECT
