@@ -16,7 +16,7 @@ IDENT='-DID="Rev 2.1"' -DSUN3 -DCARRERA
 COPTS= -O -Wno-endif-labels -Wno-implicit-function-declaration -Wno-multichar
 # CFLAGS = -I../h -I. ${COPTS} ${IDENT} -DMC68000
 #CFLAGS = -I../h ${COPTS} ${IDENT} -DMC68000
-CFLAGS = -I../h ${COPTS} ${IDENT} -DANSI
+CFLAGS = -I../h ${COPTS} ${IDENT} -DANSI -O1
 
 #AFLAGS = -m68020 -x assembler-with-cpp -Wno-endif-labels
 AFLAGS = -march=68020 -mcpu=68020 -x assembler-with-cpp -Wa,--register-prefix-optional -Wno-endif-labels
@@ -208,8 +208,8 @@ si.o: ../dev/si.c
 # -----------------------------------------------------
 
 bootrom.elf: Makefile $(OBJS)
-	@echo linking bootrom
-	@rm -f bootrom
+	@echo linking bootrom.elf
+	@rm -f bootrom.elf
 	$(LD) $(LFLAGS) -o bootrom.elf ${OBJS}
 	$(SIZE) bootrom.elf
 
@@ -218,13 +218,15 @@ bootrom.bin: Makefile $(OBJS)
 	ls -l bootrom.bin
 
 bootrom.dump: bootrom.elf
-	$(DUMP) bootrom.elf >bootrom.dump
+	$(DUMP) bootrom.elf > bootrom.dump
 
-link: Makefile $(OBJS)
-	@echo linking bootrom
-	@rm -f bootrom
-	$(LD) $(LFLAGS) -o bootrom.elf ${OBJS}
-	$(SIZE) bootrom.elf
+bootrom.raw: bootrom.elf Makefile
+	m68k-linux-gnu-objcopy $< $@ --input-target=elf32-m68k --output-target=binary
+
+bootrom.padded: bootrom.raw Makefile
+	@rm -f $@
+	dd if=/dev/zero of=$@ bs=65536 count=1
+	dd if=$< of=$@ bs=1 conv=notrunc
 
 clean:
 	rm -f $(OBJS)
