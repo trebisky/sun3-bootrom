@@ -46,6 +46,8 @@
  * Entries which do not contain a "Vn:" string are in Version 0 of the
  * proms (Rev N and onward).
  */
+#ifndef SUNROMVEC
+#define SUNROMVEC
 
 struct sunromvec {
 	char		*v_initsp;		/* Initial SSP for hardware */
@@ -321,4 +323,5 @@ struct devinfo {
 #define	v_fwrstr	v_fwritestr
 #define	v_linbuf	v_linebuf
 
+#endif // SUNROMVEC
 #endif MONSTART
