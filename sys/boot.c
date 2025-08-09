@@ -305,7 +305,7 @@ puthex ( char *p, int n )
 }
  
 int
-nullsys ( void * )
+nullsys ( void * x)
 {
         return (-1);
 }
