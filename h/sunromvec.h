@@ -174,7 +174,9 @@ struct bootparam {
 	int		bp_part;	/* partition/file # */
 	char		*bp_name;	/* file name, points into bp_strings */
 	struct boottab	*bp_boottab;	/* Points to table entry for dev */
-};
+}
+  __attribute__ ((packed))
+  ;
 
 
 /*
@@ -193,7 +195,9 @@ struct boottab {
 	int	(*b_strategy) ( void *, int );	/* strategy(iobp,rw) --> -1 or 0 */
 	char	*b_desc;		/* Printable string describing dev */
 	struct devinfo *b_devinfo;	/* Info to configure device */
-};
+}
+  __attribute__ ((packed))
+  ;
 
 /* This defines the set of map entry types */
 enum MAPTYPES {
@@ -217,7 +221,9 @@ struct devinfo {
 	unsigned long	*d_stdaddrs;	/* The vector of standard addresses */
 	enum MAPTYPES 	d_devtype;	/* What map space dev is in */
 	unsigned	d_maxiobytes;	/* Size to break big I/O's into */
-};
+}
+  __attribute__ ((packed))
+  ;
 
 /*
  * This defines the memory map interface between the PROM Monitor

@@ -75,7 +75,7 @@ struct globram {
 	unsigned char		g_key;		/* Last up/down code read */
 	unsigned char		g_prevkey;	/* The previous reading */
 	unsigned char		g_keystate;	/* State machine */
-	unsigned char		g_keybid;	/* Id byte supplied */
+	volatile unsigned char		g_keybid;	/* Id byte supplied */
 	struct keybuf_t		g_keybuf[1];	/* Raw up/down code buf */
 	unsigned int		g_shiftmask;	/* "shift-like" keys' posns */
 	unsigned int		g_translation;	/* Current translation */
@@ -155,7 +155,9 @@ struct globram {
 	unsigned int            g_right;
 	unsigned int            g_winbot;      	/* init in finit.c */
 #endif SIRIUS
-};
+}
+  __attribute__ ((packed))
+;
 
 #define				gp	((struct globram *)STRTDATA)
 
