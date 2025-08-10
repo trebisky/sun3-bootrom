@@ -2,7 +2,7 @@
 # TJT  7-30-2025
 
 # For compile to run on local host
-HCC = cc
+HCC = gcc -m32
 # HCFLAGS= -Wno-endif-labels -Wno-implicit-function-declaration
 HCFLAGS= -Wno-endif-labels -Wno-implicit-function-declaration -Wno-implicit-int -Wno-pointer-to-int-cast
 
