@@ -21,7 +21,7 @@ CFLAGS = -I../h ${COPTS} ${IDENT} -DANSI -O1
 #AFLAGS = -m68020 -x assembler-with-cpp -Wno-endif-labels
 AFLAGS = -march=68020 -mcpu=68020 -x assembler-with-cpp -Wa,--register-prefix-optional -Wno-endif-labels
 
-LFLAGS = -T bootrom.lds --no-warn-rwx-segments
+LFLAGS = -T bootrom.lds # --no-warn-rwx-segments
 
 # For cross compile to m68k target
 CC = m68k-linux-gnu-gcc -m68020 -fno-builtin $(CFLAGS)
@@ -217,8 +217,14 @@ bootrom.bin: Makefile $(OBJS)
 	$(LD) $(LFLAGS) --oformat binary -s -o bootrom.bin ${OBJS}
 	ls -l bootrom.bin
 
+bootrom.bin.padded: bootrom.bin
+	@rm -f $@
+	dd if=/dev/zero of=$@ bs=65536 count=1
+	dd if=$< of=$@ bs=1 conv=notrunc
+
 bootrom.dump: bootrom.elf
 	$(DUMP) bootrom.elf > bootrom.dump
+
 
 bootrom.raw: bootrom.elf Makefile
 	m68k-linux-gnu-objcopy $< $@ --input-target=elf32-m68k --output-target=binary
