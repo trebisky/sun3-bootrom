@@ -200,11 +200,17 @@ monreset ( struct monintstack monintstack )
          *      Enable TOD chip interrupts
          */
         gp->g_nmiclock = 0;     /* initialize nmi counter */
+asm volatile("": : :"memory");
         *INTERRUPT_BASE &= ~(IR_ENA_CLK7 | IR_ENA_CLK5);  /* Unhang flops */
+asm volatile("": : :"memory");
         CLOCK_BASE->clk_intrreg = 0;            /* Disable TOD ints */
+asm volatile("": : :"memory");
         i = CLOCK_BASE->clk_intrreg;            /* Maybe clr pending int */
+asm volatile("": : :"memory");
         *INTERRUPT_BASE |=  IR_ENA_CLK7;        /* Prime the flops */
+asm volatile("": : :"memory");
         CLOCK_BASE->clk_intrreg = CLK_INT_HSEC; /* Now allow TOD ints */
+asm volatile("": : :"memory");
 
         /*
          * These are used by the NMI routine.
