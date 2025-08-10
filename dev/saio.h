@@ -83,7 +83,7 @@ enum RESOURCES {
         extern int cpudelay; \
         register int N = (((n)<<4) >> cpudelay); \
  \
-        while (--N > 0) ; \
+        while (--N > 0)  asm volatile("": : :"memory") ; \
 }
 
 #define CDELAY(c, n)    \
@@ -91,9 +91,10 @@ enum RESOURCES {
         extern int cpudelay; \
         register int N = (((n)<<3) >> cpudelay); \
  \
-        while (--N > 0) \
+        while (--N > 0) {  asm volatile("": : :"memory");	\
                 if (c) \
                         break; \
+	} \
 }
 
 /*

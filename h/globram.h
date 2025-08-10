@@ -47,7 +47,7 @@ struct globram {
 	unsigned char		g_leds;		/* LED register, set_leds */
 
 /* Miscellaneous services */
-	int			g_nmiclock;	/* pseudo-clock counter (msec, 
+	volatile int			g_nmiclock;	/* pseudo-clock counter (msec, 
 					 	   bumped by nmi routine) */
 	unsigned		g_memorysize;	/* Phys size of mem in bytes */
 	unsigned		g_memoryavail;	/* Memory avail to Unix, not
