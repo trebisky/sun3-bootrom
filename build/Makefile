@@ -37,7 +37,7 @@ OBJS = romvec.o trap.o mapmem.o reset.o cpu.map.o \
 	getline.o printf.o busyio.o \
 	keypress.o getkey.o ktab.s2.o \
 	boot.o monalloc.o common.o blts.o \
-	expand.o finit.o fwritestr.o gallmash.o mem_grab.o \
+	expand.o finit.o fwritestr.o rop.o gallmash.o mem_grab.o \
 	if_ie.o \
 	sc.o sd.o xxboot.o xxprobe.o \
 	scutils.o space.o st.o \
@@ -51,7 +51,7 @@ ALT_OBJS = xy.o tm.o xt.o xd.o
 ORIG_OBJS = romvec.o trap.o mapmem.o reset.o cpu.map.o diag.o banner.o commands.o \
     idprom.o usecmd.o getline.o printf.o busyio.o keypress.o\
     getkey.o ktab.s2.o boot.o monalloc.o common.o blts.o \
-    expand.o finit.o fwritestr.o gallmash.o mem_grab.o if_ie.o \
+    expand.o finit.o fwritestr.o rop.o gallmash.o mem_grab.o if_ie.o \
     xy.o sc.o sd.o xxboot.o xxprobe.o scutils.o space.o st.o tm.o xt.o \
     inet.o tftp.o diagmenus.o machdep.o cmp.o patt.o db.o si.o xd.o
 
@@ -203,6 +203,9 @@ db.o: ../sun3/db.s
 
 si.o: ../dev/si.c
 	$(CC) -c $<
+
+rop.o: rop.s
+	$(AS) -c $<
 
 
 # -----------------------------------------------------
