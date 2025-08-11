@@ -38,7 +38,7 @@
 
 static void open_window ( int );
 static void close_window ( void );
-static void test_mem ( int, int ); 
+static void test_mem (const int, const int );
 static void banner_test ( void );
 
 #ifdef NOTANSI
@@ -96,7 +96,6 @@ struct pginit videoinit[] = {
  * will often make it this far and we have to give good diagnosis of
  * what we find.  The other two are similar to each other and relatively easy.
  */
-
 void
 monreset ( struct monintstack monintstack )
 {
@@ -433,8 +432,9 @@ banner_test ( void )
  *      passed into it to the limit passed into it.  This will
  *      test at most 8 Megabytes at a time.
  */
+#pragma GCC optimize "-O2"
 static void
-test_mem ( int addr, int limit) 
+test_mem (const int addr, const int limit) 
 {
         int     pass, end_addr, errflag, feedback = 0, pattern = 0x5A972C5A;  
         int     start_addr;
@@ -470,6 +470,7 @@ test_mem ( int addr, int limit)
             } 
         }
 }
+#pragma GCC reset_options
 
 /*
  *      This routine opens a window of pages to map 8 Mb of physical memory 
