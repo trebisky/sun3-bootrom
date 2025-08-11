@@ -13,10 +13,10 @@ IDENT='-DID="Rev 2.1"' -DSUN3 -DCARRERA
 # Now this is in bootrom.lds
 #RELOC=0FEF0000
 
-COPTS= -O -Wno-endif-labels -Wno-implicit-function-declaration -Wno-multichar
+COPTS= -O1 -Wno-endif-labels -Wno-implicit-function-declaration -Wno-multichar
 # CFLAGS = -I../h -I. ${COPTS} ${IDENT} -DMC68000
 #CFLAGS = -I../h ${COPTS} ${IDENT} -DMC68000
-CFLAGS = -I../h ${COPTS} ${IDENT} -DANSI -O1
+CFLAGS = -I../h ${COPTS} ${IDENT} -DANSI
 
 #AFLAGS = -m68020 -x assembler-with-cpp -Wno-endif-labels
 AFLAGS = -march=68020 -mcpu=68020 -x assembler-with-cpp -Wa,--register-prefix-optional -Wno-endif-labels
