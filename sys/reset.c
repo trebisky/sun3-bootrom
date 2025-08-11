@@ -41,6 +41,8 @@ static void close_window ( void );
 static void test_mem (const int, const int );
 static void banner_test ( void );
 
+int mod3read_tramp(unsigned int start_addr, unsigned int end_addr, unsigned int pattern);
+
 #ifdef NOTANSI
 int     trap(), bus_error(), addr_error();
 int nmi();
@@ -432,7 +434,6 @@ banner_test ( void )
  *      passed into it to the limit passed into it.  This will
  *      test at most 8 Megabytes at a time.
  */
-#pragma GCC optimize "-O2"
 static void
 test_mem (const int addr, const int limit) 
 {
@@ -449,14 +450,14 @@ test_mem (const int addr, const int limit)
             /*  Test 1 Megabyte unless it will hit the global variables */
             start_addr = addr;
             for (; start_addr < limit; start_addr += 0x100000) {
-                printf("%c\b", ind[feedback++ % 4]);            /* show life */
+	        printf("%c\b", ind[feedback++ % 4]);            /* show life */
                 if ((end_addr = start_addr + 0x100000) > limit) /* limit? */
                    end_addr = limit;
 
                 if ((pass % 2) == 0)
                    errflag = mod3write(start_addr, end_addr, pattern); /* WRITE */
                 else
-                   errflag = mod3read(start_addr, end_addr, pattern);  /* READ  */
+                   errflag = mod3read_tramp(start_addr, end_addr, pattern);  /* READ  */
 
                 /* Check for data compare error */
 
@@ -470,7 +471,16 @@ test_mem (const int addr, const int limit)
             } 
         }
 }
-#pragma GCC reset_options
+
+/* for some reason, the assembly version clobber %d4 and %a5,
+   but GCC doesn't know that so it happily uses them in test_mem for some level of optimizations.
+   the mod3_read cloobers them, and if they're critical... it stops working.
+   this trampoline notifies gcc that the assembly code is misbehaving.
+*/
+int mod3read_tramp(unsigned int start_addr, unsigned int end_addr, unsigned int pattern) {
+  asm volatile("" : : : "%d4", "%a5");
+  mod3read(start_addr, end_addr, pattern);
+}
 
 /*
  *      This routine opens a window of pages to map 8 Mb of physical memory 

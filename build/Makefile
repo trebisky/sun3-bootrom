@@ -13,7 +13,12 @@ IDENT='-DID="Rev 2.1"' -DSUN3 -DCARRERA
 # Now this is in bootrom.lds
 #RELOC=0FEF0000
 
-COPTS= -O1 -Wno-endif-labels -Wno-implicit-function-declaration -Wno-multichar
+# -Os requries memcpy
+# -O3 produces a binary > 64 KiB
+# -O2 works but is quite close to 64 KiB
+# -O1 works and has some margin (~54 KiB)
+
+COPTS= -O2 -Wno-endif-labels -Wno-implicit-function-declaration -Wno-multichar
 # CFLAGS = -I../h -I. ${COPTS} ${IDENT} -DMC68000
 #CFLAGS = -I../h ${COPTS} ${IDENT} -DMC68000
 CFLAGS = -I../h ${COPTS} ${IDENT} -DANSI
