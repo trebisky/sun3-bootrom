@@ -72,7 +72,7 @@ ORIG_OBJS = romvec.o trap.o mapmem.o reset.o cpu.map.o diag.o banner.o commands.
 
 #all: $(OBJS)
 
-all: bootrom.elf bootrom.bin bootrom.dump
+all: bootrom.elf bootrom
 
 xdump:
 	$(DUMP) machdep.o >machdep.dump
@@ -225,10 +225,11 @@ bootrom.bin: Makefile $(OBJS)
 	$(LD) $(LFLAGS) --oformat binary -s -o bootrom.bin ${OBJS}
 	ls -l bootrom.bin
 
-bootrom.bin.padded: bootrom.bin
+bootrom: bootrom.bin ../tools/sun3_checksum
 	@rm -f $@
 	dd if=/dev/zero of=$@ bs=65536 count=1
 	dd if=$< of=$@ bs=1 conv=notrunc
+	../tools/sun3_checksum $@
 
 bootrom.dump: bootrom.elf
 	$(DUMP) bootrom.elf > bootrom.dump
