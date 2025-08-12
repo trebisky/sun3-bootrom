@@ -25,7 +25,9 @@ struct mpr_data {
 	struct	pr_pos md_offset;
 	short	md_primary;
 	short	md_flags;	/* Flag bits, see below */
-};
+}
+  __attribute__ ((packed))
+  ;
 
 /*
  * Bits from md_flags:

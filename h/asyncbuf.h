@@ -99,7 +99,9 @@ struct NAME { \
 	TYPE *	endptr;		/* always contains &blocks[HOWMANY] */ \
 	char	overrun;	/* set TRUE when an overrun occurs */ \
 	TYPE	block [HOWMANY]; \
-};
+}\
+  __attribute__ ((packed))\
+  ;
 
 /*
  * Initialize a buffer before its first use.  Parameters are buffer name

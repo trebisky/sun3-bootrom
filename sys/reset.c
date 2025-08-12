@@ -38,8 +38,10 @@
 
 static void open_window ( int );
 static void close_window ( void );
-static void test_mem ( int, int ); 
+static void test_mem (const int, const int );
 static void banner_test ( void );
+
+int mod3read_tramp(unsigned int start_addr, unsigned int end_addr, unsigned int pattern);
 
 #ifdef NOTANSI
 int     trap(), bus_error(), addr_error();
@@ -96,7 +98,6 @@ struct pginit videoinit[] = {
  * will often make it this far and we have to give good diagnosis of
  * what we find.  The other two are similar to each other and relatively easy.
  */
-
 void
 monreset ( struct monintstack monintstack )
 {
@@ -106,6 +107,8 @@ monreset ( struct monintstack monintstack )
         bus_buf bbuf;           /* Buffer for bus error recovery */
 
         set_enable(get_enable() | ENA_NOTBOOT | ENA_SDVMA);
+asm volatile("": : :"memory");
+ 
 
         if (r_vector != EVEC_DOG) {
                 r_context = 0;
@@ -121,12 +124,16 @@ monreset ( struct monintstack monintstack )
                 *et++ = (long) addr_error;      /* C = address error routine */
                 (void) set_evec(EVEC_LEVEL7, nmi);
         }
+	
+asm volatile("": : :"memory");
 
         if (r_vector == EVEC_RESET || r_vector == EVEC_BOOT_EXEC
                 || r_vector == EVEC_MENU_TSTS) {
                 gp->g_inzscc = SERIAL0_BASE; /* Initialize the UART's */
                 gp->g_outzscc = SERIAL0_BASE;
         }
+	
+asm volatile("": : :"memory");
 
         /*
          * Write all the assorted initialization commands to both
@@ -134,6 +141,8 @@ monreset ( struct monintstack monintstack )
          */
         reset_uart(&SERIAL0_BASE[0].zscc_control, 1);
         reset_uart(&SERIAL0_BASE[1].zscc_control, 0);
+	
+asm volatile("": : :"memory");
 
         /*
          *      Check EEPROM for SCC Port A baud rate
@@ -150,6 +159,8 @@ monreset ( struct monintstack monintstack )
             SERIAL0_BASE[1].zscc_control = (ZSTIMECONST(ZSCC_PCLK, baud)) >> 8;
             DELAY(2);
         }
+	
+asm volatile("": : :"memory");
 
         /*
          *      Check EEPROM for SCC Port B baud rate
@@ -166,12 +177,16 @@ monreset ( struct monintstack monintstack )
             SERIAL0_BASE[0].zscc_control = (ZSTIMECONST(ZSCC_PCLK, baud)) >> 8;
             DELAY(2);
         }
+	
+asm volatile("": : :"memory");
 
         // tjt
         // GXBase = (int)VIDEOMEM_BASE;
         gp->g_fbdata.md_image = (short int *) VIDEOMEM_BASE;
 
         gp->g_font = (unsigned short (*)[CHRSHORTS-1])FONT_BASE;
+	
+asm volatile("": : :"memory");
 
 #ifndef GRUMMAN1 /* no video for grumman */
         if ((r_vector != EVEC_RESET) && (r_vector != EVEC_BOOT_EXEC)
@@ -180,16 +195,23 @@ monreset ( struct monintstack monintstack )
                 finit (ax, ay);
         }
 #endif GRUMMAN1
+	
+asm volatile("": : :"memory");
 
 #ifndef SIRIUS
         MEMORY_ERR_BASE->mr_er = PER_INTENA | PER_CHECK; /* turn on parity */
 #else
         MEMORY_ERR_BASE->mr_er = EER_INTENA ;  /* turn off ecc error rep */
 #endif  SIRIUS
+	
+asm volatile("": : :"memory");
+ 
         if (r_vector != EVEC_DOG) {
                 reset_alloc();  
                 CLOCK_BASE->clk_cmd = CLK_CMD_NORMAL;
         }
+	
+asm volatile("": : :"memory");
 
         /*
          * This hardware is sufficiently delicate that we need to follow
@@ -200,17 +222,25 @@ monreset ( struct monintstack monintstack )
          *      Enable TOD chip interrupts
          */
         gp->g_nmiclock = 0;     /* initialize nmi counter */
+asm volatile("": : :"memory");
         *INTERRUPT_BASE &= ~(IR_ENA_CLK7 | IR_ENA_CLK5);  /* Unhang flops */
+asm volatile("": : :"memory");
         CLOCK_BASE->clk_intrreg = 0;            /* Disable TOD ints */
+asm volatile("": : :"memory");
         i = CLOCK_BASE->clk_intrreg;            /* Maybe clr pending int */
+asm volatile("": : :"memory");
         *INTERRUPT_BASE |=  IR_ENA_CLK7;        /* Prime the flops */
+asm volatile("": : :"memory");
         CLOCK_BASE->clk_intrreg = CLK_INT_HSEC; /* Now allow TOD ints */
+asm volatile("": : :"memory");
 
         /*
          * These are used by the NMI routine.
          */
         gp->g_debounce = ZSRR0_BREAK;   /* For remembering BREAK state */
         gp->g_init_bounce = 0x0;        /* Initialize BREAK state */
+	
+asm volatile("": : :"memory");
 
 #ifndef GRUMMAN1 /* no keyboard/mouse for grumman */
 
@@ -233,7 +263,9 @@ monreset ( struct monintstack monintstack )
                 DELAY(2);
                 gp->g_keybzscc->zscc_control = (ZSTIMECONST(ZSCC_PCLK,1200))>>8;
                 DELAY(2);
-        } 
+        }
+	
+asm volatile("": : :"memory");
 
         if (r_vector == EVEC_RESET || r_vector == EVEC_BOOT_EXEC ||
            r_vector == EVEC_MENU_TSTS) {
@@ -241,6 +273,8 @@ monreset ( struct monintstack monintstack )
                 gp->g_outsink = OUTSCREEN;      /* set pointer to video */
         }
 #endif GRUMMAN1
+	
+asm volatile("": : :"memory");
 
 #ifdef GRUMMAN1 /* Grumman has only ports A & B so we force it to A */
         if (r_vector == EVEC_RESET || r_vector == EVEC_BOOT_EXEC ||
@@ -249,6 +283,8 @@ monreset ( struct monintstack monintstack )
                 gp->g_outsink =  INUARTA;       /* set pointer to video */
         }
 #endif GRUMMAN1
+	
+asm volatile("": : :"memory");
 
         /*
          * Now that we need to take NMI's, set up the NMI vector and
@@ -257,7 +293,9 @@ monreset ( struct monintstack monintstack )
          * is unusable after a Dog.
          */
         (void) set_evec (EVEC_LEVEL7, nmi);
+asm volatile("": : :"memory");
         *INTERRUPT_BASE |= IR_ENA_INT;  /* Enable any interrupts */
+asm volatile("": : :"memory");
 
 #ifndef GRUMMAN1 /* no choice for basic io just use port a */
 
@@ -315,6 +353,8 @@ monreset ( struct monintstack monintstack )
                 initgetkey();
         }
 #endif GRUMMAN1
+	
+asm volatile("": : :"memory");
 
 #ifdef GRUMMAN1 /* do this init outside the if block if this is grumman */
                 initgetkey();
@@ -324,8 +364,12 @@ monreset ( struct monintstack monintstack )
                 initgetkey();
                 return;
         }
+	
+asm volatile("": : :"memory");
 
         r_usp = gp->g_memorysize;       /* reset User Stack pointer */
+	
+asm volatile("": : :"memory");
 
 #ifdef NOTANSI
         {
@@ -335,6 +379,8 @@ monreset ( struct monintstack monintstack )
 #else
 		gp->g_vector_cmd = vector_default;
 #endif
+		
+asm volatile("": : :"memory");
 
         gp->g_breaking = 0;     /* no break in progress */
         gp->g_breakaddr = 0;    /* initialize break address */
@@ -389,7 +435,7 @@ banner_test ( void )
  *      test at most 8 Megabytes at a time.
  */
 static void
-test_mem ( int addr, int limit) 
+test_mem (const int addr, const int limit) 
 {
         int     pass, end_addr, errflag, feedback = 0, pattern = 0x5A972C5A;  
         int     start_addr;
@@ -404,14 +450,14 @@ test_mem ( int addr, int limit)
             /*  Test 1 Megabyte unless it will hit the global variables */
             start_addr = addr;
             for (; start_addr < limit; start_addr += 0x100000) {
-                printf("%c\b", ind[feedback++ % 4]);            /* show life */
+	        printf("%c\b", ind[feedback++ % 4]);            /* show life */
                 if ((end_addr = start_addr + 0x100000) > limit) /* limit? */
                    end_addr = limit;
 
                 if ((pass % 2) == 0)
                    errflag = mod3write(start_addr, end_addr, pattern); /* WRITE */
                 else
-                   errflag = mod3read(start_addr, end_addr, pattern);  /* READ  */
+                   errflag = mod3read_tramp(start_addr, end_addr, pattern);  /* READ  */
 
                 /* Check for data compare error */
 
@@ -424,6 +470,16 @@ test_mem ( int addr, int limit)
                 }
             } 
         }
+}
+
+/* for some reason, the assembly version clobber %d4 and %a5,
+   but GCC doesn't know that so it happily uses them in test_mem for some level of optimizations.
+   the mod3_read cloobers them, and if they're critical... it stops working.
+   this trampoline notifies gcc that the assembly code is misbehaving.
+*/
+int mod3read_tramp(unsigned int start_addr, unsigned int end_addr, unsigned int pattern) {
+  asm volatile("" : : : "%d4", "%a5");
+  mod3read(start_addr, end_addr, pattern);
 }
 
 /*
