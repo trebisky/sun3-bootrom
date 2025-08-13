@@ -15,10 +15,10 @@
 #define BYTESPERPG 8192
 #define BYTES_PG_SHIFT 13
 #define ADRSPC_SIZE 0x10000000
-#define MAPADDRMASK 0xfffe000
+#define	MAPADDRMASK 0xfffe000
 #define PMAPOFF 0x10000000
 #define SMAPOFF 0x20000000
-#define IDPROMOFF 0x0
+#define	IDPROMOFF 0x0
 #define CONTEXTOFF 0x30000000
 #define CONTEXTMASK 0x7
 #define FC_MAP 0x3
@@ -28,19 +28,19 @@
 #define BUSERROFF 0x60000000
 #define PMREALBITS 0xff07ffff
 
-#define PME_MEM_0 0x5
-#define PME_MEM_1 0x2005
-#define PME_CLOCK 0x6000d
-#define PME_PROM 0x10000d
-#define PME_INVALID 0x2
-#define PME_DES 0x1c000d
-#define PME_COLOR_STAT 0xff708015
-#define PME_COLOR_ZOOM 0xff70c015
-#define PME_COLOR_WPAN 0xff70a015
-#define PME_COLOR_PPAN 0xff70c015
-#define PME_COLOR_VZOOM 0xff70e015
-#define PME_COLOR_MAPS 0xff710015
-#define PME_COLOR_MASK 0xff70a015
+#define PME_MEM_0 0xc0000000
+#define PME_MEM_1 0xc0000001
+#define PME_CLOCK 0xc4000030
+#define PME_PROM 0xc4000080
+#define PME_INVALID 0x20000000
+#define PME_DES 0xc40000e0
+#define PME_COLOR_STAT 0xc807fb84
+#define PME_COLOR_ZOOM 0xc807fb86
+#define PME_COLOR_WPAN 0xc807fb85
+#define PME_COLOR_PPAN 0xc807fb86
+#define PME_COLOR_VZOOM 0xc807fb87
+#define PME_COLOR_MAPS 0xc807fb88
+#define PME_COLOR_MASK 0xc807fb85
 
 #define INITSP 0xfe60c00
 #define USERCODE 0x2000
@@ -104,7 +104,7 @@
 #define EVEC_DOG 0x3
 #define EVEC_BOOTING 0x2
 #define EVEC_BUSERR 0x8
-#define EVEC_LEVEL7 0x7c
+#define	EVEC_LEVEL7 0x7c
 #define EVEC_TRAP1 0x84
 #define EVEC_TRAPE 0xb8
 #define EVEC_KCMD 0x1
@@ -186,22 +186,22 @@
 #define mis_vector 0xcc
 #define mis_size 0xe0
 
-#define clk_intrreg 0x10
+#define	clk_intrreg 0x10
 
-#define MR_ER 0x0
-#define PER_INTR 0x80
-#define PER_CHECK 0x10
+#define	MR_ER 0x0
+#define	PER_INTR 0x80
+#define	PER_CHECK 0x10
 
-#define IR_ENA_INT 0x1
-#define IR_ENA_CLK7 0x80
+#define	IR_ENA_INT 0x1
+#define	IR_ENA_CLK7 0x80
 
-#define ENA_DIAG 0x1
-#define ENA_COPY 0x4
-#define ENA_VIDEO 0x8
-#define ENA_CACHE 0x10
-#define ENA_SDVMA 0x20
-#define ENA_FPP 0x40
-#define ENA_NOTBOOT 0x80
-#define CACR_CLEAR 0x8
-#define CACR_ENABLE 0x1
-#define CACR_CLEAR_ENT 0x4
+#define	ENA_DIAG 0x1
+#define	ENA_COPY 0x4
+#define	ENA_VIDEO 0x8
+#define	ENA_CACHE 0x10
+#define	ENA_SDVMA 0x20
+#define	ENA_FPP 0x40
+#define	ENA_NOTBOOT 0x80
+#define	CACR_CLEAR 0x8
+#define	CACR_ENABLE 0x1
+#define	CACR_CLEAR_ENT 0x4

@@ -77,6 +77,9 @@ check: chkalign.c
 	$(CC) -c chkalign.c
 	$(DUMP) chkalign.o >check.dump
 
+assym:
+	../tools/genassym >../sun3/assym.h
+
 # ---------------------------------------------------
 
 romvec.o: ../sun3/romvec.s
@@ -220,14 +223,12 @@ bootrom.bin: Makefile $(OBJS)
 bootrom.dump: bootrom.elf
 	$(DUMP) bootrom.elf >bootrom.dump
 
-link: Makefile $(OBJS)
-	@echo linking bootrom
-	@rm -f bootrom
-	$(LD) $(LFLAGS) -o bootrom.elf ${OBJS}
-	$(SIZE) bootrom.elf
+load: bootrom.bin
+	loadice . -i bootrom.bin
 
 clean:
 	rm -f $(OBJS)
+	#rm -f bootrom.bin
 	rm -f bootrom.dump
 	rm -f bootrom.elf
 
