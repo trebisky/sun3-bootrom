@@ -62,27 +62,35 @@
  *	struct pr_subregion	is a pixrect, a position and a size,
  *				specifying a rectangular sub-region.
  */
+#ifndef PIXRECT
+#define PIXRECT
+
 struct pr_pos {
 	int	x, y;
-};
+} __attribute__ ((packed)) ;
+
 struct pr_prpos {
 	struct	pixrect *pr;
 	struct	pr_pos pos;
-};
+} __attribute__ ((packed)) ;
+
 struct pr_size {
 	int	x, y;
-};
+} __attribute__ ((packed)) ;
+
 struct pr_subregion {
 	struct	pixrect *pr;
 	struct	pr_pos pos;
 	struct	pr_size size;
-};
+} __attribute__ ((packed)) ;
+
 struct pixrect {
 	struct	pixrectops *pr_ops;	/* operations appropriate to this pr */
 	struct	pr_size pr_size;	/* pixels per dimension */
 	int	pr_depth;		/* bits per pixel */
 	caddr_t	pr_data;		/* device-dependent pixel-access */
-};
+} __attribute__ ((packed)) ;
+
 #define pr_width	pr_size.x
 #define pr_height	pr_size.y
 
@@ -228,3 +236,5 @@ struct pixrectops {
 struct	singlecolor {
 	u_char	red, green, blue;
 };
+
+#endif // PIXRECT

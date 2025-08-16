@@ -121,6 +121,7 @@ _hardreset:
         movsb   a7,ENABLEOFF            | Enter Boot state
 
         movl    d7, a7
+| Here FERRARI doesn't behave like M25 but as others
 #ifdef M25
         movsb   SMAPOFF+0xfe00000, d7   | Check for Watchdog reset
         cmpb    #0xfe, d7

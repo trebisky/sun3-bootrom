@@ -263,14 +263,15 @@ EN_CEINT        =       0x40            | enable level 7 interrupt on error
 |
 | For Model 25 SCC access for test status and error reporting must go thru
 | the MMU; while all other Sun-3 models use the MMU bypass.
-
-#ifdef M25
+| FERRARI (Sun3/60) is the same as M25 for this
+	
+#if defined(M25) || defined(FERRARI)
 UARTACNTL       =       SCC_BASE + 4    | SCC port A control address(M25)
 UARTBCNTL       =       SCC_BASE        | SCC port B control address(M25)
 #else
 UARTACNTL       =       DIRSCC + 4      | SCC port A control address 
 UARTBCNTL       =       DIRSCC          | SCC port B control address
-#endif M25
+#endif M25 FERRARI
 UARTADATA       =       UARTACNTL + 2   | SCC port A data address
 UARTBDATA       =       UARTBCNTL + 2   | SCC port B data address
 RXREADY         =       0               | SCC receiver ready bit
@@ -403,8 +404,8 @@ LED_loop:
         cmpb    #0xFF,d0                | loop til 0-bit is shifted out
         bmi     LED_loop
 
-#ifdef M25
-        
+#if defined(M25) || defined(FERRARI)
+	
 |------------------------------------------------------------------------------
 |       SCC (Z8530) Wr/Rd Test Thru MMU (M25 only)
 |
@@ -470,7 +471,7 @@ Test_00:
         bclr    #bit_no_print,d7        | reenable print to SCC port A  
         bclr    #bit_no_read,d7         | renable char reads from port A
 
-#endif M25
+#endif M25 FERRARI
 
 | Setup SCC chip for 1200 Baud, no parity, 8 data bits, 1 stop bit
 
@@ -529,7 +530,7 @@ Test_01:
         jra     loop$end                | <<<BOTTOM OF TEST LOOP>>>
 60:
 
-#ifndef M25
+#if !defined(M25) && !defined(FERRARI)
 |-----------------------------------------------------------------------------
 | User DVMA Enable Register Test
 |
@@ -567,7 +568,7 @@ Test_02:
 40:
         dbra    d1,14b                  | last pattern?
 
-#endif  M25     
+#endif  M25 FERRARI    
 |----------------------------------------------------------------------------
 | Context Register Test
 |
@@ -807,13 +808,13 @@ Test_06:
 24:
         movsl   a5@,d0                  | ***read Page Map address***
         movl    d3,d1
-#ifdef  M25
+#if defined(M25) || defined(FERRARI)
         andl    #0xFF0007FF,d1          | strip unused data bits
         andl    #0xFF0007FF,d0
 #else
         andl    #0xFF07FFFF,d1          | strip unused data bits
         andl    #0xFF07FFFF,d0
-#endif M25
+#endif M25 FERRARI
         cmpl    d0,d1                   | write pattern = read?
         beq     34f
         lea     mem_rd_err_txt,a4
@@ -877,11 +878,11 @@ setup_traps:
         lea     TODCLK_PAGE,a0
         movl    #CLK_BASE,d0
         movsl   a0,a5@(0,d0:L)
-#ifdef M25
+#if defined(M25) || defined(FERRARI)
         lea     EEPROM_PAGE,a0
         movl    #EEPROM_BASE,d0
         movsl   a0,a5@(0,d0:L)
-#endif M25
+#endif M25 FERRARI
 #ifdef  SIRIUS
 |       Enable Memory module 0 by writing 0x40 to it
 
@@ -966,9 +967,11 @@ Test_08:
                                         | to this test
 #ifdef M25
         movl    #0xC00007FF,d0          | set rd valid,write allowed for page 1
-#else
+#elif defined(FERRARI)
+        movl    #0xC0000F80,d0          | set rd valid,write allowed for page 1
+#else	
         movl    #0xC0004000,d0          | set rd valid,write allowed for page 1
-#endif M25
+#endif M25 FERRARI
         lea     BYTES_PER_PG,a5         | virtual page 1 address
         movl    #PAGEOFF,d1
         movsl   d0,a5@(0,d1:L)
@@ -1860,6 +1863,11 @@ check_sw:
 
         movsb   ENABLEOFF,d2            | read diag switch
         btst    #DIAGSW,d2              | diag sw = 0?
+	                                | for this next one, the FERRARI ROM is weird...
+	                                | it has the beq end_test first, like !M25
+					| but then it has a 'bra 250' that seem to
+	                                | bypass additional code...
+	                                | the additional code is the M25 code...
 #ifdef M25
         bne     250f                    | if not, test all of memory
 
@@ -2202,11 +2210,11 @@ end_test:
         bne     30f                     | if yes  TEMP HACK MIKE
         bra     40f                     | if not
 30:
-#ifdef  M25
+#if defined(M25) || defined(FERRARI)
         jra     Test_00
 #else
         jra     Start                   | if burn in test, restart
-#endif  M25
+#endif  M25 FERRARI
 40:
         movl    MEM_size,d2
 esckey:
@@ -2294,22 +2302,21 @@ enbl_ecc:
         movl    #delay_10_sec,d0        | delay count for ~10 seconds
         bclr    #31, d3                 | Clear Port B flag bit
 70:
-#ifdef  M25
+#if defined(M25) || defined(FERRARI)
         movb    UARTACNTL,d1            | read Port A RX status
 #else
         movsb   UARTACNTL,d1            | read Port A RX status
-#endif M25
+#endif M25 FERRARI
         btst    #RXREADY,d1             | an input character entered?
         bne     80f                     | if yes
 
         moveq   #0xf, d1
-71:    dbra    d1, 71b                 | Wait for SCC to recover
-
-#ifdef  M25
+71:     dbra    d1, 71b                 | Wait for SCC to recover
+#if defined(M25) || defined(FERRARI)
         movb    UARTBCNTL,d1            | read Port B RX status
 #else
         movsb   UARTBCNTL,d1            | read Port B RX status
-#endif M25
+#endif M25 FERRARI
         btst    #RXREADY,d1             | an input character entered?
         bne     82f                     | if yes
 
@@ -2318,24 +2325,23 @@ enbl_ecc:
         bra     100f                    | timed out
 80:
         moveq   #0xf, d0
-81:    dbra    d0, 81b                 | Wait for SCC to recover
- 
-#ifdef M25
+81:     dbra    d0, 81b                 | Wait for SCC to recover
+#if defined(M25) || defined(FERRARI)
         movb    UARTADATA, d0           | Read the character
 #else
         movsb   UARTADATA, d0           | Read the character
-#endif M25
+#endif M25 FERRARI
         jra     84f
 82:
         moveq   #0xf, d0
-83:    dbra    d0, 83b                 | Wait for SCC to recover
+83:     dbra    d0, 83b                 | Wait for SCC to recover
 
         bset    #31, d3                 | Set bit to flag this is Port B
-#ifdef M25
+#if defined(M25) || defined(FERRARI)
         movb    UARTBDATA, d0           | Read the character
 #else    
         movsb   UARTBDATA, d0           | Read the character
-#endif M25
+#endif M25 FERRARI
 84:
         andb    #0x7f, d0               | Strip off parity bit
         cmpb    #0x65, d0               | Is it an 'e'?
@@ -2635,33 +2641,32 @@ loop$end:
         bne     40f
         moveq   #FC_MMU,d0
         movc    d0,sfc                  | set sfc to MMU
-#ifdef  M25
+#if defined(M25) || defined(FERRARI)
         movb    UARTACNTL,d0            | read SCC status
 #else
         movsb   UARTACNTL,d0            | read SCC status
-#endif M25
+#endif M25 FERRARI
         btst    #RXREADY,d0             | char rec'd?
         beq     1f                      | if so
-
-#ifdef  M25
+#if defined(M25) || defined(FERRARI)
         movb    UARTADATA,d0            | read char from Port A
 #else
         movsb   UARTADATA,d0            | read char from Port A
-#endif M25
+#endif M25 FERRARI
         jra     2f                      | Skip over reading Port B
 1:
-#ifdef  M25
+#if defined(M25) || defined(FERRARI)
         movb    UARTBCNTL,d0            | read SCC status
 #else
         movsb   UARTBCNTL,d0            | read SCC status
-#endif M25
+#endif M25 FERRARI
         btst    #RXREADY,d0             | char rec'd?
         beq     40f                     | if so
-#ifdef  M25  
+#if defined(M25) || defined(FERRARI)  
         movb    UARTBDATA,d0            | read char
 #else
         movsb   UARTBDATA,d0            | read char
-#endif M25
+#endif M25 FERRARI
 2:
         cmpb    #op_skip_end,d0         |drop out of self test?
         bne     9f                      | nope
@@ -2706,7 +2711,15 @@ loop$end:
         lea     ECC_MEM_ENA_REG,a5
         movw    d0,a5@                  | write ECC MEM ENABLE REGISTER
 #endif  SIRIUS
-
+	| Here, the FERRARI ROM is quite different
+	| instead of setting the stack pointer and
+	| then going to esckey
+	| it jumps off to UARTinit, then display
+	| "Selftest Aborted by User" !?!
+	| and then branch to memory sizing ?!? (0x0fef2864)
+	| However, the memory sizing bit seems to
+	| also do the stack pointer (0x0fef28a2)
+	| followed by the jump to esckey... (0x0fef28a8 to 0x0fef2a94)
         movl    #0x800,sp               | set stack pointer
 #ifdef  SIRIUS
         movl    #8,d2
@@ -2867,44 +2880,44 @@ print$:
 |       Display to Port A
 |
         moveq   #-1, d0                 
-#ifdef  M25
+#if defined(M25) || defined(FERRARI)
 11:    movb    UARTACNTL,d1            | wait for SCC to be ready
 #else
 11:    movsb   UARTACNTL, d1
-#endif M25
+#endif M25 FERRARI
         btst    #TXREADY, d1            | Wait for SCC to be ready
         dbne    d0, 11b                 | Loop until ready or timeout
 
         moveq   #0xf, d0
 12:    dbra    d0, 12b                 | Wait for character to be transmitted
 
-#ifdef  M25
+#if defined(M25) || defined(FERRARI)
         movb    d6, UARTADATA           | Send the character out
 #else
         movsb   d6, UARTADATA           | Send the character out
-#endif M25
+#endif M25 FERRARI
         jra     123f                    | else go on printing
 | 
 |       Display to Port B 
 |
 120:
         moveq   #-1, d0
-#ifdef  M25
+#if defined(M25) || defined(FERRARI)
 121:   movb    UARTBCNTL,d1            | wait for SCC to be ready
 #else  
 121:   movsb   UARTBCNTL, d1
-#endif M25
+#endif M25 FERRARI
         btst    #TXREADY, d1            | Wait for SCC to be ready
         dbne    d0, 121b                | Loop until ready or timeout
  
         moveq   #0xf, d0
 122:   dbra    d0, 122b                | Wait for character to be transmitted
  
-#ifdef  M25
+#if defined(M25) || defined(FERRARI)
         movb    d6, UARTBDATA           | Send the character out
 #else  
         movsb   d6, UARTBDATA           | Send the character out
-#endif M25
+#endif M25 FERRARI
  
 123:
         addql   #1, d3                  | bump digit counter
@@ -2926,44 +2939,44 @@ print$:
 |       Display to Port A 
 |
         moveq   #-1, d0
-#ifdef  M25
+#if defined(M25) || defined(FERRARI)
 13:    movb    UARTACNTL,d1            | wait for SCC to be ready
 #else
 13:    movsb   UARTACNTL, d1
-#endif M25
+#endif M25 FERRARI
         btst    #TXREADY, d1            | Wait for SCC to be ready
         dbne    d0, 13b                 | Loop until ready or timeout
 
         moveq   #0xf, d0
 14:    dbra    d0, 14b
 
-#ifdef  M25
+#if defined(M25) || defined(FERRARI)
         movb    d6,UARTADATA            | Send the character out
 #else
         movsb   d6, UARTADATA           | Send the character out
-#endif M25
+#endif M25 FERRARI
         jra     143f
 | 
 |       Display to Port B 
 |
 140:
         moveq   #-1, d0
-#ifdef  M25
+#if defined(M25) || defined(FERRARI)
 141:   movb    UARTBCNTL,d1            | wait for SCC to be ready
 #else   
 141:   movsb   UARTBCNTL, d1
-#endif M25
+#endif M25 FERRARI
         btst    #TXREADY, d1            | Wait for SCC to be ready
         dbne    d0, 141b                | Loop until ready or timeout
  
         moveq   #0xf, d0
 142:   dbra    d0, 142b
  
-#ifdef  M25
+#if defined(M25) || defined(FERRARI)
         movb    d6,UARTBDATA            | Send the character out
 #else   
         movsb   d6, UARTBDATA           | Send the character out
-#endif M25
+#endif M25 FERRARI
 143:   jra     1b
 |       
 |       Message has been displayed.
@@ -3002,11 +3015,11 @@ UARTinit:                               | init uart
         cmpb    #0xff, d0               | are we done yet??
         jeq     3f
 
-#ifdef  M25
+#if defined(M25) || defined(FERRARI)
             movb        d0, UARTACNTL           | stuff
 #else
             movsb   d0, UARTACNTL           | stuff
-#endif M25
+#endif M25 FERRARI
 
         movl    #0x800, d1              | and wait
 2:      dbra    d1, 2b
@@ -3027,11 +3040,11 @@ UARTinit:                               | init uart
         cmpb    #0xff, d0               | are we done yet??
         jeq     6f
  
-#ifdef  M25
+#if defined(M25) || defined(FERRARI)
         movb    d0, UARTBCNTL           | stuff
 #else   
         movsb   d0, UARTBCNTL           | stuff
-#endif M25
+#endif M25 FERRARI
  
         movl    #0x800, d1              | and wait
 5:      dbra    d1, 5b

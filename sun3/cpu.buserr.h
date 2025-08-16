@@ -28,5 +28,5 @@ struct buserrorreg {
         unsigned        be_fpaenerr     :1;     /* FPA enable error */
         unsigned                        :1;     /* Unused */
         unsigned        be_watchdog     :1;     /* Watchdog or User reset */
-};
+} __attribute__ ((packed)) ;
 

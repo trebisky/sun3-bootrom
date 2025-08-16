@@ -1,4 +1,6 @@
 *.o
 bootrom
 bootrom.elf
+bootrom.bin
 *.dump
+loadice.dat

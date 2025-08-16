@@ -28,7 +28,7 @@ enum fvo_format {
 	fvo_format_coproc	= 9,
 	fvo_format_bus20short	= 0xA,
 	fvo_format_bus20long	= 0xB,
-};
+} __attribute__ ((packed)) ;
 
 /* 
  * The Format/Vector Offset word appears in all stack frames.
@@ -39,7 +39,8 @@ union fvo {
 		enum fvo_format	fvo_p_format:4;
 		unsigned short	fvo_p_offset:12;
 	} fvo_parts;
-};
+} __attribute__ ((packed)) ;
+
 #define	fvo_form	fvo_parts.fvo_p_format
 #define	fvo_off		fvo_parts.fvo_p_offset
 
@@ -71,7 +72,7 @@ struct buserr_stack_10 {
 	unsigned short	be10_irc;	/* Instruction register */
 	unsigned short	be10_upc;	/* Micro program counter */
 	unsigned short	be10_reg_1c[15];
-};
+} __attribute__ ((packed)) ;
 
 /*
  * The 68020 generates two kinds of bus error frames, short (between
@@ -91,7 +92,7 @@ struct ssw20 {
 	unsigned char	ssw20_siz:2;	/* Size code for data cycle */
 	unsigned char	:1;
 	unsigned char	ssw20_fcode:3;	/* Function code for data cycle */
-};
+} __attribute__ ((packed)) ;
 
 
 struct buserr_stack_20_common {
@@ -106,8 +107,7 @@ struct buserr_stack_20_common {
 	unsigned short	be20_reg_14[2];
 	unsigned long	be20_data_output_buf;
 	unsigned short	be20_reg_1c[2];
-};
-
+} __attribute__ ((packed)) ;
 
 struct buserr_stack_20_extension {
 	unsigned short	be20_reg_20[2];
@@ -115,6 +115,6 @@ struct buserr_stack_20_extension {
 	unsigned short	be20_reg_28[2];
 	unsigned long	be20_data_input_buf;
 	unsigned short	be20_reg_30[22];
-};
+} __attribute__ ((packed)) ;
 
 #endif fvo_form

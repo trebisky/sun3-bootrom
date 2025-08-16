@@ -103,7 +103,7 @@ struct pgmapent {
         unsigned        pm_modified     :1;     /* Page has been written */
         unsigned                        :5;     /* Reserved */
         unsigned        pm_page         :19;    /* Page # in physical memory */
-};
+} __attribute__ ((packed)) ;
 
 /* tjt -- added 7-31-2025
  * This allows us to switch between treating one of the 32 bit

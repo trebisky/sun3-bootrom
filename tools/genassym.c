@@ -52,6 +52,16 @@ int printf ( char *, ... );
 typedef short int16;
 typedef int int32;
 
+/*
+ * These unions are used to define page map entries and enable register
+ * values, and get at their hex representations.
+ */
+union longmap {
+	// long	longval;
+	int32	longval;
+	struct pgmapent pgmapent;
+};
+
 /* tjt  -  7/31/2025
  * This is from sun3/m68vectors.h
  * I moved it here and added portable fixtures so
@@ -65,69 +75,14 @@ struct XXintstack {
     int16   i_fvo;      /* Format & vector offset */
 } __attribute__((packed));
 
-#ifdef stolen
-/* From sun3/cpu.map.h */
-
-enum pm_perm {
-        PMP_RO          = 0,    /* Page is read-only by all */
-        PMP_RO_SUP      = 1,    /* Page is read-only by supervisor */
-        PMP_ALL         = 2,    /* Page is read-write by all */
-        PMP_SUP         = 3,    /* Page is read-write by supervisor */
-};
-
-enum pm_types {
-        VPM_MEMORY      = 0,    /* Page is in main memory */
-        VPM_IO          = 1,    /* Page is onboard I/O */
-        VPM_VME16       = 2,    /* Page is on VMEbus, accessing 16-bit dev */
-        VPM_VME32       = 3,    /* Page is on VMEbus, accessing 32-bit dev */
-        VPM_MEMORY_NOCACHE = 4, /* Page is in main memory, but not cacheable */
-};
-
-struct pgmapent {
-        unsigned        pm_valid        :1;     /* This entry is valid */
-        enum pm_perm    pm_permissions  :2;     /* Access privileges */
-        enum pm_types   pm_type         :3;     /* Type of page+don't cache */
-        unsigned        pm_accessed     :1;     /* Page has been read */
-        unsigned        pm_modified     :1;     /* Page has been written */
-        unsigned                        :5;     /* Reserved */
-        unsigned        pm_page         :19;    /* Page # in physical memory */
-};
-#endif
-
-/* for x86, flip the fields, not the bits */
-struct XXpgmapent {
-        unsigned        pm_page         :19;    /* Page # in physical memory */
-        unsigned                        :5;     /* Reserved */
-        unsigned        pm_modified     :1;     /* Page has been written */
-        unsigned        pm_accessed     :1;     /* Page has been read */
-        enum pm_types   pm_type         :3;     /* Type of page+don't cache */
-        enum pm_perm    pm_permissions  :2;     /* Access privileges */
-        unsigned        pm_valid        :1;     /* This entry is valid */
-};
-
-/*
- * These unions are used to define page map entries and enable register
- * values, and get at their hex representations.
- */
-union longmap {
-	// long	longval;
-	int32	longval;
-	struct pgmapent pgmapent;
-};
-
-union XXlongmap {
-	int32	longval;
-	struct XXpgmapent pgmapent;
-};
-
-
+#ifdef notdef
 int
-sizes ( void )
+main()
 {
 	printf ( "long is %d\n", sizeof(long) );	// 8
 	printf ( "int is %d\n", sizeof(int) );		// 4
-	printf ( "pmgmapent is %d\n", sizeof(struct pgmapent) );	// 4
 }
+#endif
 
 int
 main()
@@ -135,7 +90,7 @@ main()
 	/*
 	 * Declare assorted registers that we're interested in.
 	 */
-	union XXlongmap mapper;
+	union longmap mapper;
 	/* Assume structs start at 0 */
 	/* Used to get the offset for "i_fvo" */
 	struct XXintstack *ip = 0;
@@ -147,8 +102,6 @@ main()
 
 	struct intersil7170 *intersilp = 0;
 	struct memreg *memerrp = 0;
-
-	// sizes ();
 
 	/*
 	 * Fields from cpu.addrs.h

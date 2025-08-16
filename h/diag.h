@@ -52,7 +52,7 @@ struct diag_state {
 	unsigned long	ds_a5;
 	unsigned long	ds_mainmemsize;
 	unsigned long	ds_a7;
-};
+} __attribute__ ((packed)) ;
 
 /*
  * How long to loop (dbra to self) while holding an LED value steady.

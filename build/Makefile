@@ -13,7 +13,12 @@ IDENT='-DID="Rev 2.1"' -DSUN3 -DCARRERA
 # Now this is in bootrom.lds
 #RELOC=0FEF0000
 
-COPTS= -O -Wno-endif-labels -Wno-implicit-function-declaration -Wno-multichar
+# -Os requries memcpy
+# -O3 produces a binary > 64 KiB
+# -O2 works but is quite close to 64 KiB
+# -O1 works and has some margin (~54 KiB)
+
+COPTS= -O2 -Wno-endif-labels -Wno-implicit-function-declaration -Wno-multichar
 # CFLAGS = -I../h -I. ${COPTS} ${IDENT} -DMC68000
 #CFLAGS = -I../h ${COPTS} ${IDENT} -DMC68000
 CFLAGS = -I../h ${COPTS} ${IDENT} -DANSI
@@ -21,7 +26,7 @@ CFLAGS = -I../h ${COPTS} ${IDENT} -DANSI
 #AFLAGS = -m68020 -x assembler-with-cpp -Wno-endif-labels
 AFLAGS = -march=68020 -mcpu=68020 -x assembler-with-cpp -Wa,--register-prefix-optional -Wno-endif-labels
 
-LFLAGS = -T bootrom.lds --no-warn-rwx-segments
+LFLAGS = -T bootrom.lds # --no-warn-rwx-segments
 
 # For cross compile to m68k target
 CC = m68k-linux-gnu-gcc -m68020 -fno-builtin $(CFLAGS)
@@ -37,7 +42,7 @@ OBJS = romvec.o trap.o mapmem.o reset.o cpu.map.o \
 	getline.o printf.o busyio.o \
 	keypress.o getkey.o ktab.s2.o \
 	boot.o monalloc.o common.o blts.o \
-	expand.o finit.o fwritestr.o gallmash.o mem_grab.o \
+	expand.o finit.o fwritestr.o rop.o gallmash.o mem_grab.o \
 	if_ie.o \
 	sc.o sd.o xxboot.o xxprobe.o \
 	scutils.o space.o st.o \
@@ -51,7 +56,7 @@ ALT_OBJS = xy.o tm.o xt.o xd.o
 ORIG_OBJS = romvec.o trap.o mapmem.o reset.o cpu.map.o diag.o banner.o commands.o \
     idprom.o usecmd.o getline.o printf.o busyio.o keypress.o\
     getkey.o ktab.s2.o boot.o monalloc.o common.o blts.o \
-    expand.o finit.o fwritestr.o gallmash.o mem_grab.o if_ie.o \
+    expand.o finit.o fwritestr.o rop.o gallmash.o mem_grab.o if_ie.o \
     xy.o sc.o sd.o xxboot.o xxprobe.o scutils.o space.o st.o tm.o xt.o \
     inet.o tftp.o diagmenus.o machdep.o cmp.o patt.o db.o si.o xd.o
 
@@ -67,7 +72,7 @@ ORIG_OBJS = romvec.o trap.o mapmem.o reset.o cpu.map.o diag.o banner.o commands.
 
 #all: $(OBJS)
 
-all: bootrom.elf bootrom.bin bootrom.dump
+all: bootrom.elf bootrom
 
 xdump:
 	$(DUMP) machdep.o >machdep.dump
@@ -76,9 +81,6 @@ xdump:
 check: chkalign.c
 	$(CC) -c chkalign.c
 	$(DUMP) chkalign.o >check.dump
-
-assym:
-	../tools/genassym >../sun3/assym.h
 
 # ---------------------------------------------------
 
@@ -207,12 +209,15 @@ db.o: ../sun3/db.s
 si.o: ../dev/si.c
 	$(CC) -c $<
 
+rop.o: rop.s
+	$(AS) -c $<
+
 
 # -----------------------------------------------------
 
 bootrom.elf: Makefile $(OBJS)
-	@echo linking bootrom
-	@rm -f bootrom
+	@echo linking bootrom.elf
+	@rm -f bootrom.elf
 	$(LD) $(LFLAGS) -o bootrom.elf ${OBJS}
 	$(SIZE) bootrom.elf
 
@@ -220,15 +225,30 @@ bootrom.bin: Makefile $(OBJS)
 	$(LD) $(LFLAGS) --oformat binary -s -o bootrom.bin ${OBJS}
 	ls -l bootrom.bin
 
-bootrom.dump: bootrom.elf
-	$(DUMP) bootrom.elf >bootrom.dump
+bootrom: bootrom.bin ../tools/sun3_checksum
+	@rm -f $@
+	dd if=/dev/zero of=$@ bs=65536 count=1
+	dd if=$< of=$@ bs=1 conv=notrunc
+	../tools/sun3_checksum $@
 
-load: bootrom.bin
-	loadice . -i bootrom.bin
+bootrom.dump: bootrom.elf
+	$(DUMP) bootrom.elf > bootrom.dump
+
+# details are in loadice.ini
+load: bootrom.bin loadice.ini
+	loadice
+
+
+bootrom.raw: bootrom.elf Makefile
+	m68k-linux-gnu-objcopy $< $@ --input-target=elf32-m68k --output-target=binary
+
+bootrom.padded: bootrom.raw Makefile
+	@rm -f $@
+	dd if=/dev/zero of=$@ bs=65536 count=1
+	dd if=$< of=$@ bs=1 conv=notrunc
 
 clean:
 	rm -f $(OBJS)
-	#rm -f bootrom.bin
 	rm -f bootrom.dump
 	rm -f bootrom.elf
 
