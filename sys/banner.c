@@ -56,6 +56,9 @@ banner ( void )
         } else {
                 printf("%s", &EEPROM->ee_diag.eed_banner[0]);
         }
+
+		// tjt
+		printf ( "Generated 3-16-2025\n" );
                 
 
         megs = (unsigned)(gp->g_memorysize)/(1024*1024);

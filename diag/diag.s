@@ -2799,7 +2799,7 @@ print$:
 |
 |       Check next character of message 
 |
-1:     clrl    d3                      | clear reg & digit counters
+1:      clrl    d3                      | clear reg & digit counters
         movl    #FC_SP, d0             
         movc    d0, sfc
         movsb   a4@, d0
@@ -2847,7 +2847,7 @@ print$:
 
 |       Check if it is an address register 
 |
-2:     cmpb    #0x61, d0               | is 'a'??
+2 :     cmpb    #0x61, d0               | is 'a'??
         jne     125f                    | nope, print char
 |
 |       This is an address register
@@ -2857,7 +2857,7 @@ print$:
 |
 |       Determine the contents of the register to be displayed
 |
-10:    movl    #FC_SP, d0
+10:     movl    #FC_SP, d0
         movc    d0, sfc
         movl    d2, d0
         roll    #4, d0                  | get next highest digit
@@ -2881,15 +2881,15 @@ print$:
 |
         moveq   #-1, d0                 
 #if defined(M25) || defined(FERRARI)
-11:    movb    UARTACNTL,d1            | wait for SCC to be ready
+11:     movb    UARTACNTL,d1            | wait for SCC to be ready
 #else
-11:    movsb   UARTACNTL, d1
+11:     movsb   UARTACNTL, d1
 #endif M25 FERRARI
         btst    #TXREADY, d1            | Wait for SCC to be ready
         dbne    d0, 11b                 | Loop until ready or timeout
 
         moveq   #0xf, d0
-12:    dbra    d0, 12b                 | Wait for character to be transmitted
+12:     dbra    d0, 12b                 | Wait for character to be transmitted
 
 #if defined(M25) || defined(FERRARI)
         movb    d6, UARTADATA           | Send the character out
@@ -2903,15 +2903,15 @@ print$:
 120:
         moveq   #-1, d0
 #if defined(M25) || defined(FERRARI)
-121:   movb    UARTBCNTL,d1            | wait for SCC to be ready
+121 :   movb    UARTBCNTL,d1            | wait for SCC to be ready
 #else  
-121:   movsb   UARTBCNTL, d1
+121:    movsb   UARTBCNTL, d1
 #endif M25 FERRARI
         btst    #TXREADY, d1            | Wait for SCC to be ready
         dbne    d0, 121b                | Loop until ready or timeout
  
         moveq   #0xf, d0
-122:   dbra    d0, 122b                | Wait for character to be transmitted
+122:    dbra    d0, 122b                | Wait for character to be transmitted
  
 #if defined(M25) || defined(FERRARI)
         movb    d6, UARTBDATA           | Send the character out
@@ -2927,7 +2927,7 @@ print$:
 |
 |       Send the character to the terminal
 |
-125:   movsb   a4@+, d6
+125:    movsb   a4@+, d6
 
         moveq   #FC_MMU, d0             | set up source and dest fc
         movc    d0, sfc

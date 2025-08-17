@@ -315,3 +315,8 @@ prom_mem_batchrop:
 .word 0xffdc
 .word 0x4e5e
 .word 0x4e75
+
+# Idiotic junk to avoid complaints from the Gnu linker
+.section        .note.GNU-stack,"",%progbits
+
+/* THE END */
