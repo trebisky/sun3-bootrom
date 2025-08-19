@@ -174,8 +174,9 @@ struct bootparam {
 	int		bp_part;	/* partition/file # */
 	char		*bp_name;	/* file name, points into bp_strings */
 	struct boottab	*bp_boottab;	/* Points to table entry for dev */
-} __attribute__ ((packed)) ;
-
+};
+// tjt thinks we can avoid packing this too, see below
+// } __attribute__ ((packed)) ;
 
 /*
  * This table entry describes a device.  It exists in the PROM; a
@@ -193,7 +194,11 @@ struct boottab {
 	int	(*b_strategy) ( void *, int );	/* strategy(iobp,rw) --> -1 or 0 */
 	char	*b_desc;		/* Printable string describing dev */
 	struct devinfo *b_devinfo;	/* Info to configure device */
-} __attribute__ ((packed)) ;
+};
+// tjt - I think we are OK not to pack this, in fact it would
+//  be good to allow padding for the 2 byte string at the start.
+//  8-17-2025
+// } __attribute__ ((packed)) ;
 
 /* This defines the set of map entry types */
 enum MAPTYPES {

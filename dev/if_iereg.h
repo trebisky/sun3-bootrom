@@ -1,4 +1,3 @@
-
 /*      @(#)if_iereg.h 1.1 86/09/27 SMI */
 
 /*
@@ -42,19 +41,24 @@ struct ieiscp {
 /* 
  * System Control Block - the focus of communication
  */
+// tjt - checked this, no padding */
 struct iescb {
         u_char          : 1;    /* mbz */
         u_char  ie_rus  : 3;    /* receive unit status */
         u_char          : 4;    /* mbz */
+
         u_char  ie_cx   : 1;    /* command done (interrupt) */
         u_char  ie_fr   : 1;    /* frame received (interrupt) */
         u_char  ie_cnr  : 1;    /* command unit not ready */
         u_char  ie_rnr  : 1;    /* receive unit not ready */
         u_char          : 1;    /* mbz */
         u_char  ie_cus  : 3;    /* command unit status */
+
         short   ie_cmd;         /* command word */
+
         ieoff_t ie_cbl;         /* command list */
         ieoff_t ie_rfa;         /* receive frame area */
+
         ieint_t ie_crcerrs;     /* count of CRC errors */
         ieint_t ie_alnerrs;     /* count of alignment errors */
         ieint_t ie_rscerrs;     /* count of discarded packets */
@@ -267,3 +271,5 @@ struct  ietbd {
         ieoff_t  ietbd_next;            /* next TBD */
         ieaddr_t ietbd_buf;             /* pointer to buffer */
 };
+
+/* THE END */

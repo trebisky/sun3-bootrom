@@ -78,23 +78,25 @@ enum RESOURCES {
 /*
  * Delay units are in microseconds.
  */
+// register int N = (((n)<<4) >> cpudelay);
 #define DELAY(n)        \
 { \
         extern int cpudelay; \
-        register int N = (((n)<<4) >> cpudelay); \
+        volatile int N = (((n)<<4) >> cpudelay); \
  \
         while (--N > 0)  asm volatile("": : :"memory") ; \
 }
 
+// register int N = (((n)<<3) >> cpudelay);
 #define CDELAY(c, n)    \
 { \
         extern int cpudelay; \
-        register int N = (((n)<<3) >> cpudelay); \
+        volatile int N = (((n)<<3) >> cpudelay); \
  \
         while (--N > 0) {  asm volatile("": : :"memory");	\
                 if (c) \
                         break; \
-	} \
+		} \
 }
 
 /*

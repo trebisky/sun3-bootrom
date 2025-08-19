@@ -89,7 +89,7 @@ static int iexmit ( struct ie_softc *, char *, int );
 static int iepoll ( struct ie_softc *, char * );
 static int iereset ( struct ie_softc *, struct saioreq * );
 
-/* tjt - this use of a cast to void * works, but it unfortunate */
+/* tjt - this use of a cast to void * works, but is unfortunate */
 struct saif ieif = {
         (void *) iexmit,
         (void *) iepoll,
@@ -177,7 +177,11 @@ ieinit ( struct saioreq *sip )
 
         es = (struct ie_softc *)sip->si_dmaaddr;
         es->es_obie = obie = (struct obie_device *)
-        devalloc(MAP_OBIO, VIOPG_ETHER << BYTES_PG_SHIFT, sizeof(*obie));
+			devalloc(MAP_OBIO, VIOPG_ETHER << BYTES_PG_SHIFT, sizeof(*obie));
+
+		printf ( "tjt - ie: es_obie = %x\n", es->es_obie );
+		printf ( "tjt - scb sizeof = %d\n", sizeof(struct iescb) );
+
         sip->si_devdata = (caddr_t)es;
         return iereset(es, sip);
 }
@@ -195,7 +199,9 @@ iereset ( struct ie_softc *es, struct saioreq *sip )
         struct ieconf *ic = &es->es_ic;
         int i, j;
         register struct mie_device *mie = es->es_mie;
-        register struct obie_device *obie = es->es_obie;
+        register volatile struct obie_device *obie = es->es_obie;
+		u_char *tjt;
+
         for (j = 0; j < 10; j++) {
                 /* Set up the control blocks for initializing the chip */
                 bzero((caddr_t)&es->es_scp, sizeof (struct iescp));
@@ -206,6 +212,9 @@ iereset ( struct ie_softc *es, struct saioreq *sip )
                 iscp->ie_scb = to_ieoff(es, (caddr_t)scb);
                 iscp->ie_cbbase = to_ieaddr(es, (caddr_t)es);
                 bzero((caddr_t)scb, sizeof (struct iescb));
+
+				printf ( "tjt - Here\n" );
+
                 /*
                  * The 82586 has bugs that require us to be in 
                  * loopback mode while we initialize it, to avoid
@@ -225,12 +234,21 @@ iereset ( struct ie_softc *es, struct saioreq *sip )
                 DELAY(20);
                 obie->obie_noreset = 1; /* Release Reset on 82586 */
                 DELAY(200);
+
+				/* tjt tests here */
+				tjt = (u_char *) obie;
+				*tjt = 0;
+				printf ( "obie 0 gives: %x\n", *tjt );
+				*tjt = 0xff;
+				printf ( "obie ff gives: %x\n", *tjt );
+
                 /*
                  * Now set up to let the Ethernet chip read the SCP.
                  * Intel wired in the address of the SCP.  It happens
                  * to be 0xFFFFF6.
                  */
                 (*(struct iescp *)SCP_LOC) = es->es_scp;
+
                 /*
                  * We are set up.  Give the chip a zap, then wait up to
                  * 100 msec, or until chip comes ready.
@@ -240,7 +258,9 @@ iereset ( struct ie_softc *es, struct saioreq *sip )
 
                 if (iscp->ie_busy == 1)      /* If no init, reset chip again. */
                         obie->obie_noreset = 0;
+
                 if (iscp->ie_busy == 1)
+                        printf("tjt - ie: busy.\n");
                         continue;       /* Continue loop until we get it */
 
                 /*
@@ -249,6 +269,7 @@ iereset ( struct ie_softc *es, struct saioreq *sip )
                 bzero((caddr_t)iad, sizeof (struct ieiaddr));
                 iad->ieia_cb.ie_cmd = IE_IADDR;
                 myetheraddr((struct ether_addr *)iad->ieia_addr);
+
                 if (iesimple(es, &iad->ieia_cb)) {
                         printf("ie: hang while setting Ethernet address.\n");
                         continue;

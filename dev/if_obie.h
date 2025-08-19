@@ -1,4 +1,3 @@
-
 /*      @(#)if_obie.h 1.1 86/09/27 SMI  */
 
 /*
@@ -21,3 +20,13 @@ struct obie_device {
         u_char  obie_buserr     : 1;    /* R/O: Ether DMA got bus error */
         u_char  obie_intr       : 1;    /* R/O: interrupt request */
 };
+
+/* tjt
+ *     See page 31 of the Sun 3 Tech manual for this.
+ * It is at address OxOOOCOOOO
+ * This is NOT part of the 82586, but is a register on the sun3 board.
+ * It is 8 bits wide.
+ * reset and loopback bits are active low.
+ */
+
+/* THE END */

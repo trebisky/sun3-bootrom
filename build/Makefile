@@ -32,7 +32,7 @@ LFLAGS = -T bootrom.lds # --no-warn-rwx-segments
 CC = m68k-linux-gnu-gcc -m68020 -fno-builtin $(CFLAGS)
 AAS = m68k-linux-gnu-as -m68020
 AS = m68k-linux-gnu-gcc -DASM $(AFLAGS)
-LD = m68k-linux-gnu-ld
+LD = m68k-linux-gnu-ld --no-warn-rwx-segments
 SIZE = m68k-linux-gnu-size
 
 DUMP = m68k-linux-gnu-objdump -d
@@ -47,7 +47,8 @@ OBJS = romvec.o trap.o mapmem.o reset.o cpu.map.o \
 	sc.o sd.o xxboot.o xxprobe.o \
 	scutils.o space.o st.o \
 	inet.o tftp.o \
-	diagmenus.o machdep.o cmp.o patt.o db.o si.o
+	diagmenus.o machdep.o cmp.o patt.o db.o si.o \
+	version.o
 
 # These are devices we never intend to deal with
 ALT_OBJS = xy.o tm.o xt.o xd.o
@@ -72,7 +73,7 @@ ORIG_OBJS = romvec.o trap.o mapmem.o reset.o cpu.map.o diag.o banner.o commands.
 
 #all: $(OBJS)
 
-all: bootrom.elf bootrom
+all: bootrom.elf bootrom.bin
 
 xdump:
 	$(DUMP) machdep.o >machdep.dump
@@ -209,9 +210,21 @@ db.o: ../sun3/db.s
 si.o: ../dev/si.c
 	$(CC) -c $<
 
-rop.o: rop.s
+rop.o: ../sys/rop.s
 	$(AS) -c $<
 
+
+# -----------------------------------------------------
+
+# a weird make idiom to cause this to be rebuilt every time.
+FORCE:
+
+version.c:  FORCE
+	rm -f version.c
+	./mkversion >version.c
+
+version.o: version.c
+	$(CC) -c $<
 
 # -----------------------------------------------------
 
@@ -220,15 +233,25 @@ bootrom.elf: Makefile $(OBJS)
 	@rm -f bootrom.elf
 	$(LD) $(LFLAGS) -o bootrom.elf ${OBJS}
 	$(SIZE) bootrom.elf
+	$(DUMP) bootrom.elf > bootrom.dump
 
-bootrom.bin: Makefile $(OBJS)
-	$(LD) $(LFLAGS) --oformat binary -s -o bootrom.bin ${OBJS}
-	ls -l bootrom.bin
+# bootrom.bin: Makefile $(OBJS)
+# 	$(LD) $(LFLAGS) --oformat binary -s -o bootrom.bin ${OBJS}
+# 	ls -l bootrom.bin
+# 
+# bootrom: bootrom.bin ../tools/sun3_checksum
+# 	@rm -f $@
+# 	dd if=/dev/zero of=$@ bs=65536 count=1
+# 	dd if=$< of=$@ bs=1 conv=notrunc
+# 	../tools/sun3_checksum $@
 
-bootrom: bootrom.bin ../tools/sun3_checksum
+bootrom.bin: Makefile $(OBJS) ../tools/sun3_checksum
+	$(LD) $(LFLAGS) --oformat binary -s -o bootrom.tmp ${OBJS}
+	ls -l bootrom.tmp
 	@rm -f $@
 	dd if=/dev/zero of=$@ bs=65536 count=1
-	dd if=$< of=$@ bs=1 conv=notrunc
+	dd if=bootrom.tmp of=$@ bs=1 conv=notrunc
+	@rm -f bootrom.tmp
 	../tools/sun3_checksum $@
 
 bootrom.dump: bootrom.elf
@@ -237,7 +260,6 @@ bootrom.dump: bootrom.elf
 # details are in loadice.ini
 load: bootrom.bin loadice.ini
 	loadice
-
 
 bootrom.raw: bootrom.elf Makefile
 	m68k-linux-gnu-objcopy $< $@ --input-target=elf32-m68k --output-target=binary
@@ -251,5 +273,7 @@ clean:
 	rm -f $(OBJS)
 	rm -f bootrom.dump
 	rm -f bootrom.elf
+	rm -f bootrom.tmp
+	rm -f bootrom
 
 # THE END

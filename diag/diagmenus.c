@@ -2157,7 +2157,7 @@ ports_test ( int mouse )
                           *p_SCC_ctl = pattn;   /* write data */
                           DELAY(10);                            /* time delay */
                           *p_SCC_ctl = 12; /* select RR 12 of SCC */
-                          DELAY(10)
+                          DELAY(10);
                           rdata = *p_SCC_ctl;   /* read data */
                           if (pattn != rdata) {
                               error = scc_derr("", port, pattn, rdata);

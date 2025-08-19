@@ -48,6 +48,9 @@ int     trap(), bus_error(), addr_error();
 int nmi();
 #endif
 
+// tjt - this is a value used by the DELAY and CDELAY macros
+// It "scales" the delay value, and could be adjusted for
+// different CPU clock rates -- but it never is.
 int cpudelay =  3;
 
 /*
@@ -450,7 +453,7 @@ test_mem (const int addr, const int limit)
             /*  Test 1 Megabyte unless it will hit the global variables */
             start_addr = addr;
             for (; start_addr < limit; start_addr += 0x100000) {
-	        printf("%c\b", ind[feedback++ % 4]);            /* show life */
+				printf("%c\b", ind[feedback++ % 4]);            /* show life */
                 if ((end_addr = start_addr + 0x100000) > limit) /* limit? */
                    end_addr = limit;
 

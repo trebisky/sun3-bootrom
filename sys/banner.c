@@ -24,6 +24,9 @@ static void menu_string ( char *, int, char * );
 
 char monrev[] = ID;
 
+// tjt
+extern char *build_version;
+
 void
 banner ( void )
 {
@@ -58,7 +61,8 @@ banner ( void )
         }
 
 		// tjt
-		printf ( "Generated 3-16-2025\n" );
+		// printf ( "Generated 3-16-2025\n" );
+		printf ( "%s\n", build_version );
                 
 
         megs = (unsigned)(gp->g_memorysize)/(1024*1024);

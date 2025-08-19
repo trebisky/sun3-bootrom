@@ -37,10 +37,9 @@ static void blinkscreen ( void );
 // tjt
 // We can't find this anywhere !!
 // prom_mem_batchrop(fbpos, f, &charpos, 1);
-// We hack in a stub to satisfy the link.
-
-static void
-prom_mem_batchrop ( struct pr_prpos a1, int a2, struct pr_prpos *a3, int a4 );
+// 
+// We first hacked in a stub to satisfy the link.
+// Then Romain created rop.s
 
 
 #ifndef GRUMMAN

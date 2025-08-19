@@ -150,7 +150,7 @@ unsigned char   uart_nodtr[] = {
  * reset).
  */
 void
-reset_uart ( unsigned char *addr, int wholechip)
+reset_uart ( volatile unsigned char *addr, int wholechip)
 {
         register unsigned char *p = uart_init;
         register unsigned char *endtable = &uart_init[sizeof(uart_init)];
