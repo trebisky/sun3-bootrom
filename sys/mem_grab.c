@@ -14,6 +14,7 @@
  *              loopd6(a,b;) --> while((short)d6var-- != 0) b;
  * This is to generate better code.  It should be fixed by
  * fixing the C compiler to generate the better code in the portable case.
+ * RD: let's assume gcc is doing "good enough" code.
  */
 
 #include "../h/types.h"
@@ -22,18 +23,6 @@
 #include "../h/memvar.h"
 #include "../h/pr_util.h"
 
-/* tjt - I am being really lazy.
- * The original code did some whacky casting using "handy" that
- *  gcc does not like.  I don't expect to build any of the pixrect
- *  oriented framebuffer code anyway, so I'll just stub this out.
- */
-
-void
-prom_mem_grab ( struct pr_prpos dst, int op, struct pr_prpos *src, short count )
-{
-}
-
-#ifdef ORIGINAL
 /* Read char from random pixrect into a little pixrect. */
 /* Inverse of batchrop. */
 /* For the moment, dst and src are reversed in names here. */
@@ -42,37 +31,40 @@ prom_mem_grab ( struct pr_prpos dst, int op, struct pr_prpos *src, short count )
 {
         register u_short *sp;
         register char *dp;
-        register char *handy;
         register int sizex, sizey;  /* sizey must be d6 */
         register int vert, dskew;
+        struct mpr_data *dprd;
+        struct pixrect *spr;
+        struct mpr_data *sprd;
 
 #ifdef lint
         count = count;  op = op;
 #endif
 
-#define dprd ((struct mpr_data *)handy)
-        dprd = mpr_d(dst.pr);
+        dprd = ((struct mpr_data *)(dst.pr)->pr_data);
         vert = dprd->md_linebytes;
-        dp = (char *)mprd_addr(dprd, dst.pos.x, dst.pos.y);
-        dskew = mprd_skew(dprd, dst.pos.x, dst.pos.y);
-#undef dprd
+        dp = (char *)mprd_addr(dprd, dst.pos.x, dst.pos.y); /* see h/memvar.h */
+        dskew = mprd_skew(dprd, dst.pos.x, dst.pos.y); /* see h/memvar.h */
 
-#define spr ((struct pixrect *)handy)
         spr = src->pr;
         sizex = spr->pr_size.x;
         sizey = spr->pr_size.y;
-
-#define sprd ((struct mpr_data *)handy)
-        sprd = mpr_d(spr);
+        sprd = ((struct mpr_data *)(spr)->pr_data);
         sp = (u_short *)sprd->md_image;
 
-		if (dskew + sizex <= 16) {
-			loopd6(srca, *sp++ = *(u_short *)dp << dskew; dp += vert;)
-		} else {
-			dskew = 16 - dskew;
-			loopd6(srcb, *sp++ = *(u_int *)dp >> dskew; dp += vert;)
-		}
+        if (dskew + sizex <= 16) {
+                //loopd6(srca, *sp++ = *(u_short *)dp << dskew; dp += vert;)
+                while((short)sizey-- != 0) {
+                        *sp++ = *(u_short *)dp << dskew;
+                        dp += vert;
+                }
+                
+        } else {
+                dskew = 16 - dskew;
+                //loopd6(srcb, *sp++ = *(u_int *)dp >> dskew; dp += vert;)
+                while((short)sizey-- != 0) {
+                        *sp++ = *(u_int *)dp >> dskew;
+                        dp += vert;
+                }
+        }
 }
-#endif
-
-/* THE END */
