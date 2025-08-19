@@ -7,6 +7,7 @@
 # SIRIUS is the 3/260 3/280
 # PRISM is the 3/110
 # M25 is the 3/50
+# FERRARI is the 3/60, preliminary support added by Romain
 
 IDENT='-DID="Rev 2.1"' -DSUN3 -DCARRERA
 

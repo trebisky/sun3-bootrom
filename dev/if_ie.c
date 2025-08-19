@@ -241,6 +241,7 @@ iereset ( struct ie_softc *es, struct saioreq *sip )
 				printf ( "obie 0 gives: %x\n", *tjt );
 				*tjt = 0xff;
 				printf ( "obie ff gives: %x\n", *tjt );
+				/* It acts like ram, which is not good */
 
                 /*
                  * Now set up to let the Ethernet chip read the SCP.
@@ -254,6 +255,7 @@ iereset ( struct ie_softc *es, struct saioreq *sip )
                  * 100 msec, or until chip comes ready.
                  */
                 ieca(es);
+
                 CDELAY(iscp->ie_busy != 1, 100);
 
                 if (iscp->ie_busy == 1)      /* If no init, reset chip again. */
@@ -359,9 +361,13 @@ ierustart ( struct ie_softc *es )
         scb->ie_rfa = to_ieoff(es, (caddr_t)rfd);
         scb->ie_cmd = IECMD_RU_START;
         ieca(es);
+
         return OK;
 }
 
+/* Pulse the CA control bit -- CA is "channel attention" */
+// tjt - at high enough levels the optimizer inlines this,
+// but why don't we just make this an inline function?
 static void
 ieca ( struct ie_softc *es )
 {
@@ -389,6 +395,7 @@ iesimple ( struct ie_softc *es, struct iecb *cb )
         if (scb->ie_cnr)
                 scb->ie_cmd |= IECMD_ACK_CNR;
         ieca(es);
+
         while (!cb->ie_done)            /* XXX */
                 if (timebomb-- <= 0) return TIMEOUT;
         while (scb->ie_cmd != 0)        /* XXX */
@@ -398,6 +405,7 @@ iesimple ( struct ie_softc *es, struct iecb *cb )
         if (scb->ie_cnr)
                 scb->ie_cmd |= IECMD_ACK_CNR;
         ieca(es);
+
         return OK;
 }
 
@@ -482,6 +490,7 @@ iepoll ( struct ie_softc *es, char *buf )
         if (scb->ie_rnr)
                 scb->ie_cmd |= IECMD_ACK_RNR;
         ieca(es);
+
         ierustart(es);
         return (len);
 }
