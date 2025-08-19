@@ -43,7 +43,7 @@ OBJS = romvec.o trap.o mapmem.o reset.o cpu.map.o \
 	getline.o printf.o busyio.o \
 	keypress.o getkey.o ktab.s2.o \
 	boot.o monalloc.o common.o blts.o \
-	expand.o finit.o fwritestr.o rop.o gallmash.o mem_grab.o \
+	expand.o finit.o fwritestr.o gallmash.o mem_grab.o mem_batchrop.o \
 	if_ie.o \
 	sc.o sd.o xxboot.o xxprobe.o \
 	scutils.o space.o st.o \
@@ -162,6 +162,9 @@ if_ie.o: ../dev/if_ie.c
 	$(CC) -c $<
 
 mem_grab.o: ../sys/mem_grab.c
+	$(CC) -c $<
+
+mem_batchrop.o: ../sys/mem_batchrop.c
 	$(CC) -c $<
 
 sc.o: ../dev/sc.c
