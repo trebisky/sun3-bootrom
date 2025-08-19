@@ -17,7 +17,7 @@ IDENT='-DID="Rev 2.1"' -DSUN3 -DCARRERA
 # Now this is in bootrom.lds
 #RELOC=0FEF0000
 
-# -Os requries memcpy
+# -Os requries memcpy (now supplied), smallest (~51 KiB)
 # -O3 produces a binary > 64 KiB
 # -O2 works but is quite close to 64 KiB
 # -O1 works and has some margin (~54 KiB)
@@ -64,6 +64,9 @@ KB_OBJS = getkey.o ktab.s2.o
 # These are the scsi drivers
 # see boot.c for the only lines that include them.
 SCSI_OBJS = sc.o sd.o st.o si.o
+
+# memcpy
+MEMCPY_OBJS = memcpy.o
 
 #OBJS = $(BASE_OBJS) $(FB_OBJS)
 OBJS = $(BASE_OBJS)
@@ -237,6 +240,9 @@ si.o: ../dev/si.c
 	$(CC) -c $<
 
 rop.o: ../sys/rop.s
+	$(AS) -c $<
+
+memcpy.o: ../sys/memcpy.S
 	$(AS) -c $<
 
 

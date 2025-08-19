@@ -16,7 +16,7 @@ IDENT='-DID="Rev 2.1"' -DSUN3 -DCARRERA
 # Now this is in bootrom.lds
 #RELOC=0FEF0000
 
-# -Os requries memcpy
+# -Os requries memcpy (now supplied), smallest (~51 KiB)
 # -O3 produces a binary > 64 KiB
 # -O2 works but is quite close to 64 KiB
 # -O1 works and has some margin (~54 KiB)
@@ -40,6 +40,9 @@ SIZE = m68k-linux-gnu-size
 
 DUMP = m68k-linux-gnu-objdump -d
 
+# memcpy
+MEMCPY_OBJS = memcpy.o
+
 OBJS = romvec.o trap.o mapmem.o reset.o cpu.map.o \
 	diag.o banner.o commands.o idprom.o usecmd.o  \
 	getline.o printf.o busyio.o \
@@ -51,7 +54,8 @@ OBJS = romvec.o trap.o mapmem.o reset.o cpu.map.o \
 	scutils.o space.o st.o \
 	inet.o tftp.o \
 	diagmenus.o machdep.o cmp.o patt.o db.o si.o \
-	version.o
+	version.o \
+	$(MEMCPY_OBJS)
 
 # These are devices we never intend to deal with
 ALT_OBJS = xy.o tm.o xt.o xd.o
@@ -224,6 +228,8 @@ si.o: ../dev/si.c
 rop.o: ../sys/rop.s
 	$(AS) -c $<
 
+memcpy.o: ../sys/memcpy.S
+	$(AS) -c $<
 
 # -----------------------------------------------------
 
