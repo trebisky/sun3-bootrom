@@ -4,3 +4,4 @@ bootrom.elf
 bootrom.bin
 *.dump
 loadice.dat
+bootrom.dump.DELAY

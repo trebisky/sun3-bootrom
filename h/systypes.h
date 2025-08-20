@@ -1,6 +1,5 @@
 /*	@(#)systypes.h 1.1 86/09/27 SMI; from UCB 4.11 83/07/01	*/
 
-
 /*
  * Basic system types and major/minor device constructing/busting macros.
  */
@@ -21,6 +20,26 @@ typedef	unsigned short	u_short;
 typedef	unsigned int	u_int;
 typedef	unsigned long	u_long;
 typedef	unsigned short	ushort;		/* System V compatibility */
+
+// tjt adds these 8-20-2025
+// I resist the temptation to add "long" to these.
+// I also resist the temptation towards vu_char and such
+
+typedef	unsigned char	u_8;
+typedef	unsigned short	u_16;
+typedef	unsigned int	u_32;
+
+typedef	volatile unsigned char	vu_8;
+typedef	volatile unsigned short	vu_16;
+typedef	volatile unsigned int	vu_32;
+
+typedef	char	i_8;
+typedef	short	i_16;
+typedef	int		i_32;
+
+typedef	volatile char	vi_8;
+typedef	volatile short	vi_16;
+typedef	volatile int	vi_32;
 
 #ifdef vax
 typedef	struct	_physadr { int r[1]; } *physadr;

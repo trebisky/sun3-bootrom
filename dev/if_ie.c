@@ -39,19 +39,26 @@
 #include "../h/in.h"
 #include "../dev/if_ether.h"
 #include "../dev/if_iereg.h"
-#include "../dev/if_mie.h"
+// #include "../dev/if_mie.h"
 #include "../dev/if_obie.h"
 #include "../h/idprom.h"
 #include "../sun3/cpu.map.h"    
 
+// one or the other of these to get ETHER_BASE
+// #include "sasun.h"    
+#include "../h/cpu.addrs.h"    
+
 // in sys/inet.c
 void myetheraddr ( struct ether_addr * );
 
-
+#ifdef notdef
+// tjt - interesting, but never used in the driver.
 #define IEVVSIZ         1024            /* # of pages in page map */
 #define IEPHYMEMSIZ     (8*1024)
 #define IEVIRMEMSIZ     (8*1024)
 #define IEPAGSIZ        1024
+#endif
+
 #define IERBUFSIZ       1600
 #define IEXBUFSIZ       1600
 #define IEDMABASE       0x0F000000      /* Can access top 16MB of memory */
@@ -69,13 +76,14 @@ struct ie_softc {
         struct  ierfd   es_rfd;
         struct  ietfd   es_tfd;
         struct  ietbd   es_tbd;
-        struct  mie_device *es_mie;
+        // struct  mie_device *es_mie;
         struct  obie_device *es_obie;
         short   es_type;
         struct  ieiaddr es_iaddr;       /* Cmd to set up our Ethernet addr */
         struct  ieconf  es_ic;          /* Cmd to configure the chip */
-        char    es_rbuf[IERBUFSIZ];
-        char    es_xbuf[IEXBUFSIZ];     /* Only used in Multibus version */
+        char    es_rbuf[IERBUFSIZ];		/* receive buffer */
+        char    es_xbuf[IEXBUFSIZ];     /* transmit buffer */
+        // char    es_xbuf[IEXBUFSIZ];  // a lie: Only used in Multibus version
         char    es_rbuf2[10];           /* Hack for 82586 ucode bugs */
 };
 
@@ -173,14 +181,25 @@ ieinit ( struct saioreq *sip )
         int paddr;
         int i;
         
-        register struct obie_device *obie;
+        // register struct obie_device *obie;
 
-        es = (struct ie_softc *)sip->si_dmaaddr;
-        es->es_obie = obie = (struct obie_device *)
-			devalloc(MAP_OBIO, VIOPG_ETHER << BYTES_PG_SHIFT, sizeof(*obie));
+		// This address is set up in sys/xxboot.c
+		// I see: 0FF0_0000
+        es = (struct ie_softc *) sip->si_dmaaddr;
+		// printf ( "tjt - ie: dmaaddr = %x\n", es );
 
-		printf ( "tjt - ie: es_obie = %x\n", es->es_obie );
-		printf ( "tjt - scb sizeof = %d\n", sizeof(struct iescb) );
+        es->es_obie = ETHER_BASE;
+
+		// tjt 8-19-2025
+		// using devalloc works, but why allocate a second
+		// virtual address when we already have one set up?
+        // es->es_obie = obie = (struct obie_device *)
+		//		devalloc(MAP_OBIO, VIOPG_ETHER << BYTES_PG_SHIFT, sizeof(*obie));
+
+		// I see: 0FE0_C000
+		// printf ( "tjt - ie: es_obie = %x\n", es->es_obie );
+		// 16 bytes, no padding
+		// printf ( "tjt - scb sizeof = %d\n", sizeof(struct iescb) );
 
         sip->si_devdata = (caddr_t)es;
         return iereset(es, sip);
@@ -198,22 +217,21 @@ iereset ( struct ie_softc *es, struct saioreq *sip )
         struct ieiaddr *iad = &es->es_iaddr;
         struct ieconf *ic = &es->es_ic;
         int i, j;
-        register struct mie_device *mie = es->es_mie;
+        // register struct mie_device *mie = es->es_mie;
         register volatile struct obie_device *obie = es->es_obie;
-		u_char *tjt;
 
         for (j = 0; j < 10; j++) {
                 /* Set up the control blocks for initializing the chip */
                 bzero((caddr_t)&es->es_scp, sizeof (struct iescp));
                 es->es_scp.ie_iscp = to_ieaddr(es, (caddr_t)iscp);
+
                 bzero((caddr_t)iscp, sizeof (struct ieiscp));
                 iscp->ie_busy = 1;
                 iscp->ie_cbbase = 0;
                 iscp->ie_scb = to_ieoff(es, (caddr_t)scb);
                 iscp->ie_cbbase = to_ieaddr(es, (caddr_t)es);
-                bzero((caddr_t)scb, sizeof (struct iescb));
 
-				printf ( "tjt - Here\n" );
+                bzero((caddr_t)scb, sizeof (struct iescb));
 
                 /*
                  * The 82586 has bugs that require us to be in 
@@ -235,13 +253,22 @@ iereset ( struct ie_softc *es, struct saioreq *sip )
                 obie->obie_noreset = 1; /* Release Reset on 82586 */
                 DELAY(200);
 
+#ifdef notdef
+				{
+				vu_8 *tjt;
+
 				/* tjt tests here */
 				tjt = (u_char *) obie;
 				*tjt = 0;
 				printf ( "obie 0 gives: %x\n", *tjt );
 				*tjt = 0xff;
 				printf ( "obie ff gives: %x\n", *tjt );
-				/* It acts like ram, which is not good */
+				}
+				/* If it acts like ram, that is not good.
+				 * the 2 undefined bits are grounded for read.
+				 */
+#endif
+				// printf ( "tjt - ie Here 0\n" );
 
                 /*
                  * Now set up to let the Ethernet chip read the SCP.
@@ -250,7 +277,9 @@ iereset ( struct ie_softc *es, struct saioreq *sip )
                  */
                 (*(struct iescp *)SCP_LOC) = es->es_scp;
 
-                /*
+                /* tjt - after reset, the chip waits for the first CA
+				 * to perform initialization.
+				 *
                  * We are set up.  Give the chip a zap, then wait up to
                  * 100 msec, or until chip comes ready.
                  */
@@ -261,9 +290,12 @@ iereset ( struct ie_softc *es, struct saioreq *sip )
                 if (iscp->ie_busy == 1)      /* If no init, reset chip again. */
                         obie->obie_noreset = 0;
 
-                if (iscp->ie_busy == 1)
+                if (iscp->ie_busy == 1) {
                         printf("tjt - ie: busy.\n");
                         continue;       /* Continue loop until we get it */
+				}
+
+				// printf ( "tjt - ie Here 1\n" );
 
                 /*
                  * Now try to run a few simple commands before we say "OK".
@@ -276,12 +308,14 @@ iereset ( struct ie_softc *es, struct saioreq *sip )
                         printf("ie: hang while setting Ethernet address.\n");
                         continue;
                 }
+				// printf ( "tjt - ie Here 2\n" );
 
                 iedefaultconf(ic);
                 if (iesimple(es, &ic->ieconf_cb)) {
                         printf("ie: hang while setting chip config.\n");
                         continue;
                 }
+				// printf ( "tjt - ie Here 3\n" );
 
                 /*
                  * Take the Ethernet interface chip out of loopback mode, i.e.
@@ -297,6 +331,7 @@ iereset ( struct ie_softc *es, struct saioreq *sip )
                         printf("ie: hang while starting receiver.\n");
                         continue;
                 }
+				// printf ( "tjt - ie Here 4\n" );
                         
                 return 0;               /* It all worked! */
         }
@@ -379,15 +414,20 @@ static int
 iesimple ( struct ie_softc *es, struct iecb *cb )
 {
         register struct iescb *scb = &es->es_scb;
-        register int timebomb = TIMEBOMB;
+        register volatile int timebomb = TIMEBOMB;
 
-        *(short *)cb = 0;       /* clear status bits */
+        *(vu_16 *)cb = 0;       /* clear status bits */
         cb->ie_el = 1;
         cb->ie_next = 0;
 
         /* start CU */
         while (scb->ie_cmd != 0)        /* XXX */
-                if (timebomb-- <= 0) return TIMEOUT;
+			if (timebomb-- <= 0) return TIMEOUT;
+			// if (timebomb-- <= 0) {
+			// 	printf ( "tjt iesimple 1: %d\n", scb->ie_cmd );
+			// 	return TIMEOUT;
+			// }
+
         scb->ie_cbl = to_ieoff(es, (caddr_t)cb);
         scb->ie_cmd = IECMD_CU_START;
         if (scb->ie_cx)
@@ -398,8 +438,10 @@ iesimple ( struct ie_softc *es, struct iecb *cb )
 
         while (!cb->ie_done)            /* XXX */
                 if (timebomb-- <= 0) return TIMEOUT;
+
         while (scb->ie_cmd != 0)        /* XXX */
                 if (timebomb-- <= 0) return TIMEOUT;
+
         if (scb->ie_cx)
                 scb->ie_cmd |= IECMD_ACK_CX;
         if (scb->ie_cnr)
@@ -424,10 +466,13 @@ iexmit ( struct ie_softc *es, char *buf, int count )
         tbd->ietbd_eof = 1;
         tbd->ietbd_cntlo = count & 0xFF;
         tbd->ietbd_cnthi = count >> 8;
+
         bcopy(buf, es->es_xbuf, count);
         tbd->ietbd_buf = to_ieaddr(es, es->es_xbuf);
+
         td->ietfd_tbd = to_ieoff(es, (caddr_t)tbd);
         td->ietfd_cmd = IE_TRANSMIT;
+
         if (iesimple(es, (struct iecb *)td)) {
                 printf("ie: xmit hang\n");
                 return -1;

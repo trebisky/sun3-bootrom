@@ -26,3 +26,5 @@
 /* FIXME: This DELAY() macro doesn't match the kernel's for non-68010 */
 #define DELAY(n)        { register int N = (n)>>1; while (--N > 0) asm volatile("": : :"memory"); }
 #endif
+
+/* THE END */

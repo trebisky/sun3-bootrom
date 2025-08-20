@@ -3,6 +3,8 @@
 static  char sccsid[] = "@(#)if_le.c 1.1 86/09/27 Copyr 1986 Sun Micro";
 #endif
 
+// tjt - not yet made ANSI, not needed for 3-160
+
 /*
  * Copyright (c) 1986 by Sun Microsystems, Inc.
  */
@@ -44,6 +46,8 @@ static  char sccsid[] = "@(#)if_le.c 1.1 86/09/27 Copyr 1986 Sun Micro";
 
 // in sys/inet.c
 void myetheraddr ( struct ether_addr * );
+
+static int lanceinit ( struct saioreq * );
 
 /* Determine whether we are PROM or not. */
 /* #define PROM 1 */
@@ -148,9 +152,8 @@ lanceopen(sip)
  * Set up memory maps and Ethernet chip.
  * Returns 1 for error (after printing message), 0 for ok.
  */
-int
-lanceinit(sip)
-        struct saioreq *sip;
+static int
+lanceinit ( struct saioreq *sip )
 {
         register struct lance_softc *es;
         int paddr;

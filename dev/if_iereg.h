@@ -11,6 +11,305 @@
  */
 
 /* byte-swapped data types */
+typedef vu_16 ieoff_t;          /* control block offsets from iscp cbbase */
+#define IENORBD 0xffff          /* null pointer for rbd */
+typedef vu_16 ieint_t;          /* 16 bit integers */
+typedef vu_32 ieaddr_t;         /* data (24-bit) addresses */
+
+/*
+ * System Configuration Pointer
+ * Must be at 0xFFFFF6 in chip's address space
+ */
+#define IESCPADDR 0xFFFFF6
+
+struct iescp {
+        vu_8    ie_sysbus;      /* bus width: 0 => 16, 1 => 8 */
+        i_8     _pad[5];        /* -- unused */
+        ieaddr_t ie_iscp;       /* address of iscp */
+};
+
+/*
+ * Intermediate System Configuration Pointer
+ * Specifies base of all other control blocks and the offset of the SCB
+ */
+struct ieiscp {
+        vu_8    ie_busy;        /* 1 => initialization in progress */
+        i_8    _pad;            /* unused */
+        ieoff_t ie_scb;         /* offset of SCB */
+        ieaddr_t ie_cbbase;     /* base of all control blocks */
+};
+
+/* 
+ * System Control Block - the focus of communication
+ */
+// tjt - checked this, no padding */
+struct iescb {
+        vu_8          : 1;      /* mbz */
+        vu_8  ie_rus  : 3;      /* receive unit status */
+        vu_8          : 4;      /* mbz */
+
+        vu_8  ie_cx   : 1;      /* command done (interrupt) */
+        vu_8  ie_fr   : 1;      /* frame received (interrupt) */
+        vu_8  ie_cnr  : 1;      /* command unit not ready */
+        vu_8  ie_rnr  : 1;      /* receive unit not ready */
+        vu_8          : 1;      /* mbz */
+        vu_8  ie_cus  : 3;      /* command unit status */
+
+        vu_16   ie_cmd;         /* command word */
+
+        ieoff_t ie_cbl;         /* command list */
+        ieoff_t ie_rfa;         /* receive frame area */
+
+        ieint_t ie_crcerrs;     /* count of CRC errors */
+        ieint_t ie_alnerrs;     /* count of alignment errors */
+        ieint_t ie_rscerrs;     /* count of discarded packets */
+        ieint_t ie_ovrnerrs;    /* count of overrun packets */
+};
+
+/* ie_rus */
+#define IERUS_IDLE      0
+#define IERUS_SUSPENDED 1
+#define IERUS_NORESOURCE 2
+#define IERUS_READY     4
+
+/* ie_cus */
+#define IECUS_IDLE      0
+#define IECUS_SUSPENDED 1
+#define IECUS_READY     2
+
+/* ie_cmd */
+#define IECMD_RESET     0x8000  /* reset chip */
+#define IECMD_RU_START  (1<<12) /* start receiver unit */
+#define IECMD_RU_RESUME (2<<12) /* resume receiver unit */
+#define IECMD_RU_SUSPEND (3<<12) /* suspend receiver unit */
+#define IECMD_RU_ABORT  (4<<12) /* abort receiver unit */
+#define IECMD_ACK_CX    0x80    /* ack command executed */
+#define IECMD_ACK_FR    0x40    /* ack frame received */
+#define IECMD_ACK_CNR   0x20    /* ack CU not ready */
+#define IECMD_ACK_RNR   0x10    /* ack RU not ready */
+#define IECMD_CU_START  1       /* start receiver unit */
+#define IECMD_CU_RESUME 2       /* resume receiver unit */
+#define IECMD_CU_SUSPEND 3      /* suspend receiver unit */
+#define IECMD_CU_ABORT  4       /* abort receiver unit */
+
+/*
+ * Generic command block
+ */
+struct  iecb {
+        vu_8          : 8;      /* -- part of status */
+
+        vu_8  ie_done : 1;      /* command done */
+        vu_8  ie_busy : 1;      /* command busy */
+        vu_8  ie_ok   : 1;      /* command successful */
+        vu_8  ie_aborted : 1;   /* command aborted */
+        vu_8          : 4;      /* -- more status */
+
+        vu_8          : 5;      /* -- unused */
+        vu_8  ie_cmd  : 3;      /* command # */
+
+        vu_8  ie_el   : 1;      /* end of list */
+        vu_8  ie_susp : 1;      /* suspend when done */
+        vu_8  ie_intr : 1;      /* interrupt when done */
+        vu_8          : 5;      /* -- unused */
+
+        ieoff_t ie_next;        /* next CB */
+};
+
+
+/*
+ * CB commands (ie_cmd)
+ */
+#define IE_NOP          0
+#define IE_IADDR        1       /* individual address setup */
+#define IE_CONFIG       2       /* configure */
+#define IE_MADDR        3       /* multicast address setup */
+#define IE_TRANSMIT     4       /* transmit */
+#define IE_TDR          5       /* TDR test */
+#define IE_DUMP         6       /* dump registers */
+#define IE_DIAGNOSE     7       /* internal diagnostics */
+
+/*
+ * TDR command block 
+ */
+struct ietdr {
+        struct iecb ietdr_cb;   /* common command block */
+
+        vu_8  ietdr_timlo: 8;   /* time */
+
+        vu_8  ietdr_ok   : 1;   /* link OK */
+        vu_8  ietdr_xcvr : 1;   /* transceiver bad */
+        vu_8  ietdr_open : 1;   /* cable open */
+        vu_8  ietdr_shrt : 1;   /* cable shorted */
+        vu_8             : 1;
+        vu_8  ietdr_timhi: 3;   /* time */
+};
+
+
+/*
+ * Individual address setup command block
+ */
+struct ieiaddr {
+        struct iecb ieia_cb;    /* common command block */
+        vu_8    ieia_addr[6];   /* the actual address */
+};
+
+/*
+ * Configure command
+ */
+struct ieconf {
+        struct iecb ieconf_cb;  		/* command command block */
+
+        vu_8               : 4;
+        vu_8  ieconf_bytes : 4;         /* # of conf bytes */
+
+        vu_8                 : 4;
+        vu_8  ieconf_fifolim : 4;       /* fifo limit */
+
+        vu_8  ieconf_savbf : 1;         /* save bad frames */
+        vu_8  ieconf_srdy  : 1;         /* srdy/ardy (?) */
+        vu_8               : 6;
+
+        vu_8  ieconf_extlp : 1;         /* external loopback */
+        vu_8  ieconf_intlp : 1;         /* external loopback */
+        vu_8  ieconf_pream : 2;         /* preamble length code */
+        vu_8  ieconf_acloc : 1;         /* addr&type fields separate */
+        vu_8  ieconf_alen  : 3;         /* address length */
+
+        vu_8  ieconf_bof    : 1;        /* backoff method */
+        vu_8  ieconf_exprio : 3;        /* exponential prio */
+        vu_8                : 1;
+        vu_8  ieconf_linprio : 3;       /* linear prio */
+
+        vu_8  ieconf_space : 8;         /* interframe spacing */
+        vu_8  ieconf_slttml : 8;        /* low bits of slot time */
+
+        vu_8  ieconf_retry  : 4;        /* # xmit retries */
+        vu_8                : 1;
+        vu_8  ieconf_slttmh : 3;        /* high bits of slot time */
+
+        vu_8  ieconf_pad    : 1;        /* flag padding */
+        vu_8  ieconf_hdlc   : 1;        /* HDLC framing */
+        vu_8  ieconf_crc16  : 1;        /* CRC type */
+        vu_8  ieconf_nocrc  : 1;        /* disable CRC appending */
+        vu_8  ieconf_nocarr : 1;        /* no carrier OK */
+        vu_8  ieconf_manch  : 1;        /* Manchester encoding */
+        vu_8  ieconf_nobrd  : 1;        /* broadcast disable */
+        vu_8  ieconf_promisc : 1;       /* promiscuous mode */
+
+        vu_8  ieconf_cdsrc  : 1;        /* CD source */
+        vu_8  ieconf_cdfilt : 3;        /* CD filter bits (?) */
+        vu_8  ieconf_crsrc  : 1;        /* carrier source */
+        vu_8  ieconf_crfilt : 3;        /* carrier filter bits */
+
+        vu_8  ieconf_minfrm : 8;        /* min frame length */
+        vu_8                : 8;
+};
+
+/*
+ * Receive frame descriptor
+ */
+struct  ierfd {
+        vu_8  ierfd_short     : 1;      /* short frame */
+        vu_8  ierfd_noeof     : 1;      /* no EOF (bitstuffing mode only) */
+        vu_8                  : 6;      /* -- unused */
+
+        vu_8  ierfd_done      : 1;      /* command done */
+        vu_8  ierfd_busy      : 1;      /* command busy */
+        vu_8  ierfd_ok        : 1;      /* command successful */
+        vu_8                  : 1;      /* -- unused */
+        vu_8  ierfd_crcerr    : 1;      /* crc error */
+        vu_8  ierfd_align     : 1;      /* alignment error */
+        vu_8  ierfd_nospace   : 1;      /* out of buffer space */
+        vu_8  ierfd_overrun   : 1;      /* DMA overrun */
+
+        vu_8                  : 8;      /* -- unused */
+
+        vu_8  ierfd_el        : 1;      /* end of list */
+        vu_8  ierfd_susp      : 1;      /* suspend when done */
+        vu_8                  : 6;      /* -- unused */
+
+        ieoff_t ierfd_next;             /* next RFD */
+        ieoff_t ierfd_rbd;              /* pointer to buffer descriptor */
+
+        vu_8  ierfd_dhost[6];           /* destination address field */
+        vu_8  ierfd_shost[6];           /* source address field */
+        vu_16 ierfd_type;               /* Ethernet packet type field */
+};
+
+/*
+ * Receive buffer descriptor
+ */
+struct  ierbd {
+        vu_8  ierbd_cntlo     : 8;      /* Low order 8 bits of count */
+
+        vu_8  ierbd_eof       : 1;      /* last buffer for this packet */
+        vu_8  ierbd_used      : 1;      /* EDLC sets when buffer is used */
+        vu_8  ierbd_cnthi     : 6;      /* High order 6 bits of count */
+
+        ieoff_t ierbd_next;             /* next RBD */
+        ieaddr_t ierbd_buf;             /* pointer to buffer */
+
+        vu_8  ierbd_sizelo    : 8;      /* Low order 8 bits of buffer size */
+
+        vu_8  ierbd_el        : 1;      /* end-of-list if set */
+        vu_8                  : 1;      /* -- unused */
+        vu_8  ierbd_sizehi    : 6;      /* High order 6 bits of buffer size */
+
+#ifdef KERNEL
+        struct ieipack *ierbd_iep;      /* ptr to data packet descriptor */
+#endif
+};
+
+/*
+ * Transmit frame descriptor ( Transmit command block )
+ */
+struct  ietfd {
+        vu_8  ietfd_defer     : 1;      /* transmission deferred */
+        vu_8  ietfd_heart     : 1;      /* Heartbeat */
+        vu_8  ietfd_xcoll     : 1;      /* Too many collisions */
+        vu_8                  : 1;      /* -- unused */
+        vu_8  ietfd_ncoll     : 4;      /* Number of collisions */
+
+        vu_8  ietfd_done      : 1;      /* command done */
+        vu_8  ietfd_busy      : 1;      /* command busy */
+        vu_8  ietfd_ok        : 1;      /* command successful */
+        vu_8  ietfd_aborted   : 1;      /* command aborted */
+        vu_8                  : 1;      /* -- unused */
+        vu_8  ietfd_nocarr    : 1;      /* No carrier sense */
+        vu_8  ietfd_nocts     : 1;      /* Lost Clear to Send */
+        vu_8  ietfd_underrun  : 1;      /* DMA underrun */
+
+        vu_8                  : 5;      /* -- unused */
+        vu_8  ietfd_cmd       : 3;      /* command # */
+
+        vu_8  ietfd_el        : 1;      /* end of list */
+        vu_8  ietfd_susp      : 1;      /* suspend when done */
+        vu_8  ietfd_intr      : 1;      /* interrupt when done */
+        vu_8                  : 5;      /* -- unused */
+
+        ieoff_t ietfd_next;             /* next RFD */
+        ieoff_t ietfd_tbd;              /* pointer to buffer descriptor */
+
+        vu_8  ietfd_dhost[6];           /* destination address field */
+        vu_16 ietfd_type;               /* Ethernet packet type field */
+};
+
+/*
+ * Transmit buffer descriptor
+ */
+struct  ietbd {
+        vu_8   ietbd_cntlo    : 8;      /* Low order 8 bits of count */
+
+        vu_8   ietbd_eof      : 1;      /* last buffer for this packet */
+        vu_8                  : 1;      /* -- unused */
+        vu_8   ietbd_cnthi    : 6;      /* High order 6 bits of count */
+
+        ieoff_t  ietbd_next;            /* next TBD */
+        ieaddr_t ietbd_buf;             /* pointer to buffer */
+};
+
+#ifdef ORIGINAL
+/* byte-swapped data types */
 typedef u_short ieoff_t;        /* control block offsets from iscp cbbase */
 #define IENORBD 0xffff          /* null pointer for rbd */
 typedef short ieint_t;          /* 16 bit integers */
@@ -21,6 +320,7 @@ typedef long ieaddr_t;          /* data (24-bit) addresses */
  * Must be at 0xFFFFF6 in chip's address space
  */
 #define IESCPADDR 0xFFFFF6
+
 struct iescp {
         char    ie_sysbus;      /* bus width: 0 => 16, 1 => 8 */
         char    ie_junk1[5];    /* unused */
@@ -271,5 +571,6 @@ struct  ietbd {
         ieoff_t  ietbd_next;            /* next TBD */
         ieaddr_t ietbd_buf;             /* pointer to buffer */
 };
+#endif /* ORIGINAL */
 
 /* THE END */

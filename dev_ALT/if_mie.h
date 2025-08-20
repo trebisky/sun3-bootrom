@@ -1,9 +1,13 @@
-
 /*      @(#)if_mie.h 1.1 86/09/27 SMI   */
 
 /*
  * Copyright (c) 1986 by Sun Microsystems, Inc.
  */
+
+// tjt - this is a set of definitions for a 82586
+//       on a Multibus card -- it has no relevance
+//       to the bootrom at all, but does get included
+//       (but should not) in the if_ie driver.
 
 #define IEVVSIZ         1024            /* pages in page map --
                                            vv as in virtual virtual */

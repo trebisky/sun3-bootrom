@@ -1,4 +1,3 @@
-
 /*
  * @(#)monalloc.c 1.1 86/09/27
  * Copyright (c) 1986 by Sun Microsystems, Inc.
