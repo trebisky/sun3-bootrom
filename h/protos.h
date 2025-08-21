@@ -194,7 +194,7 @@ int siprobe ( struct saioreq * );
 // int sidoit ( struct scsi_cdb *, struct scsi_scb *, struct saioreq * );
 
 /* in sys/rop.s */
-void prom_mem_batchrop ( struct pr_prpos, int, struct pr_prpos *, int );
+void prom_mem_batchrop ( struct pr_prpos, int, struct pr_prpos *, short );
 
 
 
