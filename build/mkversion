@@ -45,9 +45,13 @@ print <<EOF;
 
 EOF
 
+# add leading tab for sun3 at Romain's request
+# otherwise it overlaps the Sun logo on a frambuffer
+# display  8-21-2025
+
 print "char \*$ident";
 #print " = \"version $vernum for $board, Compiled by $user: $date\"\;\n";
-print " = \"Compiled by $user: $date\"\;\n";
+print " = \"\\tCompiled by $user: $date\"\;\n";
 
 print <<EOF;
 

@@ -78,6 +78,7 @@ devopen ( struct saioreq *sip )
                         sip->si_devdata = a;
                 }
         }
+
         return ((sip->si_boottab->b_open)(sip));
 }
 
@@ -92,7 +93,6 @@ devclose ( struct saioreq *sip )
 }
 
 // tape drivers use this (including st.c)
-
 int
 ttboot ( struct bootparam *bp )
 {

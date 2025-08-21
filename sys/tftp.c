@@ -115,6 +115,7 @@ top:
         out->tf_ip.ip_hl = sizeof (struct ip) / 4;
         out->tf_ip.ip_ttl = MAXTTL;
         out->tf_ip.ip_p = IPPROTO_UDP;
+
         out->tf_udp.uh_sport =  (millitime() & 1023) + 1024;
         out->tf_udp.uh_dport =  IPPORT_TFTP;
         out->tf_udp.uh_sum =  0;                /* no checksum */
@@ -181,7 +182,8 @@ top:
                     in->tf_udp.uh_dport != out->tf_udp.uh_sport) 
                         continue;
                 if (locked &&
-                    out->tf_ip.ip_dst.s_addr != in->tf_ip.ip_src.s_addr)                                continue;
+                    out->tf_ip.ip_dst.s_addr != in->tf_ip.ip_src.s_addr)
+						continue;
                 if (in->tf_tftp.th_opcode == ERROR) {
                         if (autoboot && tf->tf_block == 1)
                                 continue;

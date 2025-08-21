@@ -174,6 +174,7 @@ arp ( struct saioreq *sip, struct sainet *sain, char *tmpbuf)
         out.arp_ea.arp_op = ARPOP_REQUEST;
         arp_tha(&out.arp_ea) = etherbroadcastaddr;      /* what we want */
         arp_tpa(&out.arp_ea).s_addr = sain->sain_hisaddr.s_addr;
+
         comarp(sip, sain, &out, tmpbuf);
 }
 
@@ -191,6 +192,7 @@ revarp ( struct saioreq *sip, struct sainet *sain, char *tmpbuf)
         out.arp_ea.arp_op = REVARP_REQUEST;
         arp_tha(&out.arp_ea) = sain->sain_myether;
         arp_tpa(&out.arp_ea).s_addr = 0;        /* what we want to find out */
+
         comarp(sip, sain, &out, tmpbuf);
 }
 

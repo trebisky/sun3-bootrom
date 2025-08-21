@@ -208,9 +208,11 @@ struct sptab {
  * The data register can also be accessed as Read/Write register 8.
  */
 struct zscc_device {
-        volatile unsigned char   zscc_control;
-        unsigned char   :8;             /* Philler */
-        volatile unsigned char   zscc_data;
-        unsigned char   :8;             /* Filler */
+        vu_8   zscc_control;
+        unsigned char   __pad1;
+        vu_8   zscc_data;
+        unsigned char   __pad2;
 };
+
+/* THE END */
 

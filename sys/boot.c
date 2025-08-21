@@ -140,6 +140,7 @@ boot ( char *cmd )
                 ;
         q = p;
         skipblank(p);
+
         if (*p == '(') {        /* device specified */
                 p++;
                 if (q > cmd+2)
@@ -152,9 +153,11 @@ boot ( char *cmd )
                         }
                 }
                 if (dev == 0) goto syntax;
+
                 p = gethex(p, &bp->bp_ctlr);
                 p = gethex(p, &bp->bp_unit);
                 p = gethex(p, &bp->bp_part);
+
                 if (*p != 0 && *p != ')')
                         goto syntax;
         } else {                /* default boot */
@@ -243,8 +246,10 @@ boot ( char *cmd )
         q = puthex(q, bp->bp_part);
         *q++ = ')';
         bp->bp_name = q;
+
         while (*q++ = *name++)
                 ;
+
         bp->bp_argv[0] = bp->bp_strings;
         for (i = 1; i < (sizeof bp->bp_argv/sizeof bp->bp_argv[0])-1;) {
                 skipblank(p);
@@ -256,6 +261,7 @@ boot ( char *cmd )
                 /* SHOULD CHECK RANGE OF q */
                 *q++ = '\0';
         }
+
         bp->bp_argv[i] = (char *)0;
         reset_alloc();  /* Set up to give resources to driver */
         return ((*tp->b_boot)(bp));

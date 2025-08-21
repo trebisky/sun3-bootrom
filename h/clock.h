@@ -1,4 +1,3 @@
-
 /*	@(#)clock.h 1.1 86/09/27 SMI	*/
 
 /*
@@ -40,26 +39,27 @@
 #define	OBIO_CLKADDR	0x60000	/* address of clock in obio space */
 
 struct intersil7170 {
-	u_char	clk_hsec;	/* counter - hundredths of seconds 0-99 */
-	u_char	clk_hour;	/* counter - hours 0-23 (24hr) 1-12 (12hr) */
-	u_char	clk_min;	/* counter - minutes 0-59 */
-	u_char	clk_sec;	/* counter - seconds 0-59 */
-	u_char	clk_mon;	/* counter - month 1-12 */
-	u_char	clk_day;	/* counter - day 1-31 */
-	u_char	clk_year;	/* counter - year 0-99 */
-	u_char	clk_weekday;	/* counter - week day 0-6 */
-	u_char	clk_rhsec;	/* RAM - hundredths of seconds 0-99 */
-	u_char	clk_rhour;	/* RAM - hours 0-23 (24hr) 1-12 (12hr) */
-	u_char	clk_rmin;	/* RAM - minutes 0-59 */
-	u_char	clk_rsec;	/* RAM - seconds 0-59 */
-	u_char	clk_rmon;	/* RAM - month 1-12 */
-	u_char	clk_rday;	/* RAM - day 1-31 */
-	u_char	clk_ryear;	/* RAM - year 0-99 */
-	u_char	clk_rweekday;	/* RAM - week day 0-6 */
-	u_char	clk_intrreg;	/* interrupt status and mask register */
-	u_char	clk_cmd;	/* command register */
-	u_char	clk_unused[14];
+	vu_8	clk_hsec;	    /* counter - hundredths of seconds 0-99 */
+	vu_8	clk_hour;	    /* counter - hours 0-23 (24hr) 1-12 (12hr) */
+	vu_8	clk_min;	    /* counter - minutes 0-59 */
+	vu_8	clk_sec;	    /* counter - seconds 0-59 */
+	vu_8	clk_mon;	    /* counter - month 1-12 */
+	vu_8	clk_day;	    /* counter - day 1-31 */
+	vu_8	clk_year;	    /* counter - year 0-99 */
+	vu_8	clk_weekday;	/* counter - week day 0-6 */
+	vu_8	clk_rhsec;	    /* RAM - hundredths of seconds 0-99 */
+	vu_8	clk_rhour;	    /* RAM - hours 0-23 (24hr) 1-12 (12hr) */
+	vu_8	clk_rmin;	    /* RAM - minutes 0-59 */
+	vu_8	clk_rsec;	    /* RAM - seconds 0-59 */
+	vu_8	clk_rmon;	    /* RAM - month 1-12 */
+	vu_8	clk_rday;	    /* RAM - day 1-31 */
+	vu_8	clk_ryear;	    /* RAM - year 0-99 */
+	vu_8	clk_rweekday;	/* RAM - week day 0-6 */
+	vu_8	clk_intrreg;	/* interrupt status and mask register */
+	vu_8	clk_cmd;	    /* command register */
+	i_8		__pad[14];
 };
+
 #define	CLKADDR ((struct intersil7170 *)(0x0FFE2000))
 
 /* offsets into structure */
@@ -90,7 +90,7 @@ struct intersil7170 {
  * register uses a different mask bit (because of 12 hour
  * mode) and thus the 2 different defines.
  */
-#define	CLK_IGNORE	0x80	/* rmsec, rmin, rsec, rmon, rday, ryear, rdow */
+#define	CLK_IGNORE		0x80	/* rmsec, rmin, rsec, rmon, rday, ryear, rdow */
 #define	CLK_HOUR_IGNORE	0x40	/* ignore bit for clk_rhour only */
 
 /*
@@ -100,10 +100,10 @@ struct intersil7170 {
  * concurrently including te RAM compare interrupts.
  */
 #define	CLK_INT_INTR	0x80	/* r/o pending interrrupt */
-#define	CLK_INT_DAY	0x40	/* r/w periodic day interrupt */
+#define	CLK_INT_DAY		0x40	/* r/w periodic day interrupt */
 #define	CLK_INT_HOUR	0x20	/* r/w periodic hour interrupt */
-#define	CLK_INT_MIN	0x10	/* r/w periodic minute interrupt */
-#define	CLK_INT_SEC	0x08	/* r/w periodic second interrupt */
+#define	CLK_INT_MIN		0x10	/* r/w periodic minute interrupt */
+#define	CLK_INT_SEC		0x08	/* r/w periodic second interrupt */
 #define	CLK_INT_TSEC	0x04	/* r/w periodic 1/10 second interrupt */
 #define	CLK_INT_HSEC	0x02	/* r/w periodic 1/100 second interrupt */
 #define	CLK_INT_ALARM	0x01	/* r/w alarm mode - interrupt on time match */
@@ -111,11 +111,13 @@ struct intersil7170 {
 /* Command register defines */
 #define	CLK_CMD_TEST	0x20	/* w/o test mode (vs. normal mode) */
 #define	CLK_CMD_INTRENA	0x10	/* w/o interrupt enable (vs. disabled) */
-#define	CLK_CMD_RUN	0x08	/* w/o run bit (vs. stop) */
+#define	CLK_CMD_RUN		0x08	/* w/o run bit (vs. stop) */
 #define	CLK_CMD_24FMT	0x04	/* w/o 24 hour format (vs. 12 hour format) */
-#define	CLK_CMD_F4M	0x03	/* w/o using 4.194304MHz crystal frequency */
-#define	CLK_CMD_F2M	0x02	/* w/o using 2.097152MHz crystal frequency */
-#define	CLK_CMD_F1M	0x01	/* w/o using 1.048576MHz crystal frequency */
+#define	CLK_CMD_F4M		0x03	/* w/o using 4.194304MHz crystal frequency */
+#define	CLK_CMD_F2M		0x02	/* w/o using 2.097152MHz crystal frequency */
+#define	CLK_CMD_F1M		0x01	/* w/o using 1.048576MHz crystal frequency */
 #define	CLK_CMD_F32K	0x00	/* w/o using  32.768KHz  crystal frequency */
 
 #define	CLK_CMD_NORMAL	(CLK_CMD_INTRENA|CLK_CMD_RUN|CLK_CMD_24FMT|CLK_CMD_F32K)
+
+/* THE END */

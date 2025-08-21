@@ -1,4 +1,3 @@
-
 /*
  * @(#)idprom.c 1.1 86/09/27
  * Copyright (c) 1986 by Sun Microsystems, Inc.
@@ -29,6 +28,7 @@ idprom ( unsigned char format, struct idprom *idp )
         getidprom(&promform, 1);                /* Get format byte */
         if (format != promform)
                 return promform;
+
         getidprom((unsigned char *)idp, sizeof(*idp));  /* The whole thing */
         cp = (unsigned char *)idp;
         for (i=0; i<16; i++)

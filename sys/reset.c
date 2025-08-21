@@ -109,8 +109,8 @@ monreset ( struct monintstack monintstack )
         int i, baud = 0;
         bus_buf bbuf;           /* Buffer for bus error recovery */
 
-        set_enable(get_enable() | ENA_NOTBOOT | ENA_SDVMA);
-asm volatile("": : :"memory");
+        set_enable ( get_enable() | ENA_NOTBOOT | ENA_SDVMA);
+// asm volatile("": : :"memory");
  
 
         if (r_vector != EVEC_DOG) {

@@ -222,7 +222,8 @@ struct devinfo {
 	unsigned long	*d_stdaddrs;	/* The vector of standard addresses */
 	enum MAPTYPES 	d_devtype;	/* What map space dev is in */
 	unsigned	d_maxiobytes;	/* Size to break big I/O's into */
-} __attribute__ ((packed)) ;
+};
+// } __attribute__ ((packed)) ;
 
 /*
  * This defines the memory map interface between the PROM Monitor
