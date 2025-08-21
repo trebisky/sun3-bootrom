@@ -14,12 +14,12 @@ IDENT='-DID="Rev 2.1"' -DSUN3 -DCARRERA
 # Now this is in bootrom.lds
 #RELOC=0FEF0000
 
-# -Os requries memcpy
+# -Os requires memcpy (now supplied), smallest (~51 KiB)
 # -O3 produces a binary > 64 KiB
 # -O2 works but is quite close to 64 KiB
 # -O1 works and has some margin (~54 KiB)
 
-COPTS= -O2 -Wno-endif-labels -Wno-implicit-function-declaration -Wno-multichar
+COPTS= -Os -Wno-endif-labels -Wno-implicit-function-declaration -Wno-multichar
 # CFLAGS = -I../h -I. ${COPTS} ${IDENT} -DMC68000
 #CFLAGS = -I../h ${COPTS} ${IDENT} -DMC68000
 CFLAGS = -I../h ${COPTS} ${IDENT} -DANSI
@@ -49,7 +49,7 @@ OBJS = romvec.o trap.o mapmem.o reset.o cpu.map.o \
 	scutils.o space.o st.o \
 	inet.o tftp.o \
 	diagmenus.o machdep.o cmp.o patt.o db.o si.o \
-	version.o
+	version.o memcpy.o
 
 # These are devices we never intend to deal with
 ALT_OBJS = xy.o tm.o xt.o xd.o
@@ -212,6 +212,9 @@ si.o: ../dev/si.c
 	$(CC) -c $<
 
 rop.o: ../sys/rop.s
+	$(AS) -c $<
+
+memcpy.o: ../sys/memcpy.S
 	$(AS) -c $<
 
 
