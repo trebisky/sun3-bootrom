@@ -367,7 +367,9 @@ asm volatile("": : :"memory");
 #endif GRUMMAN1
 
         if (r_vector == EVEC_DOG) {
+#ifdef WANT_KB
                 initgetkey();
+#endif
                 return;
         }
 	

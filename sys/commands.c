@@ -278,7 +278,9 @@ monitor ( struct monintstack monintstack )
         switch(r_vector) {              /* what caused entry into monitor? */
 
         case EVEC_TRAPE:        /* "Exit to monitor" trap instruc */
+#ifdef WANT_KB
                 initgetkey();
+#endif
                 break;
 
         case EVEC_KCMD:         /* "K1" command */
@@ -315,7 +317,9 @@ BootHere:
                 goto BootHere;          /* Go do the boot */
 
         case EVEC_ABORT:
+#ifdef WANT_KB
                 initgetkey();
+#endif
                 printf("\nAbort");
                 goto PCPrint;
 

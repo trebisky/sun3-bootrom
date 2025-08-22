@@ -477,24 +477,32 @@ Trykey:
         tstb    a0@(zscc_control)       | Read to flush previous pointer.
 
         moveq   #0x7f, d0 
-1:     dbra    d0, 1b
+1:      dbra    d0, 1b
 
         moveq   #ZSRR0_RX_READY,d0      | Bit mask for RX ready bit
         andb    a0@(zscc_control),d0    | Now read it for real.
         jeq     s2_notnew               | If no char around, skip.
 
         moveq   #0x7f, d0 
-2:     dbra    d0, 2b
+2:      dbra    d0, 2b
 
         moveq   #0,d0
         movb    a0@(zscc_data),d0       | Get the keycode
         movl    d1,a0                   | Restore A-register temp
 
+| tjt - I almost deleted this, then realized this
+|  is used for serial keypresses as well as the keyboard
+| XXX
+#define WANT_PRESS
+#ifdef WANT_PRESS
         moveml  #0x00C0,sp@-            | Save a0, a1.  d0&d1 already saved.
         movl    d0,sp@-                 | Push it as argument to keypress().
         jbsr    keypress
         addql   #4,sp
         moveml  sp@+,#0x0300            | Restore saved registers
+#else
+        moveq   #0,d0
+#endif
         tstl    d0                      | See if keypress() wants us to abort.
         jeq     Trykey
         jra     abort                   | Yep, abort to monitor.

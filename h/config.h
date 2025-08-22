@@ -12,6 +12,7 @@
 
 // #define WANT_SCSI
 // #define WANT_FB
+// #define WANT_KB
 
 // TODO -- 
 // WANT_TAPE (must also want SCSI)

@@ -44,9 +44,8 @@ DUMP = m68k-linux-gnu-objdump -d
 BASE_OBJS = romvec.o trap.o mapmem.o reset.o cpu.map.o \
 	diag.o banner.o commands.o idprom.o usecmd.o  \
 	getline.o printf.o busyio.o \
-	keypress.o getkey.o ktab.s2.o \
 	boot.o monalloc.o common.o blts.o \
-	mem_grab.o \
+	keypress.o mem_grab.o \
 	if_ie.o \
 	xxboot.o xxprobe.o \
 	space.o \
@@ -54,8 +53,13 @@ BASE_OBJS = romvec.o trap.o mapmem.o reset.o cpu.map.o \
 	diagmenus.o machdep.o cmp.o patt.o db.o \
 	version.o
 
+# keypress.o is needed for a serial setup
+# scutils.o is not scsi, but a color framebuffer
+
 # These files provide framebuffer and keyboard support
 FB_OBJS = finit.o fwritestr.o scutils.o gallmash.o expand.o rop.o
+
+KB_OBJS = getkey.o ktab.s2.o
 
 # These are the scsi drivers
 # see boot.c for the only lines that include them.

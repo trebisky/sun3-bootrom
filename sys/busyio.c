@@ -24,14 +24,20 @@ static int remote_msg ( int ) ;
  * get rid of the framebuffer/keyboard
  */
 void
-fwritechar ( unsigned char x )
-{
-}
+fwritechar ( unsigned char x ) { }
 
 void
-fwritestr ( unsigned char *x, int len )
+fwritestr ( unsigned char *x, int len ) { }
+
+void
+abortfix ( void ) { }
+
+int getkey ( void )
 {
+	return -1;	/* NOKEY */
 }
+
+void initgetkey ( void ) {}
 #endif
 
 void
@@ -99,6 +105,7 @@ mayget()
         int     c;
  
         if (gp->g_diagecho == 0x12) {
+#ifdef WANT_KB
            c = getkey();           /* Let's check the keyboard first */
            if (c != -1) {          /* Is there a keyboard character */
                 if (c == '#') {
@@ -109,6 +116,7 @@ mayget()
                 }
                 return(c);         /* pick up keyboard char & quit. */
            }
+#endif
 
            if (!(gp->g_inzscc[2 - gp->g_sccflag].zscc_control & ZSRR0_RX_READY))
                 return (-1);       /* no input from the SCC */
@@ -123,8 +131,10 @@ mayget()
            }
            return(c);
         } else {
+#ifdef WANT_KB
            if (INKEYB == gp->g_insource) 
                 return (getkey());  /* Just pick up a keyboard char & quit. */
+#endif
 
            if (!(gp->g_inzscc[2-gp->g_insource].zscc_control & ZSRR0_RX_READY))
                 return (-1);    /* no char pending */
@@ -152,8 +162,10 @@ remote_msg ( int scc )
                 c = gp->g_inzscc[2 - gp->g_sccflag].zscc_data & NOPARITY;
                 DELAY(10);
            } else {
+#ifdef WANT_KB
                 if ((c = getkey()) == -1)       /* Check for keyboard input */
                         continue;
+#endif
            }
 
            if (c == '#') {              /* Special character for EOM */
