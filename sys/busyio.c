@@ -14,14 +14,33 @@
 #include "../h/globram.h"
 
 #include "../h/protos.h"
+#include "../h/config.h"
 
 static int remote_msg ( int ) ;
+
+#ifndef WANT_FB
+/* I don't have a better place to put these.
+ * We need these stubs for romvec.s when we
+ * get rid of the framebuffer/keyboard
+ */
+void
+fwritechar ( unsigned char x )
+{
+}
+
+void
+fwritestr ( unsigned char *x, int len )
+{
+}
+#endif
 
 void
 putchar ( unsigned char x )
 {
-        if (x == '\n') putchar('\r');
-        while (mayput (x)) ;
+        if (x == '\n')
+			putchar('\r');
+        while (mayput (x))
+			;
 }
 
 /*
@@ -35,14 +54,18 @@ mayput ( unsigned char x )
            if (gp->g_outzscc[2 - gp->g_sccflag].zscc_control & ZSRR0_TX_READY) {
                 DELAY(10);
                 gp->g_outzscc[2 - gp->g_sccflag].zscc_data = x;
+#ifdef WANT_FB
                 fwritechar (x);
+#endif
                 return 0;
            }
         } else {
+#ifdef WANT_FB
            if (OUTSCREEN == gp->g_outsink) {
                 fwritechar (x);
                 return 0;
            }
+#endif
 
            if (gp->g_outzscc[2-gp->g_outsink].zscc_control & ZSRR0_TX_READY) {
                 DELAY(10);

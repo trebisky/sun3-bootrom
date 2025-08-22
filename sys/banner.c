@@ -1,4 +1,3 @@
-
 /*
  * @(#)banner.c 1.1 86/09/27
  * Copyright (c) 1986 by Sun Microsystems, Inc.
@@ -16,6 +15,9 @@
 #include "../h/clock.h"
 #include "../h/fbio.h"
 #include "../h/eeprom.h"
+
+// #include "../h/protos.h"
+#include "../h/config.h"
 
 static void display_border ( void );
 static void menu_string ( char *, int, char * );
@@ -82,12 +84,12 @@ banner ( void )
                         id.id_ether[3], id.id_ether[4], id.id_ether[5]);
         }
 
-#ifndef GRUMMAN
+#ifdef WANT_FB
         if (EEPROM->ee_diag.eed_showlogo != 0x12 && 
                         gp->g_outsink == OUTSCREEN && gp->g_ay >= 3)
                 sunlogo(gp->g_ay - 3);          /* produce the sun logo */
         printf("\n");
-#endif GRUMMAN
+#endif
 }
 
 /*
@@ -97,7 +99,9 @@ banner ( void )
 void
 help ( void )
 {
+#ifdef WANT_FB
         fwritestr ("\f", 1); /* Clear screen */
+#endif
         printf("Boot PROM Monitor Commands\n\n");
         display_border();
         menu_string("a [digit]", 31, "Open CPU Addr Reg (0-7)");
@@ -171,3 +175,4 @@ menu_string ( char *cmdstr, int blanknum, char *defstr )
         printf("| %s\n", defstr);       /* Display the definition string */
 }
 
+/* THE END */

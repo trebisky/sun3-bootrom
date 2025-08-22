@@ -1,5 +1,3 @@
-
-
 /*
  * @(#)commands.c 1.1 86/09/27
  * Copyright (c) 1986 by Sun Microsystems, Inc.
@@ -57,6 +55,7 @@
 #endif  SIRIUS
 
 #include "../h/protos.h"
+#include "../h/config.h"
 
 static void openreg ( long *, long * );
 static void dobreak ( int );
@@ -712,9 +711,9 @@ TraceCont:
                                 resetinstr(); 
                                 *INTERRUPT_BASE |= IR_ENA_INT + IR_ENA_CLK7;
                                 /* Enable NMI */
-#ifndef GRUMMAN
+#ifdef WANT_FB
                                 finit (ax, ay); /* Fix video */
-#endif GRUMMAN
+#endif
                                 break;
 
                         case 1:         /* K1 - Reset 'most everything */

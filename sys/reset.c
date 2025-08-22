@@ -191,7 +191,8 @@ asm volatile("": : :"memory");
 	
 asm volatile("": : :"memory");
 
-#ifndef GRUMMAN1 /* no video for grumman */
+// #ifndef GRUMMAN1 /* no video for grumman
+#ifdef WANT_FB
         if ((r_vector != EVEC_RESET) && (r_vector != EVEC_BOOT_EXEC)
                 && (r_vector != EVEC_MENU_TSTS)) {
                 setupmap(videoinit);    /* Initialize video mem map */
@@ -300,7 +301,9 @@ asm volatile("": : :"memory");
         *INTERRUPT_BASE |= IR_ENA_INT;  /* Enable any interrupts */
 asm volatile("": : :"memory");
 
-#ifndef GRUMMAN1 /* no choice for basic io just use port a */
+// #ifndef GRUMMAN1 /* no choice for basic io just use port a
+#ifdef WANT_FB
+// Handy - Grumman, whatever it is, had no FB
 
         if (r_vector == EVEC_RESET || r_vector == EVEC_BOOT_EXEC ||
                 r_vector == EVEC_MENU_TSTS) {
@@ -355,7 +358,7 @@ asm volatile("": : :"memory");
                 }
                 initgetkey();
         }
-#endif GRUMMAN1
+#endif WANT_FB
 	
 asm volatile("": : :"memory");
 

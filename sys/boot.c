@@ -18,6 +18,7 @@
 #endif  SIRIUS
 
 #include "../h/protos.h"
+#include "../h/config.h"
 
 static char * gethex ( char *, int * );
 static char * puthex ( char *, int );
@@ -33,6 +34,23 @@ extern struct boottab stdriver;         /* SCSI tape driver */
 extern struct boottab ledriver;         /* AMD Ethernet driver */
 extern struct boottab iedriver;         /* Intel Ethernet driver */
 
+#ifdef WANT_SCSI
+struct boottab *(boottab[]) = {
+        &sddriver,
+        &stdriver,
+        &iedriver,
+        0,
+};
+#else
+// tjt - this is what I build with.
+// The 3-160 has no on-board scsi.
+struct boottab *(boottab[]) = {
+        &iedriver,
+        0,
+};
+#endif
+
+#ifdef ORIGINAL
 struct boottab *(boottab[]) = {
         &sddriver,
         &stdriver,
@@ -43,6 +61,7 @@ struct boottab *(boottab[]) = {
 #endif 
         0,
 };
+#endif
 
 #ifdef ORIGINAL
 extern struct boottab xddriver;         /* VME Xylogics disk driver */
