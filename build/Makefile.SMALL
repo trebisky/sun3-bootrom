@@ -57,7 +57,7 @@ BASE_OBJS = romvec.o trap.o mapmem.o reset.o cpu.map.o \
 # scutils.o is not scsi, but a color framebuffer
 
 # These files provide framebuffer and keyboard support
-FB_OBJS = finit.o fwritestr.o scutils.o gallmash.o expand.o rop.o
+FB_OBJS = finit.o fwritestr.o scutils.o gallmash.o expand.o mem_batchrop.o
 
 KB_OBJS = getkey.o ktab.s2.o
 
@@ -67,6 +67,9 @@ SCSI_OBJS = sc.o sd.o st.o si.o
 
 # memcpy
 MEMCPY_OBJS = memcpy.o
+
+# binary prom_mem_batchrop, superceded
+# ROP_OBJS = rop.o
 
 #OBJS = $(BASE_OBJS) $(FB_OBJS)
 OBJS = $(BASE_OBJS)
@@ -190,6 +193,9 @@ if_ie.o: ../dev/if_ie.c
 	$(CC) -c $<
 
 mem_grab.o: ../sys/mem_grab.c
+	$(CC) -c $<
+
+mem_batchrop.o: ../sys/mem_batchrop.c
 	$(CC) -c $<
 
 sc.o: ../dev/sc.c

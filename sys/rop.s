@@ -1,7 +1,7 @@
 | This function is called only from fwritestr.c
 |
 | static void
-| prom_mem_batchrop ( struct pr_prpos a1, int a2, struct pr_prpos *a3, int a4 );
+| prom_mem_batchrop ( struct pr_prpos a1, int a2, struct pr_prpos *a3, short a4 );
 
 .globl prom_mem_batchrop
 
